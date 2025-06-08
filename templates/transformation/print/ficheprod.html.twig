@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="{{ app.user.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Impression FJP N° {{ fiche[0].numero_fiche }}</title>
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}" />
+
+</head>
+<body class="alert-light">
+        <div class="container mx-auto p-2 bg-white">
+            <div class="mb-2">
+                <img class="img-responsive img-fluid" style="height: 64px;" src="{{ asset('assets/images/logo_snvlt.png') }}" alt="logo_SNVLT" height="64">
+                <span class="mx-auto font-weight-bold" style="font-size: 28px;">Système National de Vérification de la Légalité et la Traçabilité du bois</span>
+                <hr>
+            </div>
+            <div class="bg-white m-2 text-dark text-center" style="border: 1px black solid;font-size: 28px;">Fiche Journalière de Production N° {{ fiche[0].numero_fiche }}</div>
+            <div class="ms-2">
+                <div class="mb-2" style="margin-left: 10px;font-size: 18px;">
+                    <span>Raison Sociale : </span><span class="font-weight-bold text-danger">{{ rs }}</span><br>
+                    <span>Code : </span><span class="font-weight-bold">{{ code }}</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 m-2" style="min-height: 700px;">
+                <table class="table-responsive w-100">
+                        <thead class="font-weight-bold alert-light mx-auto" style="border: black 1px solid">
+                            <th class="font-weight-bold" style="width: 15%;">Essence</th>
+                            <th class="font-weight-bold" style="width: 5%;">Lng</th>
+                            <th class="font-weight-bold" style="width: 5%;">Lrg</th>
+                            <th class="font-weight-bold" style="width: 5%;">Ep</th>
+                            <th class="font-weight-bold" style="width: 8%;">Nb Elts</th>
+                            <th class="font-weight-bold" style="width: 10%;">Volume</th>
+                            <th class="font-weight-bold" style="width: 12%;">Transformation</th>
+                            <th class="font-weight-bold" style="width: 40%;">Billons</th>
+                        </thead>
+                        <tbody class=" mx-auto" style="border: 1px solid black">
+                            {% for  element in fiche %}
+                                <tr class="p-1 text-dark">
+                                    <td style="border: black 1px solid">{{ element.essence }}</td>
+                                    <td style="border-bottom: black 1px solid" class="p-1" >{{ element.lng }}</td>
+                                    <td style="border-bottom: black 1px solid" class="p-1">{{ element.lrg }}</td>
+                                    <td style="border-bottom: black 1px solid" class="p-1">{{ element.ep }}</td>
+                                    <td style="border-bottom: black 1px solid" class="p-1">{{ element.nb }}</td>
+                                    <td style="border-bottom: black 1px solid" class="p-1">{{ element.vol }}</td>
+                                    <td class="p-1" style="border: black 1px solid">{{ element.type_transfo }}</td>
+                                    <td style="border: black 1px solid" class="p-1">
+                                        {% if (element.type_transfo == "DEROULAGE") %}
+                                            {% for billon in element.billons %}
+                                                <u><span class="text-dark font-weight-bold me-2 underline" style="font-size: 14px;">
+                                                    {{ billon.numero_billon}} |
+                                                </span></u>
+                                            {% endfor %}
+                                        {% else %}
+                                            <u><span class="text-dark font-weight-bold me-2 underline" style="font-size: 14px;">
+                                                {{ element.billons }}
+                                            </span></u>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="alert-light font-weight-bold" style="border: black 1px solid">
+                                <td >Total</td>
+                                <td class="p-1" ></td>
+                                <td class="p-1"></td>
+                                <td class="p-1"></td>
+                                <td class="p-1">{{ nb_elts }}</td>
+                                <td class="p-1">{{ volume }}</td>
+                                <td class="p-1"></td>
+                                <td class="p-1"></td>
+                            </tr>
+                        </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+        <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+        <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+        <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+        <script>
+            $(document).ready(function() {
+                window.print();
+                window.close();
+                //document.reload()
+            })
+        </script>
+</body>
+</html>

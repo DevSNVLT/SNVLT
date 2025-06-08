@@ -1,0 +1,88 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} -  Services MINEF
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/service_minef.png') }}" alt="services_ministere">  Services MINEF
+    </h2>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+    <section class="section">
+        <div class="card" style="border-top: solid 3px #024202">
+            <div class="card-body">
+                <h3 class="text-danger">
+                    {% if (item_new == "true") %}
+                        Ajouter un
+                    {% else %}
+                        Editer le
+                    {% endif %} service
+                </h3>
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.libelle_service) }}</div>
+                        <div class="">{{ form_row(form.sigle) }}</div>
+                        <div class="">{{ form_row(form.codeservice) }}</div>
+                        <div class="">{{ form_row(form.telephone_service) }}</div>
+                        <div class="">{{ form_row(form.code_direction) }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.personneRessource) }}</div>
+                        <div class="">{{ form_row(form.emailPersonneRessource) }}</div>
+                        <div class="">{{ form_row(form.mobilePersonneRessource) }}</div>
+
+                    </div>
+
+                </div>
+                <hr>
+                <a href="{{ path('ref_serviceminef') }}" class="bg-danger p-2 text-white ms-2 mb-2"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2 mb-1" style="margin-left: 10px;">
+
+                    {% if (item_new == "True") %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>Ajouter un service
+                    {% else %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>Editer le service
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+
+    <script>
+
+        $(document).ready(function() {
+            $('.direction').select2({
+                placeholder: "--Sélectionnez la direction ...",
+                theme: "bootstrap-5"
+            });
+        });
+
+    </script>
+
+{% endblock %}
+

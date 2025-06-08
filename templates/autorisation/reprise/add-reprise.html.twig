@@ -1,0 +1,198 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - Reprises annuelles d'activités
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="reprise">  Reprises annuelles d'activités - [Ajout]
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set options = option_service.findAll %}
+    <link href="{{ asset('assets/dselect-main/dist/css/dselect.css') }}" rel="stylesheet" />
+    <section class="section">
+        <div class="p-2 w-100 banniere"></div>
+        <div class="card">
+            <div class="card-body">
+                {% if not (reprise == "") %}
+                    <h2>PEF : <span class="text-danger font-weight-bold underline">{{ reprise }}</span></h2>
+                    <p class="text-secondary font-weight-bold" style="text-decoration: underline">Modifier la reprise</p>
+                    <hr>
+                {% endif %}
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.numeroAutorisation) }}</div>
+                        <div class="">{{ form_row(form.dateAutorisation)}}</div>
+                        <div class="">{{ form_row(form.codeAttribution) }}</div>
+                        <div class="sigle_exploitant"></div>
+
+                        {% set valeur = options['autorisations_validation'] %}
+
+                        {% if (valeur == '0') %}
+
+                        <button type="submit" class="btn-sm btn-success btn_valider ml-1 w-100 fs-5">
+
+                            {% else %}
+                            <button type="submit" class="btn-sm ml-1 w-100 btn_valider fs-5" disabled="true">
+                                {% endif %}
+
+                                {% if (titre is same as "Add an authorization") %}
+                                    <i class="bi bi-plus-circle-fill fw-bold fs-4 ms-2"></i> Ajouter une reprise
+                                {% else %}
+                                    <i class="bi bi-pencil"></i>Modifier la reprise
+                                {% endif %}
+                            </button>
+                            <input type="hidden" class="input_hidden" value="{{ valeur }}">
+                    </div>
+
+                    <div class="col-md-8">
+                        {#<h6 class="text-dark" style="font-weight: bold">{% trans %}Data for this forest{% endtrans %}</h6>
+
+                        <h6 class="text-dark" style="font-weight: bold">{% trans %}Data for this forest{% endtrans %}</h6>#}
+
+
+                        <!-- Accordion -->
+                        <h4 class="text-primary">Vérificateurs</h4>
+                        {% if (valeur == '0') %}
+                            <h5 class="alert-danger p-2 text-center">L'option de vérification d'attribution de périmètres d'exploitation forestière a été désactivée par votre administrateur système</h5>
+                        {% else %}
+                            <h5 class="alert-secondary p-2 text-center">Espace de vérification de la légalité avant enregistrement de la reprise d'activités</h5>
+                        {% endif %}
+                        <div class="liste_doc container">
+
+                        </div>
+
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'attribution -->
+
+    </section>
+
+
+    {#<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>#}
+    <script src="{{ asset('assets/dselect-main/dist/js/dselect.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+
+        $(document).ready(function() {
+
+            let code_attribution = document.querySelector('.code_attribution');
+            affiche_docs_validation(code_attribution.value);
+            /* dselect(code_exploitant,{
+                 search : true
+             });*/
+
+            //Affiche les documents de l'opérateur sélectionné
+
+            $('body').on('change', '.code_attribution', function() {
+                let valeur = this.value;
+                affiche_docs_validation(valeur)
+            })
+            function verifie_valeur(){
+                let i = 0;
+                let j = 0;
+                let value = "";
+                let banniere  = document.querySelector('.banniere');
+                $('#docs_table tbody > tr').each(function() {
+                    value =  $(this).find('td.statut input.statut_input').val();
+
+                    if (value === "APPROUVE") {
+                        i++
+                    }
+                    j++
+                })
+                if ($('.input_hidden').val() === "1"){
+                    if (i === j){
+
+                        $('.banniere').attr('class', 'bg-success banniere text-white p-2');
+                        banniere.innerHTML = "<h4>{% trans %}This logger can apply for this forest allocation{% endtrans %}</h4>"
+
+                        $('.btn_valider').attr('disabled', false);
+                        $('.btn_valider').attr('class', 'btn-sm btn-success btn_valider ml-1 w-100 fs-5');
+                    } else {
+
+                        $('.banniere').attr('class', 'bg-danger banniere text-white p-2');
+                        banniere.innerHTML = '<h4>{% trans %}This logger cannot  apply for this forest allocation{% endtrans %}</h4>'
+
+                        $('.btn_valider').attr('disabled', true);
+                    }
+                } else {
+                    $('.banniere').attr('class', 'bg-success banniere text-white p-2');
+                    banniere.innerHTML = '<h4>{% trans %}This logger can apply for this forest allocation{% endtrans %}</h4>'
+
+                    $('.btn_valider').attr('disabled', false);
+                    $('.btn_valider').attr('class', 'btn-sm btn-success btn_valider ml-1 w-100 fs-5');                    }
+            }
+            function  affiche_docs_validation(valeur){
+                let exploitant ="";
+                $.ajax({
+                    url:'{{ path('app_login')}}snvlt/docs_op/reprises/' + valeur,
+                    type : 'POST',
+                    data : {id_attribution: valeur,
+                    },
+                    success: function(response){
+                        console.log(response);
+                        let reponse = JSON.parse(response);
+
+                        var contenu =  '<table class="table table-responsive" id="docs_table">' +
+                            '<thead>' +
+                            '<tr class="alert-light-info text-dark">' +
+                            '<th>{% trans %}File{% endtrans %}</th>' +
+                            '<th>{% trans %}Document{% endtrans %}</th>' +
+                            '<th>{% trans %}Status{% endtrans %}</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody>';
+
+                        for(var i = 0; i < reponse.length; i++){
+                            if(reponse[i].statut === "APPROUVE"){
+                                contenu = contenu + '<tr class="alert-success">'+
+                                    '<td><a style="cursor: pointer;" target="popup" href="{{path('app_portail')}}snvlt/{{ asset('images/doc_operateurs/') }}'+ reponse[i].fichier +'"><img src="{{ asset('assets/icons/16x16/pdf.png') }}" alt="fichier"></a></td>';
+                            } else {
+                                contenu = contenu + '<tr class="alert-danger">'+
+
+                                    '<td class="text-center">-</td>';
+                            }
+                            contenu = contenu + '<td><h4 class="p-1" style="font-weight:bold;font-size:18px;" >' + reponse[i].libelle + '</h4></td>' +
+                                '<td class="statut"><input type="text" readonly class="statut_input " style="font-size: 16px; font-weight: bold; border: 0px;background: transparent;" value="'+ reponse[i].statut + '"></td>' +
+                                '</tr>';
+                            exploitant = reponse[i].exploitant;
+                        }
+                        contenu = contenu + '</tbody>' +
+                            '</table>';
+                        let liste_doc = document.querySelector('.liste_doc');
+                        let sigle_exploitant = document.querySelector('.sigle_exploitant');
+                        let doc = document.querySelector('#doc');
+                        sigle_exploitant.innerHTML ='<h3 class="badge bg-danger text-white p-2 m-2" style="font-size: 18px;font-weight: bold;">' + exploitant + '</h3>';
+                        liste_doc.innerHTML =contenu;
+                        setTimeout(1000);
+                        verifie_valeur();
+                    }
+                })
+            }
+        %});
+
+    </script>
+
+
+{% endblock %}

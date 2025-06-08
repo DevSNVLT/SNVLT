@@ -1,0 +1,67 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Rapports{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="rapport">  Soumission du rapport N° {{ rapport_oi.id }} - <span class="badge p-2 bg-danger text-white" style="font-size: 16px;" >{{ rapport_oi.codeOi.sigle }}</span>
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <div class="row p-2">
+                    <div class="col-md-3">
+                        <div class="align-content-md-start">
+                            <h3 class="alert-light text-dark p-1 font-weight-bold">Titre :</h3>
+                            <h4 class="bg-gradient-success text-dark font-weight-bold p-2" style=""><i class="mdi mdi-arrow-right font-weight-bold" style="font-size: 20px;"></i> {{ rapport_oi.libelle }}</h4>
+                        </div>
+                        <div class="align-content-md-start">
+                            <h3 class="alert-light text-dark p-1 font-weight-bold">Résumé :</h3>
+                            <textarea class="text-dark form-control" readonly style="height: 300px;background: lightyellow;">{{ rapport_oi.resume }}</textarea>
+                        </div>
+                        <div class="align-content-md-start">
+                            {#
+                            <h4 class="text-dark font-weight-light" style="margin-left: 25px;"><i class="mdi mdi-arrow-right font-weight-bold" style="font-size: 20px;"></i> <a class="btn btn-primary font-weight-bold" target="_blank" href="{{ asset('images/uploads/reports/') }}{{ rapport_oi.fichier }}" style="font-size: 16px;"> télécharger le rapport</a></h4>
+                            #}
+                        </div>
+                        <div class="align-content-md-start">
+                            <h3 class="alert-light text-dark p-1 mt-2 font-weight-bold">envoyé le :</h3>
+                            <h4 class="text-dark font-weight-light" style="margin-left: 25px;"><i class="mdi mdi-arrow-right font-weight-bold" style="font-size: 20px;"></i> {{ rapport_oi.createdAt | date('d/m/Y')}}</h4>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="col-md-9">
+                        <h3 class="alert-light text-dark p-1 font-weight-bold">Fichier :</h3>
+                        <iframe src="{{ asset('images/uploads/reports/') }}{{ rapport_oi.fichier }}" height="800" width="100%" style="border: 0px; box-shadow: 10px 10px lightgrey;"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#oi');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}

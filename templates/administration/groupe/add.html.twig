@@ -1,0 +1,52 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Add Group{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/groupe.png') }}" alt="attribution">  {% trans %}Groups{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.nom_groupe) }}</div>
+                    </div>
+
+                </div>
+                <br>
+                <a href="{{ path('ref_groupes') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                    {% if (titre is same as "Ajouter un groupe") %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Group{% endtrans %}
+                    {% else %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Edit Group{% endtrans %}
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+{% endblock %}
+

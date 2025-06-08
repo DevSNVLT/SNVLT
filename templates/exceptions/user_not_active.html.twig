@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>{% block Title %}{% endblock %}</title>
+
+    <!-- plugins:css -->
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+</head>
+<body>
+<div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    {% if(app.user.codeGroupe.id == 1) %}
+    <nav class="navbar default-layout-navbar bg-white col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#f7f9f7, #f1fbed);color: black;">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#f7f9f7, #f1fbed);color: black;">
+
+            {% elseif (app.user.codeDirection) %}
+            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#1e7861, #7f995a);">
+                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#1e7861, #7f995a);">
+
+                    {% elseif (app.user.codeService) %}
+                    <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#1869b0, #198089);">
+                        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#1869b0, #198089);">
+
+                            {% elseif (app.user.codeexploitant) %}
+                            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#a56930, #fe5d01);">
+                                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#a56930, #fe5d01);">
+
+                                    {% elseif (app.user.codeindustriel) %}
+                                    <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#967d1b, #ae650a);">
+                                        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center"  style="background-image:linear-gradient(#967d1b, #ae650a);">
+
+                                            {% elseif (app.user.codeExportateur) %}
+                                            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#7d7d7b, #5c5c59);">
+                                                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#7d7d7b, #5c5c59);">
+
+                                                    {% elseif (app.user.codeCommercant) %}
+                                                    <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#07616a, #28bbbd);">
+                                                        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#07616a, #28bbbd);">
+
+                                                            {% elseif (app.user.codeDr) %}
+                                                            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#839783, #1f6c07);">
+                                                                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#839783, #1f6c07);">
+
+                                                                    {% elseif (app.user.codeDdef) %}
+                                                                    <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#64abdd, #5e07e9);">
+                                                                        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#64abdd, #5e07e9);">
+
+                                                                            {% elseif (app.user.codeCantonnement) %}
+                                                                            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#027872, #096243);">
+                                                                                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#027872, #096243);">
+
+                                                                                    {% elseif (app.user.codePosteControle) %}
+                                                                                    <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#787272, #453e3c);">
+                                                                                        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#787272, #453e3c);">
+
+                                                                                            {% elseif (app.user.codeOi) %}
+                                                                                            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#617e4e, #3b7733);">
+                                                                                                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#617e4e, #3b7733);">
+
+                                                                                                    {% endif %}
+                                                                                                    {% if(app.user.codeGroupe.id == 1) %}
+                                                                                                    <a class="navbar-brand brand-logo" href="#"><img src="{{ asset('assets/images/SNVLT_WEBAPP.png') }}" alt="logo" style="height: 64px;width: 85%" /></a>
+                                                                                                    <a class="navbar-brand brand-logo-mini" href="#"><img src="{{ asset('assets/images/logo_snvlt.png') }}" alt="logo" style="height: 48px;width: 48px;"/></a>
+                                                                                                </div>
+                                                                                                <div class="navbar-menu-wrapper d-flex align-items-stretch">
+                                                                                                    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                                                                                                        <span class="mdi mdi-menu  " style="height: 32px; font-size: 32px;color: #0c4128"></span>
+                                                                                                    </button>
+                                                                                                    {% set exo = exercice_en_cours.getAnnee %}
+                                                                                                    <span class="badge p-2 text-white my-auto mx-auto font-weight-bold" style="font-size: 16px;background: -moz-linear-gradient(#13653e, #186d7b)" >{{ 'Exercise'|trans }} {{ exo }}</span>
+
+
+                                                                                                    <ul class="navbar-nav navbar-nav-right  text-light">
+
+
+                                                                                                        <li class="nav-item nav-profile dropdown">
+                                                                                                            <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
+                                                                                                                <div class="nav-profile-img">
+                                                                                                                    {% if (app.user.photo) %}
+                                                                                                                        <img src="{{ asset('images/uploads/users/') }}{{ app.user.photo }}" alt="image">
+                                                                                                                    {% else %}
+                                                                                                                        <img src="{{ asset('assets/images/webapp/user.png') }}" alt="image">
+                                                                                                                    {% endif %}
+                                                                                                                </div>
+                                                                                                                <div class="nav-profile-text">
+                                                                                                                    <p class="mb-1 font-weight-bold text-dark">{{ app.user.titre }} {{ app.user.prenomsUtilisateur }} {{ app.user.nomUtilisateur }}</p>
+                                                                                                                </div>
+                                                                                                            </a>
+
+                                                                                                        </li>
+                                                                                                        {% else %}
+                                                                                                        <a class="navbar-brand brand-logo" href="#"><img src="{{ asset('assets/images/logo_normal.png') }}" alt="logo" style="height: 64px;width: 85%" /></a>
+                                                                                                        <a class="navbar-brand brand-logo-mini" href="#"><img src="{{ asset('assets/images/minef.png') }}" alt="logo" style="height: 48px;width: 40px;"/></a>
+                                                                                                </div>
+                                                                                                <div class="navbar-menu-wrapper d-flex align-items-stretch">
+                                                                                                    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                                                                                                        <span class="mdi mdi-menu text-white " style="height: 32px; font-size: 32px;"></span>
+                                                                                                    </button>
+                                                                                                    {% set exo = exercice_en_cours.getAnnee %}
+                                                                                                    <span class="text-white my-auto mx-auto" >{{ 'Exercise'|trans }} {{ exo }}</span>
+
+
+                                                                                                    <ul class="navbar-nav navbar-nav-right  text-light">
+
+
+                                                                                                        <li class="nav-item nav-profile dropdown">
+                                                                                                            <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
+                                                                                                                <div class="nav-profile-img">
+                                                                                                                    {% if (app.user.photo) %}
+                                                                                                                        <img src="{{ asset('images/uploads/users/') }}{{ app.user.photo }}" alt="image">
+                                                                                                                    {% else %}
+                                                                                                                        <img src="{{ asset('assets/images/webapp/user.png') }}" alt="image">
+                                                                                                                    {% endif %}
+                                                                                                                </div>
+                                                                                                                <div class="nav-profile-text">
+                                                                                                                    <p class="mb-1 text-black font-weight-bold text-white">{{ app.user.titre }} {{ app.user.prenomsUtilisateur }} {{ app.user.nomUtilisateur }}</p>
+                                                                                                                </div>
+                                                                                                            </a>
+
+                                                                                                        </li>
+                                                                                                        {% endif %}
+
+                                                                                                    </ul>
+                                                                                                    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+                                                                                                        <span class="mdi mdi-menu"></span>
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            </nav>
+                                                                                            <!-- partial -->
+                                                                                            <div class="container-fluid page-body-wrapper">
+                                                                                                <!-- partial:partials/_sidebar.html -->
+                                                                                                {% include 'base/menu.html.twig' %}
+                                                                                                <!-- partial -->
+
+                                                                                                <div class="main-panel alert-light">
+
+                                                                                                    {#Banniere OPERATEUR#}
+
+                                                                                                    {% if (app.user.codeOperateur.id == 1)%}
+                                                                                                        {% if(app.user.codeDirection) %}
+                                                                                                            <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#e0ebfc, #b5f1fb)">{{ app.user.codeDirection.denomination }}</h3>
+
+                                                                                                        {% elseif(app.user.codeService) %}
+                                                                                                            <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#d9d3d0, #f7d6b7)">{{ app.user.codeDirection.denomination }}</h3>
+                                                                                                        {% else %}
+                                                                                                            <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#dbd6d4, #badcdc)">{{ 'Administrator' | trans }}</h3>
+                                                                                                        {% endif %}
+                                                                                                    {% elseif (app.user.codeOperateur.id == 2)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#b8e4af, #97af9c)">{{ app.user.codeexploitant.raisonSocialeExploitant }}</h3>
+                                                                                                    {% elseif (app.user.codeOperateur.id == 3)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#f8f2d1, #dcd4ba)">{{ app.user.codeindustriel.raisonSocialeUsine }}</h3>
+                                                                                                    {% elseif (app.user.codeOperateur.id == 4)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#b2b4b5, #e0c7f5)">{{  app.user.codeExportateur.raisonSocialeExportateur }}</h3>
+
+                                                                                                    {% elseif (app.user.codeOperateur.id == 5)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#d6fbe8, #c6cac8)">{{  app.user.codeDr.denomination }}</h3>
+                                                                                                    {% elseif (app.user.codeOperateur.id == 6)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#d4d6d5, #b6b9b8)">{{  app.user.codeDdef.nomDdef }}</h3>
+                                                                                                    {% elseif (app.user.codeOperateur.id == 7)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#f9f4cc, #f4f3ef)">{{  app.user.codeCantonnement.nomCantonnement }}</h3>
+                                                                                                    {% elseif (app.user.codeOperateur.id == 10)%}
+                                                                                                        <h3 class="p-2 text-center text-dark" style="background: linear-gradient(#fbefe3, #ebebea)">{{  app.user.codePosteControle.denomination }}</h3>
+                                                                                                    {% endif %}
+
+
+                                                                                                    <div class="content-wrapper">
+                                                                                                        <div class="d-xl-flex justify-content-between align-items-start">
+                                                                                                            {% block titre_page %}
+
+                                                                                                            {% endblock %}
+
+                                                                                                        </div>
+                                                                                                        <h2 class="mt-4">
+                                                                                                            {% for message in app.session.flashBag.get('info') %}
+                                                                                                                <div class="alert alert-info" id="flash">
+                                                                                                                    {{ message }}
+                                                                                                                </div>
+                                                                                                            {% endfor %}
+                                                                                                            {% for message in app.session.flashBag.get('success') %}
+                                                                                                                <div class="alert alert-success" id="flash">
+                                                                                                                    {{ message }}
+                                                                                                                </div>
+                                                                                                            {% endfor %}
+                                                                                                            {% for message in app.session.flashBag.get('error') %}
+                                                                                                                <div class="alert alert-danger" id="flash">
+                                                                                                                    {{ message }}
+                                                                                                                </div>
+                                                                                                            {% endfor %}
+
+                                                                                                        </h2>
+                                                                                                        {% block page_content %}
+                                                                                                            <link rel="stylesheet" href="{{ asset('assets/login/style_login.css') }}">
+
+                                                                                                            <center>
+                                                                                                                <form method="post" class="form-login alert-light-danger mb-5 mt-5">
+
+                                                                                                                    <img src="{{ asset('assets/images/logo_snvlt.png') }}" height="120" alt="SNVLT">
+                                                                                                                    <h1 class="text-danger mb-5">Désolé !</h1>
+                                                                                                                    <span class=" "><h2 class="font-weight-bold text-dark mb-3">Vos accès ont été bloqués par votre administrateur</h2></span>
+                                                                                                                    {#{% set referer = app.request.headers.get('referer') %}#}
+
+                                                                                                                    <a href="{{ path('app_logout') }}" class="btn btn-lg btn-danger btn-block mb-3" style="font-size: 18px;" type="submit">
+                                                                                                                        {% trans %}I understand{% endtrans %}
+                                                                                                                    </a>
+
+                                                                                                                </form>
+                                                                                                            </center>
+                                                                                                        {% endblock %}
+                                                                                                    </div>
+                                                                                                    <!-- content-wrapper ends -->
+                                                                                                    <!-- partial:partials/_footer.html -->
+                                                                                                    <input type="hidden" id="langue" value="{{ app.user.locale }}">
+                                                                                                    <footer class="footer mt-5" style="background-image:linear-gradient(#d2e0d2, #e9f2e5);color: black; font-size: 18px;">
+                                                                                                        <div class="footer-inner-wraper">
+                                                                                                            <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                                                                                                                <span class="text-dark d-block text-center text-sm-left d-sm-inline-block"><a class="badge p-2  text-white" style="background-color: darkgreen" href="https://www.eauxetforets.gouv.ci/" target="_blank">{% trans %}MINISTRY_NAME{% endtrans %}</a> {% trans %}Copyright ©{% endtrans %} {% trans %}WEBSITE{% endtrans %} {% trans %}YEAR{% endtrans %}</span>
+                                                                                                                <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">  <a class="badge p-2  text-white" href="https://www.system2is.com/" style=";background-color: orangered;" target="_blank">{% trans %}DEVELOPER{% endtrans %}</a></span>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </footer>
+                                                                                                    <!-- partial -->
+                                                                                                </div>
+                                                                                                <!-- main-panel ends -->
+                                                                                            </div>
+                                                                                            <!-- page-body-wrapper ends -->
+                                                                                        </div>
+
+                                                                                        <script src="{{ asset('assets/bootstrap-5.3.2/dist/js/bootstrap.min.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/vendors/chart.js/Chart.min.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/vendors/jquery-circle-progress/js/circle-progress.min.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/assets/js/dashboard.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/node_modules/jquery/dist/jquery.min.js') }}"></script>
+
+
+                                                                                        <script src="{{ asset('assets/webapp/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/webapp/assets/js/bootstrap.bundle.min.js') }}"></script>
+
+                                                                                        <script src="{{ asset('assets/webapp/assets/vendors/apexcharts/apexcharts.js') }}"></script>
+                                                                                        <script src="{{ asset('assets/webapp/assets/js/pages/dashboard.js') }}"></script>
+
+                                                                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+                                                                                        {# <script>
+                    const eventSource = new EventSource("{{ mercure('/entries')|escape('js') }}");
+                    eventSource.onmessage = event => {
+                        // Will be called every time an update is published by the server
+                        console.log(JSON.parse(event.data));
+                    }
+                </script>#}
+
+                                                                                        <script>
+                                                                                            let langue = document.querySelector('#langue').value;
+
+                                                                                            $('.language-selector').on("click",function () {
+                                                                                                var langue = $(this).attr("id");
+                                                                                                $.ajax({
+                                                                                                    type: 'POST',
+                                                                                                    url: '{{ path('changeLocale') }}',
+                                                                                                    data: {langue: langue},
+                                                                                                    success: function (data) {location.reload();}
+                                                                                                });
+                                                                                            })
+                                                                                            $('body').on('click', '.notif_id', function (){
+                                                                                                $.ajax({
+                                                                                                    type: 'POST',
+                                                                                                    url: '{{path('app_portail')}}snvlt/admin/validation/notif_lu/' + this.id,
+                                                                                                    data: {id_notification: this.id},
+                                                                                                    success: function () {
+                                                                                                        console.log(response);
+                                                                                                        let reponse = JSON.parse(response);
+
+                                                                                                    }
+                                                                                                });
+                                                                                            })
+
+                                                                                            $(document).ready(function () {
+                                                                                                $("#flash").delay(4000).fadeOut("slow");
+                                                                                            });
+
+
+
+                                                                                        </script>
+</body>
+</html>

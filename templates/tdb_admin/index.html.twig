@@ -1,0 +1,544 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+     {% trans %}SNVLT{% endtrans%} - {% trans %}Dashboard{% endtrans %}
+{% endblock %}
+
+ {% block menu %}
+      {% include 'base/menu.html.twig' %}
+ {% endblock %}
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+        {% block titre_page %}
+            <h2 class="text-dark font-weight-bold mb-2">
+                <img src="{{ asset('assets/images/webapp/dashboard.png') }}" alt="tdb">  {% trans %}Dashboard{% endtrans %}
+            </h2>
+            <div class="d-sm-flex justify-content-xl-between align-items-center mb-2 p-2">
+
+                  {% if (app.user.codeOperateur.id == 1)%}
+                        {% if(app.user.codeDirection) %}
+                            <div class="btn-group bg-warning rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                                <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ 'Direction' | trans }} {{ app.user.codeOperateur.libelleOperateur}}</h6>
+                            </div>
+                        {% elseif(app.user.codeService) %}
+                            <div class="btn-group bg-warning rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                                <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ 'Service' | trans }} {{ app.user.codeOperateur.libelleOperateur}}</h6>
+                            </div>
+                        {% else %}
+                            <div class="btn-group bg-dark rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                                <h6 class="text-white fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ 'Administrator' | trans }} {{ app.user.codeOperateur.libelleOperateur}}</h6>
+                            </div>
+                        {% endif %}
+                  {% elseif (app.user.codeOperateur.id == 2)%}
+                      <div class="btn-group bg-warning rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 3)%}
+                      <div class="btn-group bg-warning rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 4)%}
+                      <div class="btn-group bg-warning rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 5)%}
+                      <div class="btn-group bg-success rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 6)%}
+                      <div class="btn-group bg-success rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 7)%}
+                      <div class="btn-group bg-success rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                  {% elseif (app.user.codeOperateur.id == 10)%}
+                      <div class="btn-group bg-success rounded-5" style="border-radius: 14px;padding-left: 10px;padding-right: 10px;" role="group" aria-label="#">
+                          <h6 class="text-dark fw-bold mt-2" style="padding-left: 10px;padding-right: 10px;">{{ app.user.codeOperateur.libelleOperateur}}</h6>
+                      </div>
+                     {% endif %}
+            </div>
+        {% endblock %}
+
+{% block page_content %}
+    <hr>
+
+    <div class="row bg-white">
+        {% if (app.user.codeGroupe.id == 1) %}
+            {% include 'tdb_admin/fragments_dashboard/admin_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 5) %}
+            {% include 'tdb_admin/fragments_dashboard/dr_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 6) %}
+            {% include 'tdb_admin/fragments_dashboard/ddef_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 7) %}
+            {% include 'tdb_admin/fragments_dashboard/cef_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 2) %}
+            {% include 'tdb_admin/fragments_dashboard/exp_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 3) %}
+            {% include 'tdb_admin/fragments_dashboard/ind_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 9) %}
+            {% include 'tdb_admin/fragments_dashboard/oi_dashboard.html.twig' %}
+        {% elseif (app.user.codeOperateur.id == 1) %}
+            <div class="mx-auto py-auto alert-success" style="height: 500px;">
+                <img class="mt-5" src="{{ asset('assets/images/logo_snvlt.png') }}" height="350" alt="logo_eaux_et_forets_ci">
+                <div class="text-center text-success font-weight-bold">Ministère des Eaux et Forêts - RCI</div>
+            </div>
+        {% endif %}
+
+    </div>
+        <script src="{{ asset('assets/apexcharts-bundle/dist/apexcharts.min.js') }}"></script>
+    <script>
+
+
+
+        function stringToDate(_date,_format,_delimiter)
+        {
+            var formatLowerCase=_format.toLowerCase();
+            var formatItems=formatLowerCase.split(_delimiter);
+            var dateItems=_date.split(_delimiter);
+            var monthIndex=formatItems.indexOf("mm");
+            var dayIndex=formatItems.indexOf("dd");
+            var yearIndex=formatItems.indexOf("yyyy");
+            var month=parseInt(dateItems[monthIndex]);
+            month-=1;
+            var formatedDate = new Date(dateItems[yearIndex],month,dateItems[dayIndex]);
+            return formatedDate;
+        }
+
+        function convert_to_date(valeur)
+        {
+            return stringToDate(valeur, "mm-dd-yyyy","-")
+        }
+
+        var options_op_essences = {
+            series: [
+                {% for ess in essences_vol %}
+                    {{ ess.vol }},
+                {% endfor %}
+            ],
+            labels: [
+                {% for ess in essences_vol %}
+                '{{ ess.nom_vernaculaire }}',
+                {% endfor %}
+            ],
+            chart: {
+                width: 500,
+                height: 350,
+                type: 'donut',
+            },
+            plotOptions: {
+                pie: {
+                    startAngle: -90,
+                    endAngle: 270
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            fill: {
+                type: 'gradient',
+            },
+            legend: {
+                formatter: function(val, opts) {
+                    return val + " - " + Math.round(opts.w.globals.series[opts.seriesIndex])
+                }
+            },
+            title: {
+                text: 'Top 10 Essences forestières et volumes exploités (m3)'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 300
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        var chart_op_essence = new ApexCharts(document.querySelector("#donnees_essences"), options_op_essences);
+        chart_op_essence.render();
+
+        var optionsjauge = {
+            series: [{
+                name: 'Agréements',
+                data: [145, 55, 57, 56, 61]
+            }, {
+                name: 'Autorisations',
+                data: [222, 85, 101, 98, 87]
+            }],
+            chart: {
+                type: 'bar',
+                height: 250
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    endingShape: 'rounded'
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: ['PEF', 'PS', 'PV', 'IND', 'PDT DRV'],
+            },
+            yaxis: {
+                title: {
+                    text: '$ (thousands)'
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return  val
+                    }
+                }
+            }
+        };
+
+        var chart_jauge = new ApexCharts(document.querySelector("#chartjauge"), optionsjauge);
+        chart_jauge.render();
+
+        var options = {
+            series: [
+                {% for operateur in operateurs %}
+                    {{ operateur.users.count }},
+                {% endfor %}
+            ],
+            labels: [
+                {% for operateur in operateurs %}
+                '{{ operateur.libelleOperateur | slice(0, 14)}}',
+                {% endfor %}
+            ],
+            chart: {
+                //width: 380,
+                type: 'donut',
+            },
+            plotOptions: {
+                pie: {
+                    startAngle: -90,
+                    endAngle: 270
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            fill: {
+                type: 'gradient',
+            },
+            legend: {
+                formatter: function(val, opts) {
+                    return val + " - " + opts.w.globals.series[opts.seriesIndex]
+                }
+            },
+            title: {
+                text: '{{ 'SNVLT Operators with number of agent' }}'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+
+        var chart = new ApexCharts(document.querySelector("#chart_operateurs"), options);
+        chart.render();
+
+        //Suivi des publications OI
+        var options_oi = {
+            series: [
+                {% for rapport in rapport_oi %}
+                    {{ rapport.nombre }},
+                {% endfor %}
+            ],
+            labels: [
+                {% for rapport in rapport_oi %}
+                    '{{ rapport.statut }}',
+                {% endfor %}
+            ],
+            chart: {
+                //width: 380,
+                type: 'donut',
+            },
+            plotOptions: {
+                pie: {
+                    startAngle: -90,
+                    endAngle: 270
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            fill: {
+                type: 'gradient',
+            },
+            legend: {
+                formatter: function(val, opts) {
+                    return val + " - " + opts.w.globals.series[opts.seriesIndex]
+                }
+            },
+            /*title: {
+                text: '{{ 'SNVLT Operators with number of agent' }}'
+            },*/
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+
+        var chart_oi = new ApexCharts(document.querySelector("#chart_oi_rapports"), options_oi);
+        chart_oi.render();
+
+
+        {#var options_saisies = {#}
+        {#    series: [{#}
+        {#        name: "Nb opérations",#}
+        {#        data: [{% for jour in suivi_saisies %}#}
+        {#            {{ jour.nbLigne }},#}
+        {#            {% endfor %}]#}
+        {#    }],#}
+        {#    chart: {#}
+        {#        height: 350,#}
+        {#        type: 'line',#}
+        {#        zoom: {#}
+        {#            enabled: true#}
+        {#        }#}
+        {#    },#}
+        {#    dataLabels: {#}
+        {#        enabled: false#}
+        {#    },#}
+        {#    stroke: {#}
+        {#        curve: 'straight'#}
+        {#    },#}
+        {#    title: {#}
+        {#        text: 'Mouvements SNVLT',#}
+        {#        align: 'left'#}
+        {#    },#}
+        {#    grid: {#}
+        {#        row: {#}
+        {#            colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns#}
+        {#            opacity: 0.5#}
+        {#        },#}
+        {#    },#}
+        {#    xaxis: {#}
+        {#        categories: [{% for jour in suivi_saisies %}#}
+        {#            {{ jour.createdAt | date('d/m/Y') }},#}
+        {#            {% endfor %}],#}
+        {#    }#}
+        {#};#}
+
+
+        {#var chart_saisies = new ApexCharts(document.querySelector("#chart_saisies"), options_saisies);#}
+        {#chart_saisies.render();#}
+
+        // Graph Quotas DR
+        var options_quotas_dr = {
+            series: [{
+                name: 'Quota',
+                data: [{% for quota in quotas %}
+                    {{ quota.quota_val }},
+                    {% endfor %}]
+            }, {
+                name: 'Volume exploité',
+                data: [{% for quota in quotas %}
+                    {{ quota.cubage }},
+                    {% endfor %}]
+            }],
+            chart: {
+                type: 'bar',
+                height: 250
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    endingShape: 'rounded'
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: [{% for quota in quotas %}
+                    '{{ quota.foret }}',
+                    {% endfor %}],
+            },
+            yaxis: {
+                title: {
+                    text: 'volumes en m3'
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + " m3"
+                    }
+                }
+            }
+        };
+
+        var chart_quotas_dr = new ApexCharts(document.querySelector("#chart_quotas_dr"), options_quotas_dr);
+        chart_quotas_dr.render();
+
+        // Graph Quotas DDEF
+        var options_quotas_ddef = {
+            series: [{
+                name: 'Quota',
+                type: 'column',
+                data: [{% for quota in quotas %}
+                    {{ quota.quota_val }},
+                    {% endfor %}]
+            }, {
+                name: 'Volume exploité',
+                type: 'line',
+                data: [{% for quota in quotas %}
+                    {{ quota.cubage }},
+                    {% endfor %}]
+            }],
+            chart: {
+                height: 250,
+                type: 'line',
+                color: "black"
+            },
+            stroke: {
+                width: [0, 2]
+            },
+            title: {
+                text: 'Volume exploites et Quotas'
+            },
+            dataLabels: {
+                enabled: true,
+                enabledOnSeries: [1]
+            },
+            labels: [{% for quota in quotas %}
+                '{{ quota.foret }}',
+                {% endfor %}],
+            yaxis: [{
+                title: {
+                    text: 'Quotas Superficie',
+                },
+
+            }, {
+                opposite: true,
+                title: {
+                    text: 'Volumes exploités'
+                }
+            }]
+        };
+
+        var chart_quotas_ddef= new ApexCharts(document.querySelector("#chart_quotas_ddef"), options_quotas_ddef);
+        chart_quotas_ddef.render();
+
+
+        //Graph CEF
+        var options_cef = {
+            series: [{% for foret in forets_cef %}
+                    {{ foret.volume_brh }},
+                    {% endfor %}],
+            chart: {
+                width: 300,
+                type: 'donut',
+            },
+            dataLabels: {
+                enabled: true
+            },
+            labels: [{% for foret in forets_cef %}
+                '{{ foret.foret_cef }}',
+                {% endfor %}],
+
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 250
+                    },
+                    legend: {
+                        show: true
+                    }
+                }
+            }],
+            legend: {
+                position: 'right',
+                offsetY: 0,
+                height: 400,
+            }
+        };
+
+        var chart_cef = new ApexCharts(document.querySelector("#chart_cef_data"), options_cef);
+        chart_cef.render();
+
+
+        var options_parc = {
+            series: [{
+                data: [{% for parc in parc_usine_stats %}
+                    {{ parc.nb_bille }},
+                    {% endfor %}]
+            }],
+            chart: {
+                type: 'bar',
+                height: 250
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    borderRadiusApplication: 'end',
+                    horizontal: true,
+                }
+            },
+            dataLabels: {
+                enabled: true
+            },
+            xaxis: {
+                categories: [{% for parc in parc_usine_stats %}
+                    '{{ parc.essence }}',
+                    {% endfor %}],
+            }
+        };
+
+        var chart_parc = new ApexCharts(document.querySelector("#chart_parc_usine"), options_parc);
+        chart_parc.render();
+
+
+
+    </script>
+{% endblock %}
+

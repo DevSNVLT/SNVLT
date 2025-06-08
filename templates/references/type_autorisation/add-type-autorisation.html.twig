@@ -1,0 +1,71 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {% trans %}Authorization type{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/type_autorisation.png') }}" alt="autorisations">  {% trans %}Authorization type{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-9 mx-auto">
+                        <div class="">{{ form_row(form.libelle) }}</div>
+                        <div class="">{{ form_row(form.type_operateur) }}</div>
+                        <div class="">{{ form_row(form.code_doc_grille) }}</div>
+                        <br>
+                        <a href="{{ path('app_references_type_autorisation') }}" class="alert-danger p-2"><i class="bi bi-back me-2"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-success text-white p-2">
+
+                            {% if (titre is same as "Add Authorization Type") %}
+                                <i class="bi bi-plus-circle-fill  me-2"></i>{% trans %}Add Authorization Type{% endtrans %}
+                            {% else %}
+                                <i class="bi bi-pencil  me-2"></i>{% trans %}Edit Authorization Type{% endtrans %}
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.js') }}"></script>
+
+
+    <script>
+
+        $(document).ready(function() {
+
+            $('.grille').select2();
+            $('.type_autorisation_type_operateur').select2();
+        });
+
+    </script>
+
+
+
+{% endblock %}
+

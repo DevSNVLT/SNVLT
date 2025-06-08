@@ -1,0 +1,184 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Forest Prospection{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/foret.png') }}" alt="forest">  {% trans %}Forest Prospection{% endtrans %}
+    </h2>
+    <a href="{{ asset('data/template_LAC.xls') }}" style="background: #b55802;color: #fbf8f8;font-size: 16px;border: #fbf8f8 solid 1px;" class="btn btn-warning"><i class="mdi mdi-download" style="margin-right: 5px;"></i>{% trans %}Download template{% endtrans %}</a>{#
+    <h4 class="text-dark">{% trans %}This place is dedicated to logger's prospection{% endtrans %}</h4>#}
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <script src="{{ asset('assets/assets_other/js/config.js') }}"></script>
+    <hr>
+    <section class="section bg-white p-1">
+        {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+        <div class="p-2 alert-light row">
+
+            <div class="col-md-2 mt-3">{{ form_row(form.code_attribution) }}</div>
+            <div class="col-md-3 justify-content-start d-flex">{{ form_row(form.fichier) }}
+                <span class="bg-dark badge text-white fichiername mt-4" style="font-size: 18px;height: 30px;margin-left: 5px;"></span>
+            </div>
+            <div class="col-md-1 mt-4"><input type="submit" class="btn btn-sm btn-primary" value="Charger"></div>
+            <div class="col-md-2 mt-3"><button
+                    type="button"
+                    class="btn btn-outline-dark chargerBtn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#backDropModal"
+                    style="font-size: 16px;"
+            >
+                {% trans %}Display and upload data{% endtrans %}
+                </button></div>
+
+        </div>
+        {{ form_end(form) }}
+        <div class="row p-2 text-center mx-auto alert-success">
+            <div class="col-md-2 bg-white m-2 text-center" style="border: lightgrey solid 1px">
+                <span class="fw-bold text-dark" style="font-weight: bold">{% trans %}My allocations{% endtrans %}</span>
+                <ul class="list-group alert-light-primary"  style="height: 300px;overflow-y: auto;">
+                    {% for attribution in mes_attribution %}
+                        <li class="list-group-item list-group-item-action text-center"><a href="#" class="fs-7 fw-bold" style="color: #435a69;font-weight: bold;font-size: 20px;" id="{{ attribution.id }}" >{{ attribution.codeForet.denomination }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-9 m-2 p-2 bg-white" style="border: lightgrey solid 1px">
+                <div class="justify-content-center">
+                    <table class="table table-stripped" style="height: 300px;">
+                        <thead class=" bg-primary text-white">
+                        <tr class="alert-success">
+                            <th>{% trans %}spices{% endtrans %}</th>
+                            <th>{% trans %}Zone{% endtrans %}</th>
+                            <th>{% trans %}X{% endtrans %}</th>
+                            <th>{% trans %}Y{% endtrans %}</th>
+                            <th>{% trans %}L{% endtrans %}</th>
+                            <th>{% trans %}d{% endtrans %}</th>
+                            <th>{% trans %}Volume{% endtrans %}</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <div class="col-lg-4 col-md-3">
+        <small class="text-light fw-semibold">Backdrop</small>
+        <div class="mt-3">
+
+            <!-- Modal -->
+            <div class="modal fade" id="backDropModal" data-bs-backdrop="static" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <form class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-dark" id="backDropModalTitle">Modal title</h5>
+                            <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                            ></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <div class="col-md-12 m-2 p-2 bg-white" style="border: lightgrey solid 1px">
+                                <div class="justify-content-center">
+                                    <table class="table  table-stripped" style="height: 400px;">
+                                        <thead class="text-white">
+                                        <tr style="color: black; font-weight: bold; background: linear-gradient(#e2dddd, #f5f3f3);">
+                                            <th>{% trans %}Forest species{% endtrans %}</th>
+                                            <th>{% trans %}Zone{% endtrans %}</th>
+                                            <th>{% trans %}X{% endtrans %}</th>
+                                            <th>{% trans %}Y{% endtrans %}</th>
+                                            <th>{% trans %}Length{% endtrans %}</th>
+                                            <th>{% trans %}Diameter{% endtrans %}</th>
+                                            <th>{% trans %}Volume{% endtrans %}</th>
+
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ asset('assets/assets_other/js/ui-modals.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+
+    <script>
+
+
+        $(document).ready(function() {
+            let code_attibution = document.querySelector('.foret').value
+            let fichiername = document.querySelector('.fichiername')
+
+
+            $('.monfichier').on('change', function (){
+                var fn = $(this).val();
+                var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+                fichiername.innerHTML = filename;
+
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/admin/prospect/'+ code_attibution,
+                    type: 'POST',
+                    data: code_attibution,
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            })
+
+            function getFileName(elm) {
+                var fn = $(elm).val();
+                var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+                fichiername.innerHTML = filename;
+            }
+
+        });
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

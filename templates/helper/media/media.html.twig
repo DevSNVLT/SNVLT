@@ -1,0 +1,51 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Mediatèque{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/course.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Mediatèque{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('mediatech.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Ajouter{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+            <h2 class="alert-info p-2">{{ media.libelle }}</h2>
+                <video height="500" width="100%" controls>
+                    <source src="{{ asset('uploads/helper/medias/') }}{{ media.fichier }}" type="video/mp4">
+                    Votre navigateur ne supporte pas cette vidéo
+                </video>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}
+

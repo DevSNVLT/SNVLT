@@ -1,0 +1,332 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Recherche Feuillet{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/search_doc.png') }}" height="64" alt="requetes">  Recherche Feuillet
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <div class="bg-white sticky-top" style="min-height: 500px; border: 1px lightblue solid;">
+        <div class="d-inline-flex p-2 text-center justify-content-center mx-auto">
+        <select class="text-center"  name="type_doc" id="type_doc" style="height: 40px;background: white;font-size: 24px;border:1px lightgrey solid;">
+            {% for doc in listes_type_docs %}
+                <option value="{{ doc.id }}">{{ doc.abv }}</option>
+            {% endfor %}
+        </select>
+        <input class="text-center" type="text" id="numero_feuillet" placeholder="N° du feuillet" style="height: 40px;background: white;font-size: 24px;margin-left:15px;border:1px lightgrey solid;">
+        <select class="text-center"  name="docs" id="docs" style="height: 40px;background: #01724b;font-size: 24px;color: white;border:1px lightgrey solid;">
+
+        </select>
+
+            <a class="btn btn-primary" style="height: 40px;font-size: 16px;margin-left:15px;" id="btn_rechercher">Rechercher</a>
+			<span class=" p-2 ms-2" style="background: linear-gradient(#e0f4e1,#f4e9de);font-size:18px;" id="nb_brh"></span>
+            </div>
+
+        <hr>
+        <div class="text-center">
+            <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+        </div>
+        <div class="contenu_div m-2">
+
+            </div>
+    </div>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        document.getElementById('type_doc').value = "";
+        document.getElementById('numero_feuillet').value = "";
+        document.querySelector('.spinload').style = "display:none";
+
+        $('#btn_rechercher').on('click', function (){
+
+            let type_doc = document.getElementById('type_doc').value;
+            let numero_feuillet = document.getElementById('numero_feuillet').value;
+			if (type_doc === "" || numero_feuillet === ""){
+				Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Recherche de feuillets',
+                    html: "<h4 class='text-danger'>Sélectionnez un type de document et renseignez le numéro du feuillet avant de continuer SVP!</h4>",
+                    padding: '1em'
+                });
+			} else {
+				document.querySelector('.spinload').style = "display:inline;margin-top: -8px;";
+				rechercher_feuillet(numero_feuillet, type_doc)
+			}
+            
+
+
+        })
+        $('#docs').on('change', function (){
+
+            let type_doc = document.getElementById('type_doc').value;
+            let numero_feuillet = document.getElementById('numero_feuillet').value;
+			
+			if (type_doc === "" || numero_feuillet === ""){
+			Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Recherche de feuillets',
+                    html: "<h4 class='text-danger'>Sélectionnez un type de document et renseignez le numéro du feuillet avant de continuer SVP!</h4>",
+                    padding: '1em'
+                });
+				
+			} else {
+				document.querySelector('.contenu_div').innerHTML = "";
+				document.querySelector('.spinload').style = "display:inline;margin-top: -8px;";
+				findSingleResult(
+								numero_feuillet,
+								this.value,
+								type_doc
+							)
+			}
+        })
+
+        function rechercher_feuillet(numero_feuillet, type_doc){
+            let contenu = "";
+            document.querySelector(".contenu_div").innerHTML ="";
+            $('#docs').empty();
+            $('#docs  option').remove();
+			document.querySelector('#nb_brh').innerText = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_feuillet/' + numero_feuillet + '/' + type_doc ,
+                type : 'POST',
+                success : function (response){
+                    let liste_saisie = JSON.parse(response);
+
+                    if (liste_saisie.length === 0){
+                        document.querySelector(".contenu_div").innerHTML = '<h3 class="text-danger">Ce numéro de feuillet n\'est pas inscrit en base</h3>'
+                        document.querySelector('.spinload').style = "display:none";
+                    } {
+						document.querySelector('#nb_brh').innerText = liste_saisie.length + " documents retrouvés";
+                        for(var i=0; i < liste_saisie.length; i++){
+                            contenu = contenu + '<option value="' + liste_saisie[i].id_brh + '">' + liste_saisie[i].numero_brh + '</option>';
+                        }
+                        document.querySelector("#docs").innerHTML = contenu;
+
+                        findSingleResult(
+                            numero_feuillet,
+                            document.querySelector("#docs").value,
+                            type_doc
+                        )
+                    }
+
+                }
+            })
+
+        }
+
+        function findSingleResult(numero_feuillet, id_doc, type_doc){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/feuillet/infos/' + numero_feuillet + '/' + id_doc  + '/' + type_doc ,
+                type : 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+
+                    if (infos.length > 0){
+                        for(var i=0; i < infos.length; i++){
+                        contenu = contenu + '<div class="row mb-2 ms-3 alert-light">' +
+                            '<div class="col-md-2"><h4>Concession</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].foret + '</div>' +
+                            '</div>' +
+
+                            '<div class="row mb-2 ms-3">' +
+                            '<div class="col-md-2"><h4>Exploitant</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].exploitant + '</div>' +
+                            '</div>'+
+
+                            '<div class="row mb-2 ms-3 alert-light">' +
+                            '<div class="col-md-2"><h4>Usine Destination</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].usine + '</div>' +
+                            '</div>'+
+
+                            '<div class="row mb-2 ms-3">' +
+                            '<div class="col-md-2"><h4>Cantonnement</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].cantonnement + '</div>' +
+                            '</div>'+
+
+                            '<div class="row mb-2 ms-3 alert-light">' +
+                            '<div class="col-md-2"><h4>Date Chargement</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].date_chargement + '</div>' +
+                            '</div>'+
+
+
+                            '<div class="row mb-2 ms-3">' +
+                            '<div class="col-md-2"><h4>Nombre de billes</h4></div>' +
+                            '<div class="col-md-10 text-danger">'+infos[i].nb_lignes + '</div>' +
+                            '</div>'+
+
+                            '<div class="row mb-2 ms-3 alert-light">' +
+                            '<div class="col-md-2"><h4>Cubage</h4></div>' +
+                            '<div class="col-md-10 text-danger font-weight-bold">'+infos[i].cubage+ ' m<sup>3</sup></div>' +
+                            '</div>';
+                        }
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none";
+                }
+            })
+        }
+
+
+        function editElement(){
+            var obj = {};
+
+            obj.numero_lignepagebrh =  $("#numero_lignepagebrh_dpif").val();
+            obj.lettre_lignepagebrh =  document.querySelector("#lettre_lignepagebrh_dpif").value;
+            obj.nom_essencebrh =  $("#nom_essencebrh_dpif").val();
+            obj.zh_lignepagebrh =  $("#zh_lignepagebrh_dpif").val();
+            obj.x_lignepagebrh =  $("#x_lignepagebrh_dpif").val();
+            obj.y_lignepagebrh =  $("#y_lignepagebrh_dpif").val();
+            obj.longeur_lignepagebrh =  $("#longeur_lignepagebrh_dpif").val();
+            obj.diametre_lignepagebrh =  $("#diametre_lignepagebrh_dpif").val();
+            obj.cubage_lignepagebrh =  $("#cubage_lignepagebrh_dpif").val();
+
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbrh/op/data/edit_lignes/'  + data + "/" + id_bille,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    //console.log(retour)
+                    alert("Mise à jour effectuée")
+                    let date_debut = document.getElementById('date_debut').value;
+                    let date_fin = document.getElementById('date_fin').value;
+                    document.querySelector('.contenu').innerHTML = '<h3 class="text-danger">Chargement des données en cours. Patientez SVP!</h3>';
+                    getResults(date_debut, date_fin);
+
+
+                }
+            })
+        }
+
+        function getAgents(date_performance){
+            let contenu_agents = "";
+            document.querySelector('.agents').innerHTML = '<h6 class="text-danger">Chargement! Patientez...</h6>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/performances/users/' + date_performance ,
+                type : 'POST',
+                success : function (response){
+                    let liste_agents = JSON.parse(response);
+
+                    if (liste_agents.length > 0){
+
+
+                        for(var i=0; i < liste_agents.length; i++){
+                            contenu_agents = contenu_agents + '<tr>';
+                            contenu_agents = contenu_agents + '<td><span class="fw-bold badge p-1 text-white" style="background: #0c5460;border-radius: 25px;font-size:14px;">' + liste_agents[i].created_by + '</span></td>';
+                            contenu_agents = contenu_agents + '<td class="text-center">' + liste_agents[i].nb_brh + '</td>';
+                            contenu_agents = contenu_agents + '<td class="text-center text-primary">' + liste_agents[i].nb_ligne + '</td>';
+                            contenu_agents = contenu_agents + '<td class="text-center">' + liste_agents[i].volume + '</td>';
+                            contenu_agents = contenu_agents + '</tr>';
+                        }
+
+                        document.querySelector('.agents').innerHTML = contenu_agents;
+                    }
+
+                }
+            })
+        }
+
+
+        $('#btn_refresh').on('click', function (){
+            refresh_data();
+        })
+
+
+
+        function refresh_data() {
+            let contenu = ""
+
+            document.querySelector('.body_performance').innerHTML = '<h6 class="text-danger">Chargement! Patientez...</h6>';
+            $.ajax({
+                url : '{{ path('performances_jours') }}',
+                type : 'POST',
+                success : function (response){
+                    let liste_jours = JSON.parse(response);
+
+                    if (liste_jours.length > 0){
+
+
+                        for(var i=0; i < liste_jours.length; i++){
+
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="text-dark fw-bold elt_jour"><a class="link-dark dateBtn" style="font-weight: bold;color: #370905;cursor:pointer;" id="'  + liste_jours[i].id_performance +  '">'  + liste_jours[i].created_at + '</a></td>';
+                            contenu = contenu + '<td class="">' + liste_jours[i].nb_brh + '</td>';
+                            contenu = contenu + '<td class="">' + liste_jours[i].nb_ligne + '</td>';
+                            contenu = contenu + '<td class="text-danger">' + liste_jours[i].volume + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+
+                        document.querySelector('.body_performance').innerHTML = contenu;
+                    }
+
+                }
+            })
+        }
+
+
+        function deleteSingleResult(id_bille){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/brh/del/' + id_bille + '/B1',
+                type : 'POST',
+                success : function (response){
+                    let info_bille = JSON.parse(response);
+
+                    if (info_bille[0].valeur === "SUCCESS"){
+                        alert('Bille supprimée')
+                        document.location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression')
+                    }
+
+                }
+            })
+        }
+
+
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %All }Users{% endtrans %}
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/user.png') }}"  alt="{% trans %}users{% endtrans %}">  {% trans %}All Users{% endtrans %}
+    </h2>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section p-2 bg-white">
+        <div class="card">
+
+            <div class="card-body">
+                <a class="link  font-weight-bold" style="font-size: 24px;" href="#">{{ 'All users' }}</a>
+                <table class="table table-responsive table-striped" id="users">
+                    <thead>
+                    <tr style="background: #207e0c; color: #f0fcf0;">
+                        <th></th>
+                        <th>{% trans %}Firstname and Lastname{% endtrans %}</th>
+                        <th>{% trans %}Email{% endtrans %}</th>
+                        <th>{% trans %}Contacts{% endtrans %}</th>
+                        <th>{% trans %}Function{% endtrans %}</th>
+                        <th>{% trans %}Group{% endtrans %}</th>
+                        <th>{% trans %}Type of Operator{% endtrans %}</th>
+                        <th>{% trans %}Structure{% endtrans %}</th>
+                        <th>{% trans %}Action{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for utilisateur in liste_users %}
+
+                        {% if (utilisateur.actif == true) %}
+                            <tr>
+                        {% else %}
+                            <tr class="bg-danger text-white fst-italic" title="{% trans %}This user is blocked into the system{% endtrans %}">
+                        {% endif %}
+                            <td class="">
+                                {% if( utilisateur.photo ) %}
+                                    <a href="#" ><img src="{{ asset('images/uploads/users/') }}{{ utilisateur.photo }}" alt="avatar" height="48"></a>
+                                {% else %}
+                                    <img src="{{ asset('assets/images/webapp/user.png') }}" alt="avatar"  height="48">
+                                {% endif %}
+                            </td>
+                            <td class="text-dark ">
+                                <div class="col">
+                                    <a>
+                                        {% if(utilisateur.isResponsable) %}
+                                            <sapn class="badge bg-dark text-white" style="font-size: 16px;">{{ utilisateur.titre}} {{ utilisateur.prenomsUtilisateur}} {{ utilisateur.nomUtilisateur}}</sapn>
+                                        {% else %}
+                                            <sapn class="fs-7"  style="font-size: 16px;">{{ utilisateur.prenomsUtilisateur}} {{ utilisateur.nomUtilisateur}}</sapn>
+                                        {% endif %}
+                                    </a>
+                                </div>
+
+
+                            </td>
+                            <td style="font-size: 16px;">{{ utilisateur.email }}</td>
+                            <td style="font-size: 16px;">{{ utilisateur.mobile }}</td>
+                            <td style="font-size: 16px;">{{ utilisateur.fonction }}</td>
+                            <td style="font-size: 16px;">{{ utilisateur.codeGroupe.nomGroupe }}</td>
+                            <td style="font-size: 16px;">{% if(utilisateur.codeOperateur) %}
+                                    {{ utilisateur.codeOperateur.libelleOperateur }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 16px;font-weight: bold;color: #0f5132">
+                                {% if(utilisateur.codeOperateur) %}
+                                    {% if(utilisateur.codeOperateur.id == 1) %}
+                                        {% if(utilisateur.codeService == null and utilisateur.codeDirection == null) %}
+                                            -
+                                            {% else %}
+                                                {% if(utilisateur.codeService)  %}
+                                                    <h3 class="badge alert-primary p-2" style="font-size: medium">{{ utilisateur.codeService.sigle}}</h3>
+                                                {% else %}
+                                                    <h3 class="badge alert-primary p-2" style="font-size: medium">{{ utilisateur.codeDirection.sigle }}</h3>
+                                            {% endif %}
+                                        {% endif %}
+
+                                    {% elseif(utilisateur.codeOperateur.id == 2) %}
+                                                     <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeexploitant.sigle }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 3) %}
+                                        <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeindustriel.sigle}}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 4) %}
+                                        <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeExportateur.raisonSocialeExportateur}}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 5) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeDr.denomination }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 6) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeDdef.nomDdef }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 7) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeCantonnement.nomCantonnement }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 10) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codePosteControle.denomination }}</h3>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button  class="btn monprofil" id="{{ utilisateur.id }}">
+                                    <img src="{{ asset('assets/images/webapp/user.png') }}" alt="user" height="24">
+                                </button>
+                                {% if (utilisateur.actif) %}
+                                    {% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}
+                                        <a href="#" class="bloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/lock.png') }}" height="16" alt="Bloquer"></a>
+                                    {% endif %}
+                                {% else %}
+                                    {% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}
+                                        <a href="#"  class="debloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/unlock.png') }}" height="16" alt="Débloquer"></a>
+                                    {% endif %}
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </section>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script>
+
+
+
+        $('.body').on('click', '.monprofil', function(){
+            let id_user = this.id;
+            alert(id_user);
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/json_user/' + id_user,
+                type: 'POST',
+                data:{id_user: id_user,
+                },
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        })
+
+        //Affiche les information sur l'utilisateur
+
+
+
+        $('body').on('click', '.bloquer', function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Do you want to lock this user ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: '{% trans %}Yes, lock{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_lock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}locked!{% endtrans %}',
+                        'The user is now blocked.',
+                        '{% trans %}Success{% endtrans %}' )
+                   .then((result) => {
+                        if (result.isConfirmed) {
+                            document.location.reload();
+                        }
+                    });
+
+                }
+            });
+        });
+
+        $('.debloquer').click(function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                text: "{% trans %}Do you want to unlock this user ?{% endtrans %}",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#5daf11',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '{% trans %}Yes, Unlock{% endtrans %}!',
+                toast: true,
+                padding: '1em',
+                background: '#e6f8e8',
+                backdrop: `
+                            rgba(0,0,800,0.4)
+                            url("/images/nyan-cat.gif")
+                            left top
+                            no-repeat
+                          `
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_unlock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}Unlocked!{% endtrans %}',
+                        'The user is now active.',
+                        '{% trans %}Success{% endtrans %}')
+                    .then((result) => {
+                        if (result.isConfirmed) {
+                            document.location.reload();
+                        }
+                    });
+
+
+
+                }
+
+            });
+        });
+
+        // Simple Datatable
+        let table1 = document.querySelector('#users');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+
+
+{% endblock %}

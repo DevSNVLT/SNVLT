@@ -1,0 +1,169 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeexploitant) %}
+        {% trans %}SNVLT{% endtrans %} - Mes BCBGFH [PEF]
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - Mes BCBGFH [PEF]
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeexploitant) %}
+            Mes BCBGFH [PEF]
+        {% else %}
+            {% trans %}DOCUMENTS BCBGFH [PEF]{% endtrans %}
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+            <div class="bg-white p-2">
+                {% if( app.user.codeOperateur.id == 1) %}
+                <div class="p-1 alert-light">
+                    <select class="foret" name="foret" id="foret">
+                        <option value="0">Tous les Mes BCBGFH</option>
+                        {% for fore in liste_forets %}
+                            <option value="{{ fore.id }}">{{ fore.numeroForet }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                <div class="div_contenu"></div>
+
+            </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script>
+
+
+        //Chargement de la liste des BCBGFH [PEF] pour l'opérateur
+        mes_brh(0);
+        $('.foret').select2({
+            theme: "classic"
+        });
+        $('#foret').on('change', function (){
+            document.querySelector('.div_contenu').innerHTML = "";
+            mes_brh(this.value);
+        })
+
+        function mes_brh(id_foret){
+            document.querySelector('.div_contenu').innerHTML = '<div class="text-center mt-2">' +
+                                                               '<img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">' +
+                                                                '</div>';
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbrh/op/' + id_foret,
+                type: 'POST',
+                success: function(response) {
+
+                    let docbrh_liste = JSON.parse(response);
+                    let contenu = "";
+                    contenu = contenu + '<table class="table table-responsive" id="my_brhs" style="width: 100%;border:lightgrey 1px solid;">'
+                    contenu = contenu + '<thead>'
+                    contenu = contenu + '<tr style="background: #4d7304;color: #fffefe; font-weight: bold;width: 100%;">'
+                    contenu = contenu + '<th>BCBGFH N°</th>'
+                    contenu = contenu + '<th>{% trans %}Forest{% endtrans %}</th>'
+                    {% if app.user.codeGroupe.id == 1 %}
+                    contenu = contenu + '<th>Avancement</th>'
+                    {% endif %}
+                    contenu = contenu + '<th>{% trans %}Cantonment{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Regional Direction{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Delivery date{% endtrans %}</th>'
+                            {% if not app.user.codeexploitant %}
+                    contenu = contenu + '<th>{% trans %}Logger{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Sigle{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Code Logger{% endtrans %}</th>'
+                            {% endif %}
+                    contenu = contenu + '<th>{% trans %}Nb billes{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Nb arbres{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Volume{% endtrans %}</th>'
+                    contenu = contenu + '</tr>'
+                    contenu = contenu + '</thead>'
+                    contenu = contenu + '<tbody>'
+                    for(var i = 0; i < docbrh_liste.length ; i++){
+                        if(docbrh_liste[i].etat === false){
+                            contenu = contenu +'<tr class="alert-danger">';
+                        } else if(docbrh_liste[i].volume_brh > 0) {
+                            contenu = contenu +'<tr class="text-dark" style="background: #fcfcda">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/docbrh/op/pages/' + docbrh_liste[i].id_document_brh + '" id="' + docbrh_liste[i].id_document_brh + '">' + docbrh_liste[i].numero_docbrh + '</a></td>' +
+                            '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + docbrh_liste[i].foret  + '</span></td>';
+                        {% if app.user.codeGroupe.id == 1 %}
+                        contenu = contenu + '<td>';
+                        contenu = contenu + '<div class="progress custom-progress-success">' ;
+
+                            if (docbrh_liste[i].nb_pages > 0 && docbrh_liste[i].nb_pages < 10 ){
+                                contenu = contenu +'<div class="progress-bar bg-warning" role="progressbar" style="width: ' + docbrh_liste[i].nb_pages * 10  + '%" aria-valuenow="' + docbrh_liste[i].nb_pages * 10  + '" aria-valuemin="0" aria-valuemax="100"></div></div>'
+
+                            } else if (docbrh_liste[i].nb_pages === 10){
+                                contenu = contenu +'<div class="progress-bar bg-success" role="progressbar" style="width: ' + docbrh_liste[i].nb_pages * 10  + '%" aria-valuenow="' + docbrh_liste[i].nb_pages * 10  + '" aria-valuemin="0" aria-valuemax="100"></div></div>'
+                            } else {
+                                contenu = contenu +'<div class="progress-bar bg-danger" role="progressbar" style="width: ' + docbrh_liste[i].nb_pages * 10  + '%" aria-valuenow="' + docbrh_liste[i].nb_pages * 10  + '" aria-valuemin="0" aria-valuemax="100"></div></div>'
+                            }
+                        {% endif %}
+                        contenu = contenu + '</td>' +
+                            '<td><span>' + docbrh_liste[i].cantonnement  + '</span></td>'+
+                            '<td><span>' + docbrh_liste[i].dr  + '</span></td>'+
+                            '<td><span>' + docbrh_liste[i].date_delivrance  + '</span></td>';
+                        {% if not app.user.codeexploitant %}
+                        contenu = contenu +'<td><span>' + docbrh_liste[i].exploitant  + '</span></td>'+
+                            '<td><span>' + docbrh_liste[i].sigle  + '</span></td>' +
+                            '<td><span>' + docbrh_liste[i].code_exploitant  + '</span></td>';
+                        {% endif %}
+                        contenu = contenu +'<td>'+ docbrh_liste[i].nb_billes + '</td>';
+                        contenu = contenu +'<td>'+ docbrh_liste[i].nb_arbres + '</td>';
+                        contenu = contenu +'<td>'+ docbrh_liste[i].volume_brh + '</td></tr>';
+                    }
+                    contenu = contenu + '</tbody>'
+                    contenu = contenu + '</table>'
+
+                    document.querySelector('.div_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+
+                    let aujourdhui = new Date()
+                    dataTableSnvlt("#my_brhs", 'Documents BCBGFH', 20)
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

@@ -1,0 +1,483 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Users{% endtrans %}
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/responsable.png') }}"  alt="{% trans %}users{% endtrans %}">  {% trans %}All Managers{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+
+        <div class="">
+            <div class="alert-primary p-1 m-2" style="height: 16px;width: 16px;border: #0c5460 1px solid;"></div><span class="m-2 font-weight-bold">Directions MINEF</span>
+        </div>
+        <div class="">
+            <div class="bg-warning p-1 m-2" style="height: 16px;width: 16px;border: #0c5460 1px solid;"></div><span class="m-2 font-weight-bold">DR / CEF</span>
+        </div>
+        <div class="">
+            <div class="alert-success p-1 m-2" style="height: 16px;width: 16px;border: #0c5460 1px solid;"></div><span class="m-2 font-weight-bold">{{ 'Operator' | trans }}</span>
+        </div>
+
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <sapn class="badge alert-success p-2 text-dark" style="font-size: 16px;font-weight: lighter;"> {% trans %}Is manager{% endtrans %}</sapn>
+        </div>
+        <div class="btn-group p-1 rounded-5 me-5" role="group" aria-label="Basic example">
+            <sapn class="badge bg-danger text-white p-1 ms-2" style="font-size: 16px;font-weight: lighter;">{% trans %}Is locked{% endtrans %}</sapn>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn" style="border: 0px; font-size: 16px;" href="{{ path('secure_au_user') }}" title="{% trans %}Add a manager{% endtrans %}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 32px;color: red"></i></a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+	<link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+	<section class="section p-2 bg-white">
+        <div class="card">
+
+            <div class="card-body">
+                <a class="link  font-weight-bold" style="font-size: 24px;" href="{{ path('app_users_admin') }}">{{ 'All users' }}</a>
+                <table class="table table-responsive " id="users">
+                    <thead>
+                    <tr style="background: #207e0c; color: #f0fcf0;">
+                        <th></th>
+                        <th>{% trans %}Firstname and Lastname{% endtrans %}</th>
+                        <th>{% trans %}Email{% endtrans %}</th>
+                        <th>{% trans %}Contacts{% endtrans %}</th>
+                        <th>{% trans %}Group{% endtrans %}</th>
+                        <th>{% trans %}isSuperAdmin{% endtrans %}</th>
+                        <th>{% trans %}Type of Operator{% endtrans %}</th>
+                        <th>{% trans %}Structure{% endtrans %}</th>
+                        <th>{% trans %}Action{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for utilisateur in liste_users %}
+
+                        {% if (utilisateur.actif == true) %}
+                            <tr>
+                        {% else %}
+                            <tr class="alert-danger title="{% trans %}This user is blocked into the system{% endtrans %}">
+                        {% endif %}
+                            <td class="">
+                                {% if( utilisateur.photo ) %}
+                                    <a class="utilisateur_infos" id="{{ utilisateur.id }}" href="#" data-toggle="modal" data-target="#photo"><img class="rounded-circle" src="{{ asset('images/uploads/users/') }}{{ utilisateur.photo }}" alt="avatar" height="48"></a>
+                                {% else %}
+                                    <img class="rounded-circle" src="{{ asset('assets/images/webapp/user.png') }}" alt="avatar"  height="48">
+                                {% endif %}
+                            </td>
+                            <td class="text-dark ">
+                                <div class="col">
+                                    <a class="font-weight-bold text-secondary link fs-5" href="#" data-bs-toggle='dropdown'>
+                                        {% if(utilisateur.isResponsable) %}
+                                            <sapn class="badge alert-light text-dark" style="font-size: 16px;">{{ utilisateur.titre}} {{ utilisateur.prenomsUtilisateur}} {{ utilisateur.nomUtilisateur}}</sapn>
+                                        {% else %}
+                                            <sapn class="fs-7"  style="font-size: 16px;">{{ utilisateur.prenomsUtilisateur}} {{ utilisateur.nomUtilisateur}}</sapn>
+                                        {% endif %}
+                                    </a>
+                                    <ul class='dropdown-menu alert-success ms-5' aria-labelledby='dropdownMenuButtonSM'>
+
+                                        <li>
+                                            <a class='dropdown-item menuBtn alert-danger p-2 remove_respo' data-bs-toggle="modal" data-bs-target="#modal_remove_manager"  href='#' id="{{ utilisateur.id}}">
+                                                <img src='{{ asset('assets/icons/16x16/delete.png') }}'  alt='remove_responsability'>
+
+                                                <span class='ms-2'>{% trans %}Retirer en tant que Manager{% endtrans %}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class='dropdown-item menuBtn profileAgent' data-bs-toggle="modal" data-bs-target="#modal_see_profile"  href='#' id="{{ utilisateur.id}}">
+                                                <img src='{{ asset('assets/icons/profile2.png') }}'  alt=''>
+
+                                                <span class='ms-2'>{% trans %}See profile{% endtrans %}</span>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+
+
+                            </td>
+                            <td style="font-size: 16px;">{{ utilisateur.email }}</td>
+                            <td style="font-size: 16px;">{{ utilisateur.mobile }}</td>
+
+                        <td class="text-center" style="font-size: 16px;font-weight: bold;">
+                            {% if (utilisateur.codeGroupe.id == 1) %}
+                                <a class='badge alert-danger btn-sm font-weight-bold text-dark' style="border: 2px solid red; border-radius: 5px;" id="{{ utilisateur.id }}">
+                                    {{ utilisateur.codeGroupe.nomGroupe }}
+                                </a>
+                            {% else %}
+                                <a class='badge alert-success btn alert btn-sm font-weight-bold text-dark drpBtn '  style="border: 2px solid green; border-radius: 5px;"  type='button' id="{{ utilisateur.id }}" data-bs-toggle='dropdown' aria-expanded='false'>
+                                    {{ utilisateur.codeGroupe.nomGroupe }}
+                                </a>
+                                <ul class='dropdown-menu ms-5 text-dark alert-success' aria-labelledby='dropdownMenuButtonSM'>
+                                    {% for profile  in mygroups %}
+                                        <li>
+                                            {% if(profile.nomGroupe == utilisateur.codeGroupe.nomGroupe) %}
+                                                <a class='dropdown-item menuBtn  text-dark' id='{{ profile.id }}'>
+                                                    <i class="bi bi-check fs-4 text-success font-weight-bold me-2"></i><span class='font-weight-bold ms-2'>{{ profile.nomGroupe }}</span>
+                                                </a>
+                                            {% else %}
+                                                <a class='dropdown-item menuBtn ms-2  text-dark' id='{{ profile.id }}' href='{{ path('change_profile_respo', {'id_utilisateur': utilisateur.id, 'id_groupe': profile.id },) }}'>
+                                                    <span class='ms-3'>- {{ profile.nomGroupe }}</span>
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ("ROLE_ADMIN" in utilisateur.roles) %}
+                                <img src="{{ asset('assets/images/valider.png') }}" alt="ok">
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                           {# <td style="font-size: 16px;">{{ utilisateur.codeGroupe.nomGroupe }}</td>#}
+                            <td style="font-size: 16px;">{% if(utilisateur.codeOperateur) %}
+                                    {{ utilisateur.codeOperateur.libelleOperateur }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 16px;font-weight: bold;color: #0f5132">
+                                {% if(utilisateur.codeOperateur) %}
+                                    {% if(utilisateur.codeOperateur.id == 1) %}
+                                        {% if(utilisateur.codeService == null and utilisateur.codeDirection == null) %}
+                                            -
+                                            {% else %}
+                                                {% if(utilisateur.codeService)  %}
+                                                    <h3 class="badge alert-primary p-2" style="font-size: medium">{{ utilisateur.codeService.sigle}}</h3>
+                                                {% else %}
+                                                    <h3 class="badge alert-primary p-2" style="font-size: medium">{{ utilisateur.codeDirection.sigle }}</h3>
+                                            {% endif %}
+                                        {% endif %}
+
+                                    {% elseif(utilisateur.codeOperateur.id == 2) %}
+                                                     <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeexploitant.raisonSocialeExploitant }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 3) %}
+                                        <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeindustriel.raisonSocialeUsine}}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 4) %}
+                                        <h3 class="badge alert-success p-2" style="font-size: medium">{{ utilisateur.codeExportateur.raisonSocialeExportateur}}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 5) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeDr.denomination }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 6) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeDdef.nomDdef }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 7) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codeCantonnement.nomCantonnement }}</h3>
+                                    {% elseif(utilisateur.codeOperateur.id == 10) %}
+                                        <h3 class="badge bg-warning p-2" style="font-size: medium">{{ utilisateur.codePosteControle.denomination }}</h3>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a  class="btn monprofil" id="{{ utilisateur.id }}" href="#">
+                                    <img src="{{ asset('assets/images/webapp/user.png') }}" alt="user" height="16">
+                                </a>
+                                {% if (utilisateur.actif) %}
+                                    {#{% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}#}
+                                        <a href="#" class="bloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/lock.png') }}" height="16" alt="Bloquer"></a>
+                                    {#{% endif %}#}
+                                {% else %}
+                                    {#{% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}#}
+                                        <a href="#"  class="debloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/unlock.png') }}" height="16" alt="Débloquer"></a>
+                                    {#{% endif %}#}
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {#Remove manager#}
+        <div class="modal fade" id="modal_remove_manager" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/responsable.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Remove Manager' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <h4  class="text-dark ">{{ 'Voulez-vous retirer cet utilisateur en tant que Responsable ?' |trans}}</h4>
+                            </div>
+                        </div>
+                        <div class="text-center text-center mb-3 justify-content-center" style="margin-bottom: 15px;">
+                            <small class="text-danger font-weight-bold">{{ 'Sélectionnez un utilisateur dans la liste ci-dessous' | trans}}</small>
+                            <select class="form-control m-2" name="users" id="select_new_responsable" style="width:80%; border: 1px solid lightblue;">
+
+                            </select>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-primary text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Non'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-danger remove_manager font-weight-light  accept_loading"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Oui, le retirer'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+		
+		{#Display profile#}
+				<div class="modal fade" id="modal_see_profile" data-bs-backdrop="static" tabindex="-1">
+					<div class="modal-dialog bg-white">
+							<div class="modal-header alert-success">
+								<h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/responsable.png') }}" alt="user_profile" style="margin-right: 10px; height: 32px;"> {{ 'Profile' | trans}}</h5>
+								<button
+								type="button"
+								class="btn-close"
+								data-bs-dismiss="modal"
+								aria-label="Close"
+								></button>
+							</div>
+							<div class="modal-body contenu_profile">
+
+
+							</div>
+						
+					</div>
+				</div>
+        <div class="modal fade" id="photo" tabindex="-1" role="dialog" aria-labelledby="photo" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+
+                    <div class="modal-header text-center bg-success">
+                        <h3 class="text-white" id="Username"></h3>
+                        <button type="button" class="close text-white fs-5" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body my-auto text-center" id="divPhoto">
+                        <div class="spinner-grow spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+                            <div class="mt-5"><span class="visually-hidden"></span></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script>
+        let respo_id = 0;
+        $('body').on('click', '.remove_manager', function(){
+            let old_respo_id = respo_id;
+            let new_respo_id = document.querySelector('#select_new_responsable').value;
+
+            if(new_respo_id === null || new_respo_id === ""){
+                alert("VEUILLEZ SELECTIONNER L'UTILISATEUR SVP");
+            } else {
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/remove_respo/r/' + old_respo_id + '/' + new_respo_id,
+                    type: 'POST',
+                    success: function(response) {
+                        document.location.reload();
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                })
+            }
+
+        });
+
+        $('body').on('click', '.remove_respo', function(){
+            let id_user = this.id;
+            respo_id = id_user;
+            //alert(id_user);
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/getusers/' + id_user,
+                type: 'POST',
+                success: function(response) {
+                    let contenu = "<option>{{ 'Utilisateurs disponibles' | trans }}</option>"
+                    let my_users = JSON.parse(response);
+
+                    for (var i = 0; i < my_users.length; i++){
+                        contenu = contenu + '<option value="' + my_users[i].id_user + '">' + my_users[i].nom_prenoms + '</option>'
+                    }
+
+                    document.querySelector('#select_new_responsable').innerHTML = contenu;
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        });
+
+
+        $('body').on('click', '.profileUser', function(){
+            let id_user = this.id;
+            //alert(id_user);
+            /*$.ajax({
+                url: '{#{{path('app_portail')}}snvlt/#}getusers/' + id_user,
+                type: 'POST',
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })*/
+        })
+
+        //Affiche les information sur l'utilisateur
+
+
+
+        $('body').on('click', '.bloquer', function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Do you want to lock this user ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: '{% trans %}Yes, lock{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_lock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}locked!{% endtrans %}',
+                        'The user is now blocked.',
+                        '{% trans %}Success{% endtrans %}' )
+                   .then((result) => {
+                        if (result.isConfirmed) {
+                            document.location.reload();
+                        }
+                    });
+
+                }
+            });
+        });
+
+        $('body').on('click', '.debloquer', function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                text: "{% trans %}Do you want to unlock this user ?{% endtrans %}",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#5daf11',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '{% trans %}Yes, Unlock{% endtrans %}!',
+                toast: true,
+                padding: '1em',
+                background: '#e6f8e8'
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_unlock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}Unlocked!{% endtrans %}',
+                        'The user is now active.',
+                        '{% trans %}Success{% endtrans %}')
+                    .then((result) => {
+                        if (result.isConfirmed) {
+                            document.location.reload();
+                        }
+                    });
+
+
+
+                }
+
+            });
+        });
+
+        $('body').on('click','.utilisateur_infos', function(){
+            $('#Username').text("...");
+            let UserDivPhoto = document.querySelector('#divPhoto');
+            let photo = "<h3>Patientez...</h3><img class='' src='{{ asset('assets/images/webapp/user.png') }}' alt='avatar' height='64'>";
+            UserDivPhoto.innerHTML = photo;
+            $.ajax({
+                url:'{{ path('user_details') }}/' + this.id ,
+                type : 'POST',
+                data : {id_user: this.id},
+                success: function(response){
+                    console.log(response);
+                    let userInfos = JSON.parse(response);
+                    $('#Username').text(userInfos.nom_prenoms);
+                    photo = "<img class='' src='{{ asset('/images/uploads/users/') }}"+ userInfos.photo + "' alt='avatar' height='400'>";
+                    UserDivPhoto.innerHTML = photo;
+                }
+            });
+
+        })
+
+		$('body').on('click', '.profileAgent', function(){
+            let contenu = "";
+            {#let UserDivPhoto = document.querySelector('#divPhoto');#}
+            {#let photo = "<h3>Patientez...</h3><img class='' src='{{ asset('assets/images/webapp/user.png') }}' alt='avatar' height='64'>";#}
+            {#UserDivPhoto.innerHTML = photo;#}
+            $.ajax({
+                url:'{{ path('user_details') }}/' + this.id ,
+                type : 'POST',
+                data : {id_user: this.id},
+                success: function(response){
+                    console.log(response);
+                    let userInfos = JSON.parse(response);
+                    contenu = contenu +  '<img class="" src="{{ asset('/images/uploads/users/') }}"' + userInfos.photo + ' alt="avatar" height=""400>';
+                    contenu = contenu + '<div class="align-content m-2"><span class="alert-light m-1 p-1">Agent </span> <h2>' + userInfos.nom_prenoms + '</h2>'
+
+
+                   document.querySelector(".contenu_profile").innerHTML = contenu;
+                }
+            });
+
+        })
+		
+        // Simple Datatable
+        let table1 = document.querySelector('#users');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+
+
+{% endblock %}

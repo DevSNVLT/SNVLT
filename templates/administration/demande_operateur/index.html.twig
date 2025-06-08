@@ -1,0 +1,142 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}My documents requests{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/demande.png') }}" alt="{% trans %}documents_requests{% endtrans %}">  {% trans %}My documents requests{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <span class=" p-2 ms-2" style="font-size: 16px;font-weight: bold; color: red;">{% trans %}Status for step validation{% endtrans %} <i class="mdi mdi-arrow-right-bold" style="font-size: 18px;color: red"></i></span>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 alert-success ms-2 text-dark" title="EN COURS" style="border: 1px solid grey; font-size: 12px;width: 145px;">En cours de traitement</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-success ms-2 text-white" title="APPROUVE" style="border: 1px solid grey; font-size: 13px;width: 140px;">Validé</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-danger ms-2 text-white" title="EN COURS" style="border: 1px solid grey; font-size: 13px;width: 140px;">Rejetté</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-light ms-2 text-dark fs-8" title="EN COURS" style="border: 1px solid grey; font-size: 13px;width: 140px;">Non traité</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn" style="border: 0px; font-size: 16px;" href="{{ path('demande.add') }}" title="{% trans %}Add a manager{% endtrans %}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 32px;color: red"></i></a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+
+        <div class="card">
+            <div class="alert-warning p-2"><h4 class="text-danger m-2">{{ 'The retrive code is required to collect documents in the office delivery documents' | trans}}</h4></div>
+            <div class="card-body">
+                <table class="table table-responsive" id="document_operateurs">
+                    <thead>
+                    <tr style="background: #01887d;color: #fcf8f8;">
+                <th style="font-size: 18px;">{% trans %}Document{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Retrieve Code{% endtrans %}</th>
+                <th class="text-center" style="font-size: 18px;">{% trans %}Quantity Requested{% endtrans %}</th>
+                <th class="text-center" style="font-size: 18px;">{% trans %}Quantity allowed{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Request Date{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Status{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Received{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Signatures{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for demande in mes_demandes %}
+                {% if (demande.statut is same as 'EN ATTENTE') %}
+                    <tr class="alert-warning">
+                {% elseif (demande.statut is same as 'APPROUVE')%}
+                    <tr class="alert-success">
+                {% elseif (demande.statut is same as 'REJETTE')%}
+                    <tr class="alert-danger">
+                {% endif%}
+
+                <td class="text-dark font-weight-bold">
+                    {% if (demande.docStat) %}
+                        {{ demande.docStat.abv}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                {% if (demande.transmission) %}
+                    <td><span class="badge bg-secondary font-weight-bold text-light text-center" disabled style="font-size: 20px;">{{ demande.code}}</span></td>
+                {% else %}
+                    <td><span class="badge bg-warning font-weight-bold text-center" style="font-size: 20px;">{{ demande.code}}</span></td>
+                {% endif %}
+                <td class="text-center"><span class="p-2 bg-info text-center font-weight-bold font-medium rounded-5 text-white">{{ demande.qte}}</span></td>
+                <td class="text-center">
+                    {% if not (demande.qteValidee) %}
+                    -
+                    {% else %}
+                        <span class="p-2 bg-dark text-white font-weight-bold text-center font-medium" style="border-radius: 5px;">{{ demande.qteValidee}}</span>
+                    {% endif %}</td>
+                <td>{{ demande.createdAt  | date('d-m-Y') }}</td>
+                <td>
+
+                    {% for circuit in mes_circuits.findCircuitByDemande(demande.id) %}
+                        {% if(circuit.statut == 'EN COURS') %}
+                            <span class="badge rounded-5 p-2 alert-success border-success" title="EN COURS - {{ circuit.serviceValidation }}" style="border: 1px solid grey">-</span>
+                        {% elseif(circuit.statut == 'VALIDE') %}
+                            <span class="badge rounded-5 p-2 bg-success" title="VALIDE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                        {% elseif (circuit.statut == 'REJETTE')%}
+                            <span class="badge rounded-5 p-2 bg-danger" title="REJETTE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                        {% else %}
+                            <span class="badge rounded-5 p-2 bg-light" title="EN ATTENTE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="font-weight-bold" style="margin-left: 5px;">{{ demande.statut}}</span>
+                </td>
+                <td class="text-center">
+                    {% if (demande.transmission) %}
+                        <i class="mdi mdi-check-circle text-success" style="font-size: 32px;"></i>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if (demande.signatureDr) %}
+                        <span class="p-2 bg-dark text-white font-weight-bold text-center" style="border-radius: 5px;font-size: 13px;">{{ 'RD' | trans}}</span>
+                    {% endif %}
+                    {% if (demande.signatureCef) %}
+                        <span class="p-2 bg-dark text-white font-weight-bold text-center" style="border-radius: 5px;font-size: 13px;">{{ 'CEF' | trans}}</span>
+                    {% endif %}
+                </td>
+            {% endfor %}
+            </tbody>
+        </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+
+        // Simple Datatable
+        let table1 = document.querySelector('#document_operateurs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

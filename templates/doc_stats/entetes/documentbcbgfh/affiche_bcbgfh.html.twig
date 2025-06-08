@@ -1,0 +1,1161 @@
+{% extends 'template_base.html.twig' %}
+
+{% set roleuser = "" %}
+
+{% block Title %}
+    [ {{ document_name.numeroDocbcbgfh }} ]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}bcbgfh{% endtrans %}">  Mes BCBGFH-FC -
+        [
+        <span class="alert-success p-2" style="font-size: 16px;">{{ document_name.numeroDocbcbgfh }}</span>
+        - <span class="alert-info p-2 ms-2" style="font-size: 16px;">{{ document_name.codeContrat.codeForet.denomination }}</span>
+        - <span class="alert-warning p-2 ms-2" style="font-size: 16px;">
+		{% if(document_name.codeContrat.codeForet.codeCantonnement) %}
+			{{ document_name.codeContrat.codeForet.codeCantonnement.nomCantonnement }}</span>
+        {% endif %}
+		]
+        <label for="#" class="badge rounded-5 bg-primary p-2 text-white" style = "font-size:16px;" id = "lbl_dest"></label>
+        <label for="#" class="badge rounded-5 bg-primary p-2 text-white" style="font-size:16px;margin-left: 5px" id = "lbl_usine"></label>
+    </h2>
+
+    {% if(app.user.codeOperateur.id == 2) %}
+        <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+            <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+                <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_save" style="background: #ff6f00; font-size: 16px;margin: 10px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>Enregistrer entête</a>
+                <a href="#" id="photo_feuillet" class="btn text-white p-2"style="background: #0022ff; font-size: 16px;margin: 10px;"><i class="mdi mdi-image text-white" style="font-size: 18px; margin-right: 5px;"></i>Ajouter une photo</a>
+                    <a class="btn text-white p-2 " style="border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;" href="#" id="validate_page"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}submit to manager{% endtrans %}</a>
+                    {#<a class="btn text-white p-2 " style="border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;" href="#" id="validate_page"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}Validate loading{% endtrans %}</a>#}
+            </div>
+        </div>
+    {% endif %}
+    {% for role in app.user.roles %}
+        {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_ADMIN") %}
+            {% set roleuser = "AGENT_DPIF" %}
+            <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+                <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+                    <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_save" style="background: #ff6f00; font-size: 16px;margin: 10px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>Enregistrer entête</a>
+                    <a href="#" id="photo_feuillet" class="btn text-white p-2"style="background: #0022ff; font-size: 16px;margin: 10px;"><i class="mdi mdi-image text-white" style="font-size: 18px; margin-right: 5px;"></i>Ajouter une photo</a>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/style.css') }}">
+    <link rel="stylesheet" href="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.css">
+    <style>
+		.curseur input:focus {
+			border : 2px solid green;
+			background-color: lightgreen;
+		}
+	</style>
+	
+    <section class="section p-3" style="background:radial-gradient(#dfd6c5, #c6d6d9); border: 1px lightgrey solid">
+        <div class="" style="background: transparent">
+            <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                <div class="col-md-4 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Page No' | trans }}</span><select class="col-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 16px;background-color: #fcc80b; border: 1px solid lightgrey;color: #021959">
+                        </select>
+                    </div>
+                    <div class="row form-group has-error has-feedback mb-2">
+                        <span class="col-5">{{ 'Destination' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="destination" id="destination" data-placeholder="Destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                            <option value="0">-- Sélectionnez une ville ---</option>
+                            {% for ville in villes %}
+                                <option value="{{ ville.id }}">{{ ville.nomSousprefecture }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row form-group has-error has-feedback mb-2">
+                        <span class="col-5">{{ 'Factory park' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="parc_usine" id="parc_usine" data-placeholder="usine de destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                            {% for usine in usines %}
+                                <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Date Chargement' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="date" name="date_chargement" id="date_chargement"  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Chauffeur' | trans }}</span><input class="col-6" type="text" name="chauffeur" id="chauffeur" placeholder="Nom et prenoms " style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Immatriculation' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text" name="immatriculation" id="immatriculation" placeholder="Immatriculation du camion" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+                    </div>
+                </div>
+                <div class="col-md-4" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Cost' | trans }}</span><input class="col-6" type="number"  name="cout" id="cout" placeholder="Coût du chargement" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Village' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text"  name="village" id="village" placeholder="Village" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="card " style="border: lightgrey solid 1px;background: white;">
+            <div class="p-3" style="background:white;">
+                {% if( app.user.codeOperateur.id == 1) %}
+
+                    <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiebcbgfh_dpif"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
+                {% else %}
+                        <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiecp"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
+
+                {% endif %}
+            </div>
+            <div class="ms-4 me-4 card-body p-2" style="background: #f7f4f4">
+                <div class="d-sm-flex justify-content-between align-items-center transaparent-tab-border {">
+                    <ul class="nav nav-tabs tab-transparent" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link  text-dark active" style="font-size: 16px;color: #0011ff" id="overview-tab" data-toggle="tab" href="#databcbgfh" role="tab" aria-selected="true">Données BCBGFH-FC</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="movements-tab" data-toggle="tab" href="#photo_tab" role="tab" aria-selected="false">Photo</a>
+                        </li>
+                    </ul>
+                    <div class="d-md-block d-none">
+                        <a href="#" class="text-light p-1"><i class="mdi mdi-view-dashboard"></i></a>
+                        <a href="#" class="text-light p-1"><i class="mdi mdi-dots-vertical"></i></a>
+                    </div>
+                </div>
+
+                <div class="tab-content tab-transparent-content">
+                    <div class="tab-pane fade show active" id="databcbgfh" role="tabpanel" aria-labelledby="business-tab">
+                        <div class="row" style="background: #f4f2f2">
+                            <div class="col-md-12">
+                                <div class="overflow-y-scroll" style="height: 400px;">
+                                    <table class="table table-responsive sticky-top" id="data_bcbgfh"  style="height: 400px;">
+                                        <thead>
+                                        <tr class="" style="background: linear-gradient(#1f3b01,#343435);color:white;">
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
+                                            <th class="font-weight-light" style="font-size: 20px;width: 15%;">{{ 'species' |trans }}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="body_contenu" class="bg-white">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="photo_tab" role="tabpanel" aria-labelledby="business-tab">
+                        <img src="" id="image_feuillet" alt="">
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+    </section>
+
+    {#Ajout Lignepagebcbgfh#}
+    <div class="modal fade" id="saisiecp" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter des données BCBGFH-FC</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                            <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;" id="lbl_alert"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+                                {# <input type="number" value="" id="numero_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;" onload="this.focus()">
+                                #}<select type="number" class="select_numero"  id="select_numero" style="font-size: 16px;background-color: #72d5f9;font-weight: bold; border: 1px solid lightgrey;" onload="this.focus()">
+
+                                </select>
+                                <select  id="lettre_lignepagebcbgfh" style="font-size: 16px;background-color: #72d5f9; border: 1px solid lightgrey;font-weight: bold;">
+                                    {#<option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>#}
+                                </select>
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                {#        <select id="nom_essencebcbgfh" readonly  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une essence ---</option>
+                                    {% for essence in essences %}
+                                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                                    {% endfor %}
+                                </select>#}
+                                <input type="text" readonly value="" id="nom_essencebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                {#<select id="zh_lignepagebcbgfh" readonly="true" onFocus="expand(this)" onBlur="unexpand(this)" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une zone ---</option>
+                                    {% for zone in zones %}
+                                        <option value="{{ zone.id }}">{{ zone.zone }}</option>
+                                    {% endfor %}
+                                </select>#}
+                                <input type="text" readonly value="" id="zh_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="x_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="y_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            {#<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select  id="lettre_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>#}
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="longeur_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="diametre_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#Ajout Lignepagebcbgfh GROUPE DPIF SAISIE#}
+    <div class="modal fade" id="saisiebcbgfh_dpif" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter des données BCBGFH-FC</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                            
+							<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select class="curseur" id="nom_essencebcbgfh_dpif" readonly  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une essence ---</option>
+                                    {% for essence in essences %}
+                                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+							
+							<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+                                <input class="curseur" type="number" value="" id="numero_lignepagebcbgfh_dpif" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;" onload="this.focus()">
+                            </div>
+							
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+
+                                <select class="curseur" id="zh_lignepagebcbgfh_dpif"  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une zone ---</option>
+                                    {% for zone in zones %}
+                                        <option value="{{ zone.id }}">{{ zone.zone }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="x_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="y_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select class="curseur" id="lettre_lignepagebcbgfh_dpif" style="font-size: 16px;background-color: #72d5f9; border: 1px solid lightgrey;font-weight: bold;">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="longeur_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="diametre_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh_dpif" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="save_data_dpif" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="{{ asset('assets/Js/cartographie/resources/leaflet/leaflet.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/libs/leaflet.browser.print.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/jquery/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/leaflet-providers.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.js') }}"></script>
+    <script src="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="{{ asset('assets/Js/cartographie/main.js') }}"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+        // Index de la page courante
+        let index_page = 0;
+
+        //Affiche les pages du document BCBGFH-FC
+        affiche_pages({{ document_name.id }});
+
+        $('#add_data').on('click', function (){
+            liste_numeros_cp();
+			initialiser_dpif();
+        })
+
+        $('#numero_page_select').on('change', function (){
+            //document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+            index_page = this.value;
+            initialiser_page();
+            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+
+            affiche_page_courante(index_page)
+
+            affiche_lignes_courante(index_page)
+
+        })
+
+        $('#select_numero').on('change', function (){
+            initialiser_numero_select();
+            lettres_billes(this.value);
+            infos_arbre(this.value)
+
+        })
+        $('#lettre_lignepagebcbgfh').on('change', function (){
+
+            document.querySelector('#longeur_lignepagebcbgfh').value = "";
+            document.querySelector('#diametre_lignepagebcbgfh').value = "";
+            document.querySelector('#cubage_lignepagebcbgfh').value = "";
+
+            affiche_mensurations( $('#select_numero').val(), this.value);
+        })
+
+        $('#longeur_lignepagebcbgfh').on('change', function (){
+            $("#cubage_lignepagebcbgfh").val(calcul_volume(this.value, $('#diametre_lignepagebcbgfh').val()))
+        })
+
+        $('#diametre_lignepagebcbgfh').on('change', function (){
+            $("#cubage_lignepagebcbgfh").val(calcul_volume($('#longeur_lignepagebcbgfh').val(), this.value))
+        })
+
+        $('#longeur_lignepagebcbgfh_dpif').on('change', function (){
+            $("#cubage_lignepagebcbgfh_dpif").val(calcul_volume(this.value, $('#diametre_lignepagebcbgfh_dpif').val()))
+        })
+
+        $('#diametre_lignepagebcbgfh_dpif').on('change', function (){
+            $("#cubage_lignepagebcbgfh_dpif").val(calcul_volume($('#longeur_lignepagebcbgfh_dpif').val(), this.value))
+        })
+
+		{% if(roleuser == "AGENT_DPIF") %}
+			$('#destination').on('change', function (){
+				charge_usines(this.value)
+			})
+		{% endif %}
+        function calcul_volume(lng, dm){
+            return Math.round((((dm * dm)/4)*3.14159 * (lng/1000000)) * 1000)/1000
+        }
+
+        $('#btn_save').on('click', function (){
+
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#immatriculation').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Chargement BCBGFH-FC',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                maj_page_bcbgfh();
+            }
+
+        })
+
+        function affiche_pages(id_bcbgfh){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/' +id_bcbgfh,
+                type: 'POST',
+                data: {'id_bcbgfh': id_bcbgfh},
+                success: function(response) {
+
+                    let page_bcbgfh = JSON.parse(response);
+                    var contenu = '';
+                    let select_page = document.querySelector("#numero_page_select");
+
+
+
+                    for(var i = 0; i < page_bcbgfh.length ; i++){
+
+                        contenu = contenu + '<option value="' + page_bcbgfh[i].id_page + '">' + page_bcbgfh[i].numero_page + '</option>';
+                    }
+                    contenu = contenu + '</div>'
+                    select_page.innerHTML = contenu;
+
+                    affiche_page_courante(select_page.value);
+                    $('#numero_page_select').val(page_bcbgfh[0].id_page)
+                    index_page =  $('#numero_page_select').val();
+
+                    affiche_lignes_courante(index_page)
+                    //affiche_lignes_courante(page_bcbgfh[0].id_page);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        //Affiche la page_courante
+        function affiche_page_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/' +id_page,
+                type: 'POST',
+                data: {'id_bcbgfh': id_page},
+                success: function(response) {
+
+                    let page_bcbgfh = JSON.parse(response);
+
+                    let date_chargement = page_bcbgfh[0].date_chargement;
+                    $('#destination').val(page_bcbgfh[0].destination);
+                    // charge_usines(page_bcbgfh[0].destination)
+
+                    $('#date_chargement').val(date_chargement);
+                    $('#chauffeur').val(page_bcbgfh[0].transporteur);
+                    $('#cout').val(page_bcbgfh[0].cout);
+                    $('#village').val(page_bcbgfh[0].village);
+                    $('#immatriculation').val(page_bcbgfh[0].immatriculation);
+                    $('#parc_usine').val(page_bcbgfh[0].parc_usine);
+                    $('#lbl_usine').text(page_bcbgfh[0].usine_dest);
+                    $('#lbl_dest').text(page_bcbgfh[0].destination);
+                    if (page_bcbgfh[0].photo){
+                        document.querySelector("#image_feuillet").src ="{{ asset('images/uploads/bcbgfh') }}/" +  page_bcbgfh[0].photo
+                    }
+
+                    if (page_bcbgfh[0].fini) {
+
+                        chargement_valide();
+                    } else {
+
+                        chargement_non_valide()
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_lignes_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbcbgfh/op/lignes_bcbgfh/data/' +id_page,
+                type: 'POST',
+                data: {'id_bcbgfh': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    var contenu = '';
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu').innerHTML = '<tr  style="font-size: 20px;"><h6 class="text-danger font-weight-lighter bg-transparent">No Data Available</h6></tr>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center"><a class="text-dark font-weight-bold" style="font-size: 20px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="badge bg-dark text-white p-1"style="font-size: 20px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh_bcbgfh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x_bcbgfh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y_bcbgfh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng_bcbgfh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm_bcbgfh  + '</span></td>'+
+                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 20px;">' + Math.round((lignes[i].cubage_bcbgfh) * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].cubage_bcbgfh) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr class="alert-danger" style="font-size: 20px;"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('.txt_essence').innerHTML = contenu;
+                }
+            })
+        }
+
+        //Charge les numeros CP disponibles pour cette foret
+        function liste_numeros_cp(){
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/numbcbgfh/dispo/' + index_page,
+                'type': 'POST',
+                success: function(response) {
+                    let liste_numeros = JSON.parse(response)
+                    var contenu = '<option>{{ 'Select tree No' | trans }}</option>';
+
+                    for (var i = 0; i< liste_numeros.length ; i++){
+                        contenu = contenu + '<option value="' + liste_numeros[i].id_ligne + '">' + liste_numeros[i].num + '</option>'
+                    }
+                    document.querySelector('.select_numero').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('.txt_zone').innerHTML = contenu;
+                }
+            })
+        }
+
+        $("#save_data").on('click', function (){
+
+            //Vérification des données en-tetes
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+            }else {
+                if (
+                    $('#select_numero').val() === "" ||
+                    $('#lettre_lignepagebcbgfh').val() === "" ||
+                    $('#nom_essencebcbgfh').val() === "" ||
+                    $('#x_lignepagebcbgfh').val() === "" ||
+                    $('#y_lignepagebcbgfh').val() === "" ||
+                    $('#longeur_lignepagebcbgfh').val() === "" ||
+                    $('#diametre_lignepagebcbgfh').val() === "" ||
+                    $('#zh_lignepagebcbgfh').val() === null
+                ){
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#f5c8b8',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+
+                }else if ( $('#longeur_lignepagebcbgfh').val() > 2000 || $('#longeur_lignepagebcbgfh').val() < 0 ||
+                    $('#diametre_lignepagebcbgfh').val() > 200 || $('#diametre_lignepagebcbgfh').val() < 0 ||
+                    ($('#x_lignepagebcbgfh').val()).length > 7 || ($('#x_lignepagebcbgfh').val()).length  < 6 ||
+                    ($('#y_lignepagebcbgfh').val()).length > 7 || ($('#y_lignepagebcbgfh').val()).length  < 6
+                ) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#f5c8b8',
+                        timer : 3000,
+                        icon: "success",
+                        title: "{% trans %}The values seem to be invalid{% endtrans %}",
+                        padding: '1em'
+                    });
+                } else {
+					
+                    add_ligne_bcbgfh();
+                }
+            }
+
+
+        });
+
+        $("#save_data_dpif").on('click', function (){
+
+            //Vérification des données en-tetes
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+            }else {
+                if (
+                    $('#numero_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#lettre_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#nom_essencebcbgfh_dpif').val() === "" ||
+                    $('#x_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#y_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#longeur_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#diametre_lignepagebcbgfh_dpif').val() === "" ||
+                    $('#zh_lignepagebcbgfh_dpif').val() === null
+                ){
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#f5c8b8',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+
+                }else if ( $('#longeur_lignepagebcbgfh_dpif').val() > 2000 || $('#longeur_lignepagebcbgfh_dpif').val() < 0 ||
+                    $('#diametre_lignepagebcbgfh_dpif').val() > 200 || $('#diametre_lignepagebcbgfh_dpif').val() < 0 ||
+                    ($('#x_lignepagebcbgfh_dpif').val()).length > 7 || ($('#x_lignepagebcbgfh_dpif').val()).length  < 6 ||
+                    ($('#y_lignepagebcbgfh_dpif').val()).length > 7 || ($('#y_lignepagebcbgfh_dpif').val()).length  < 6
+                ) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#f5c8b8',
+                        timer : 3000,
+                        icon: "success",
+                        title: "{% trans %}The values seem to be invalid{% endtrans %}",
+                        padding: '1em'
+                    });
+                } else {
+					
+                    add_ligne_bcbgfh_dpif();
+                }
+            }
+
+
+        });
+
+
+        function maj_page_bcbgfh(){
+            var obj = {};
+            obj.date_chargementbcbgfh =  $("#date_chargement").val();
+            obj.destination_pagebcbgfh =  $("#destination").val();
+            obj.parc_usine_bcbgfh =  $("#parc_usine").val();
+            obj.village_pagebcbgfh =  $("#village").val();
+            obj.chauffeurbcbgfh =  $("#chauffeur").val();
+            obj.cout_transportbcbgfh =  $("#cout").val();
+            obj.immatcamion =  $("#immatriculation").val();
+            obj.code_docbcbgfh=  {{ document_name.id }};
+
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/edit/'+ index_page + '/'  + data,
+                'type': 'POST',
+
+                success: function(response) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Page header saved !{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                }
+            })
+        }
+
+        function add_ligne_bcbgfh(){
+            var obj = {};
+
+            obj.numero_lignepagebcbgfh =  $("#select_numero").val();
+            obj.lettre_lignepagebcbgfh =  $("#lettre_lignepagebcbgfh").val();
+            obj.nom_essencebcbgfh =  $("#nom_essencebcbgfh").val();
+            obj.zh_lignepagebcbgfh =  $("#zh_lignepagebcbgfh").val();
+            obj.x_lignepagebcbgfh =  $("#x_lignepagebcbgfh").val();
+            obj.y_lignepagebcbgfh =  $("#y_lignepagebcbgfh").val();
+            obj.longeur_lignepagebcbgfh =  $("#longeur_lignepagebcbgfh").val();
+            obj.diametre_lignepagebcbgfh =  $("#diametre_lignepagebcbgfh").val();
+            obj.cubage_lignepagebcbgfh =  $("#cubage_lignepagebcbgfh").val();
+            obj.code_pagebcbgfh =  index_page;
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/add_lignes/'  + data + "/{{ document_name.codeContrat.codeForet.id }}",
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+                    //alert(retour[0].code_bcbgfh)
+                    //alert(retour)
+                    if (retour[0].code_bcbgfh === "SAME_NUMBER") {
+                        document.querySelector('#lbl_alert').style = "display:inline";
+                        document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
+                        //alert("Sorry! This number with this forest is already in used");
+
+
+                    } else {
+
+                        affiche_lignes_courante(index_page);
+                        initialiser_numero_select();
+                        liste_numeros_cp();
+						maj_page_bcbgfh();
+                        lettres_billes(document.querySelector('#select_numero').value)
+                        document.querySelector('#select_numero').focus();
+                    }
+
+
+                }
+            })
+        }
+
+		function add_ligne_bcbgfh_dpif(){
+					var obj = {};
+					
+					obj.numero_lignepagebcbgfh =  $("#numero_lignepagebcbgfh_dpif").val();
+					obj.lettre_lignepagebcbgfh =  document.querySelector("#lettre_lignepagebcbgfh_dpif").value;
+					obj.nom_essencebcbgfh =  $("#nom_essencebcbgfh_dpif").val();
+					obj.zh_lignepagebcbgfh =  $("#zh_lignepagebcbgfh_dpif").val();
+					obj.x_lignepagebcbgfh =  $("#x_lignepagebcbgfh_dpif").val();
+					obj.y_lignepagebcbgfh =  $("#y_lignepagebcbgfh_dpif").val();
+					obj.longeur_lignepagebcbgfh =  $("#longeur_lignepagebcbgfh_dpif").val();
+					obj.diametre_lignepagebcbgfh =  $("#diametre_lignepagebcbgfh_dpif").val();
+					obj.cubage_lignepagebcbgfh =  $("#cubage_lignepagebcbgfh_dpif").val();
+					obj.code_pagebcbgfh =  index_page;
+					obj.code_contrat =  {{ document_name.codeContrat.id }};
+
+					var data = JSON.stringify(obj);
+					$.ajax({
+						'url': '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/add_lignes/'  + data + "/{{ document_name.codeContrat.codeForet.id }}",
+						'type': 'POST',
+						success: function(response) {
+
+							let retour = JSON.parse(response)
+							console.log(retour)
+							//alert(retour[0].code_bcbgfh)
+							//alert(retour)
+							if (retour[0].code_bcbgfh === "SAME_NUMBER") {
+								//document.querySelector('#lbl_alert').style = "display:inline";
+								//document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
+								alert("Désolé! Cette Numéro de bille a déjà été utilisé pour ce contrat");
+
+
+							} else {
+								initialiser_dpif();
+								affiche_lignes_courante(index_page);
+								maj_page_bcbgfh();
+								document.querySelector('#numero_lignepagebcbgfh_dpif').focus();
+							}
+
+
+						}
+					})
+				}
+		function initialiser_dpif(){
+			$("#numero_lignepagebcbgfh_dpif").val('');
+			$("#lettre_lignepagebcbgfh_dpif")[0].selectedIndex = 0;
+			$("#nom_essencebcbgfh_dpif")[0].selectedIndex = 0;
+			$("#zh_lignepagebcbgfh_dpif")[0].selectedIndex = 0;;
+			$("#x_lignepagebcbgfh_dpif").val('');
+			$("#y_lignepagebcbgfh_dpif").val('');
+			$("#longeur_lignepagebcbgfh_dpif").val('');
+			$("#diametre_lignepagebcbgfh_dpif").val('');
+			$("#cubage_lignepagebcbgfh_dpif").val('');
+			$("#numero_lignepagebcbgfh_dpif").focus()
+		}
+        $('#validate_page').on('click', function (e){
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Chargement BCBGFH-FC',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                validate_pagebcbgfh();
+            }
+        });
+
+        function validate_pagebcbgfh()
+        {
+            Swal.fire({
+                html: "<h4 class='alert-success text-dark font-weight-bold p-3'>{% trans %}Validate this Loading ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#23850a',
+                cancelButtonColor: '#fb0000',
+                background: '#f3f8e9',
+                confirmButtonText: '{% trans %}Yes, Validate{% endtrans %}',
+                cancelButtonText: '{% trans %}Cancel{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('app_portail') }}snvlt/bcbgfh/soumettre_chargement/' + index_page ,
+                        type : 'POST',
+                        data : {id_page: index_page},
+                        success: function(response){
+                            console.log(response);
+                            let valeur = JSON.parse(response);
+
+                            Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                background: '#dffbdd',
+                                timer : 3000,
+                                icon: "success",
+                                title: '{% trans %}The loading is sent to manager!{% endtrans %}',
+                                showConfirmButton: false
+                            });
+                            initialiser_page();
+                            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+                            affiche_page_courante(index_page)
+
+                            affiche_lignes_courante(index_page)
+                        }
+                    });
+
+
+                }
+            });
+        }
+        function initialiser(){
+
+            document.querySelector('#select_numero').value ="";
+            document.querySelector('#lettre_lignepagebcbgfh').value ="";
+            document.querySelector('#x_lignepagebcbgfh').value ="";
+            document.querySelector('#y_lignepagebcbgfh').value ="";
+            document.querySelector('#longeur_lignepagebcbgfh').value ="";
+            document.querySelector('#diametre_lignepagebcbgfh').value ="";
+            document.querySelector('#cubage_lignepagebcbgfh').value ="";
+            document.querySelector('#nom_essencebcbgfh').selectedIndex = 0;
+            document.querySelector('#zh_lignepagebcbgfh').selectedIndex = 0;
+            document.querySelector('#lbl_alert').style = "display:none";
+
+            document.querySelector('#select_numero').focus();
+
+        }
+
+        function initialiser_page(){
+
+            document.querySelector('#parc_usine').value ="";
+            document.querySelector('#destination').value ="";
+            document.querySelector('#date_chargement').value ="";
+            document.querySelector('#chauffeur').value ="";
+            document.querySelector('#immatriculation').value ="";
+            document.querySelector('#cout').value ="";
+            document.querySelector('#village').value ="";
+            document.querySelector('#parc_usine').focus();
+            initialiser();
+        }
+
+        function chargement_valide(){
+
+            document.querySelector('#parc_usine').setAttribute('disabled', '');
+            document.querySelector('#destination').setAttribute('disabled', '');
+            document.querySelector('#date_chargement').setAttribute('disabled', '');
+            document.querySelector('#chauffeur').setAttribute('disabled', '');
+            document.querySelector('#immatriculation').setAttribute('disabled', '');
+            document.querySelector('#cout').setAttribute('disabled', '');
+            document.querySelector('#village').setAttribute('disabled', '');
+            document.querySelector('#add_data').style = "display:none";
+            document.querySelector('#btn_save').style = "display:none";
+            document.querySelector('#photo_feuillet').style = "display:none";
+
+                {% for role in app.user.roles %}
+                    {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_ADMIN") %}
+                        {% set roleuser = "AGENT_DPIF" %}
+                    {% endif %}
+                {% endfor %}
+                {% if(roleuser == "AGENT_DPIF") %}
+                //alert("OK")
+                    document.querySelector('#add_data').style = "display:inline;font-size: 18px;color: white;width: 200px;background: #456805;font-size: 18px;color: white;width: 200px;background: #456805; margin-top: 20px; margin-bottom: 20px;";
+                    document.querySelector('#btn_save').style = "background: #ff6f00; font-size: 16px;margin: 10px;";
+                    document.querySelector('#photo_feuillet').style = "background: #0022ff; font-size: 16px;margin: 10px;";
+                    document.querySelector('#parc_usine').removeAttribute('disabled');
+                    document.querySelector('#destination').removeAttribute('disabled');
+                    document.querySelector('#date_chargement').removeAttribute('disabled');
+                    document.querySelector('#chauffeur').removeAttribute('disabled');
+                    document.querySelector('#immatriculation').removeAttribute('disabled');
+                    document.querySelector('#cout').removeAttribute('disabled');
+                    document.querySelector('#village').removeAttribute('disabled');
+
+            {% endif %}
+
+
+            document.querySelector('#validate_page').style = "display:none";
+            document.querySelector('#data_bcbgfh').setAttribute('disabled', '');
+
+            //document.querySelector('#btn_photo').style = "display:inline;border: 0px; font-size: 16px;background: darkorange;margin-right: 10px;";
+
+        }
+        function chargement_non_valide(){
+
+            document.querySelector('#parc_usine').removeAttribute('disabled');
+            document.querySelector('#destination').removeAttribute('disabled');
+            document.querySelector('#date_chargement').removeAttribute('disabled');
+            document.querySelector('#chauffeur').removeAttribute('disabled');
+            document.querySelector('#immatriculation').removeAttribute('disabled');
+            document.querySelector('#cout').removeAttribute('disabled');
+            document.querySelector('#village').removeAttribute('disabled');
+            document.querySelector('#add_data').style = "display:inline;font-size: 18px;color: white;width: 200px;background: #456805;font-size: 18px;color: white;width: 200px;background: #456805; margin-top: 20px; margin-bottom: 20px;";
+            document.querySelector('#btn_save').style = "background: #ff6f00; font-size: 16px;margin: 10px;";
+            document.querySelector('#photo_feuillet').style = "background: #0022ff; font-size: 16px;margin: 10px;";
+            {% if(app.user.codeOperateur.id == 2) %}
+			document.querySelector('#validate_page').style = "display:inline;border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;";
+            {% endif %}
+			document.querySelector('#data_bcbgfh').removeAttribute('disabled');
+            //document.querySelector('#btn_photo').style = "display:none; ";
+
+        }
+        function expand(obj)
+        {
+            obj.size = 5;
+        }
+
+        function unexpand(obj)
+        {
+            obj.size = 1;
+        }
+
+
+        //Liste des usines par ville
+        function charge_usines(id_ville){
+            let contenu_parc_usine = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/usines_cantonnement/l/' + id_ville,
+                type: 'POST',
+                success: function(response){
+                    let liste_usines = JSON.parse(response)
+                    if (liste_usines.length > 0){
+                        contenu_parc_usine = '<option value="0">--{{ 'Select a factory'|trans }}--</option>';
+                        for (let i = 0; i < liste_usines.length ; i++){
+                            contenu_parc_usine = contenu_parc_usine + '<option value="' + liste_usines[i].id_usine + '">' + liste_usines[i].rs + '</option>'
+                        }
+                    }
+                    document.querySelector('#parc_usine').innerHTML = contenu_parc_usine;
+                }
+            })
+        }
+
+        //Liste des lettres_billes
+        function lettres_billes(id_arbre){
+            let contenu_lettres = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numbcbgfh/dispo/lettres/' + id_arbre,
+                type: 'POST',
+                success: function(response){
+                    let liste_lettres = JSON.parse(response)
+                    if (liste_lettres.length > 0){
+
+                        for (let i = 0; i < liste_lettres.length ; i++){
+                            contenu_lettres = contenu_lettres + '<option value="' + liste_lettres[i].lettre + '">' + liste_lettres[i].lettre + '</option>'
+                        }
+                    }
+                    document.querySelector('#lettre_lignepagebcbgfh').innerHTML = contenu_lettres;
+                    affiche_mensurations(id_arbre, $('#lettre_lignepagebcbgfh').val())
+                }
+            })
+        }
+
+        //Infos sur l'arbre sélectionné
+        function infos_arbre(id_arbre){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numbcbgfh/arbre_infos/' + id_arbre,
+                type: 'POST',
+                success: function(response){
+                    let infos = JSON.parse(response)
+                    if (infos.length > 0){
+                        $('#nom_essencebcbgfh').val(infos[0].essence);
+                        $('#zh_lignepagebcbgfh').val(infos[0].zh);
+                        $('#x_lignepagebcbgfh').val(infos[0].x_arbre);
+                        $('#y_lignepagebcbgfh').val(infos[0].y_arbre);
+                    }
+                }
+            })
+        }
+
+        //Affiche les mensurations de la bille
+        function affiche_mensurations(id_arbre, lettre){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numcp/billes/donnees/' + id_arbre + '/' + lettre,
+                type: 'POST',
+                success: function(response){
+                    let infos = JSON.parse(response)
+                    if (infos.length > 0){
+                        $('#longeur_lignepagebcbgfh').val(infos[0].lng);
+                        $('#diametre_lignepagebcbgfh').val(infos[0].dm);
+                        $('#cubage_lignepagebcbgfh').val(infos[0].vol);
+                    }
+                }
+            })
+        }
+
+        function initialiser_numero_select(){
+            document.querySelector('#lettre_lignepagebcbgfh').selectIndex = -1;
+            document.querySelector('#nom_essencebcbgfh').value = "";
+            document.querySelector('#zh_lignepagebcbgfh').value = "";
+            document.querySelector('#x_lignepagebcbgfh').value = "";
+            document.querySelector('#y_lignepagebcbgfh').value = "";
+            document.querySelector('#longeur_lignepagebcbgfh').value = "";
+            document.querySelector('#diametre_lignepagebcbgfh').value = "";
+            document.querySelector('#cubage_lignepagebcbgfh').value = "";
+
+        }
+
+
+        function numStr(a, b) {
+            a = '' + a;
+            b = b || ' ';
+            var c = '',
+                d = 0;
+            while (a.match(/^0[0-9]/)) {
+                a = a.substr(1);
+            }
+            for (var i = a.length-1; i >= 0; i--) {
+                c = (d != 0 && d % 3 == 0) ? a[i] + b + c : a[i] + c;
+                d++;
+            }
+            return c;
+        }
+
+        $("#photo_feuillet").on('click', function (){
+            if (index_page > 0){
+                document.location.href = '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages/p/' + index_page;
+            }
+
+        })
+    </script>
+
+
+
+{% endblock %}

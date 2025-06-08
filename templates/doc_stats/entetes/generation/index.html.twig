@@ -1,0 +1,692 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Génération Documents
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/generate_doc.png') }}" alt="{% trans %}Direction{% endtrans %}">  Génération de Documents
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+        <div class="text-white p-2 m-2 w-100" style="background-color: #f96b36; font-size: 20px;">Cette section vous permet de générer manuellement des documents Opérateurs en relation avec les autorisations enregistrées.</div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                    <div class="col-md-3 " style="width: 100%;">
+                        <div class="row mb-2 mt-2 doc_type">
+                            <select class="col-12"  name="doc_type" id="doc_type" style="font-size: 16px;background-color: rgba(204,240,217,0.99); border: 1px solid lightgrey;color: black;width: 90%;">
+                                <option value="0">-- Sélectionnez un document---</option>
+                                {% for doc in type_doc %}
+                                    <option value="{{ doc.id }}">{{ doc.abv }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="exploitants" style="display:none;">
+                           <select class=""  name="exploitants" id="exploitants" style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez un exploitant---</option>
+                                {% for exploitant in exploitants %}
+                                    <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="reprises" style="display:none;">
+                            <select class="ms-2 " name="reprises" id="reprises"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez une forêt---</option>
+                                {% for reprise in reprises %}
+                                    {% if (reprise.codeAttribution) %}
+                                        <option value="{{ reprise.id }}">{{ reprise.codeAttribution.codeForet.denomination }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 fc" style="display:none;">
+                            <select class="col-12"  name="fc" id="fc"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez une forêt classée---</option>
+                                {% for fc in fcs %}
+                                    <option value="{{ fc.id }}">{{ fc.denomination }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 mt-2 contrats" style="display:none;">
+                            <select class="col-12  mt-2 "  name="contrats" id="contrats"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                {#<option value="0">-- Sélectionnez un contrat---</option>#}
+
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 usines" style="display:none;">
+                           <select class="col-12"  name="usines" id="usines"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez une usine---</option>
+                               {% for usine in usines %}
+                                   <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine}}</option>
+                               {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 parcelles" style="display:none;">
+                             <select class="col-12"  name="parcelles" id="parcelles"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez une parcelle villageoise---</option>
+                                 {% for parcelle in parcelles %}
+                                     <option value="{{ parcelle.id }}">{{ parcelle.codeAttributionPv.codeParcelle.denomination}}</option>
+                                 {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 commercants" style="display:none;">
+                             <select class="col-12"  name="commercants" id="commercants"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez un commerçant---</option>
+                                 {% for commercant in commercants %}
+                                     <option value="{{ commercant.id }}">{{ commercant.numeroCommercant}}, {{ commercant.nom }} {{ commercant.prenoms }}</option>
+                                 {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="row form-group has-error has-feedback mb-2 exportateurs" style="display:none;">
+                            <select class="col-12"  name="exportateurs" id="exportateurs"  style="font-size: 16px;background-color: #b2dcf1; border: 1px solid lightgrey;width: 90%;">
+                                <option value="0">-- Sélectionnez un exportateur---</option>
+                                {% for auto_export in autos_export %}
+                                    <option value="{{ auto_export.id  }}">{{ auto_export.codeAgreement.codeExportateur.sigle}}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="text-danger">*</span>
+                        </div>
+                        <div class="form-group  alert-warning text-white mt-2 mb-2 infos" style="width: 100%;border: 2px solid darkgreen">
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-8 offset-1 row p-2 m-2 mx-auto" style="border: 1px solid lightgrey;background-color: #fbf9f9">
+                        <div class="col-md-12" style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-5 text-dark">{{ 'Document Name' | trans }}</span><span class="text-danger col-1">*</span>
+                                <div class="col-">
+                                <select class="font-weight-bold"  name="lettre" id="lettre"  style="font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;margin-right: 4px;display:none;">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                    <option value="H">H</option>
+                                    <option value="I">I</option>
+                                    <option value="J">J</option>
+                                    <option value="K">K</option>
+                                    <option value="L">L</option>
+                                    <option value="M">M</option>
+                                    <option value="N">N</option>
+                                    <option value="O">O</option>
+                                    <option value="P">P</option>
+                                    <option value="Q">Q</option>
+                                    <option value="R">R</option>
+                                    <option value="S">S</option>
+                                    <option value="T">T</option>
+                                    <option value="U">U</option>
+                                    <option value="V">V</option>
+                                    <option value="W">W</option>
+                                    <option value="X">X</option>
+                                    <option value="Y">Y</option>
+                                    <option value="Z">Z</option>
+                                </select>
+                                <input class="text-center font-weight-bold" type="text" name="numero_doc" id="numero_doc"  style="font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;text-transform: uppercase;margin-right: 4px;width: 75px;">
+                                <input class="text-center font-weight-bold" type="text" readonly name="docname" id="docname"  style="font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;text-transform: uppercase;margin-right: 4px;width: 75px;"> /
+                                <input class="text-center font-weight-bold" type="text" name="annee" id="annee"  style="font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;text-transform: uppercase;margin-right: 4px;width: 30px;">
+
+                                </div>
+                            </div>
+
+                            <hr class="bg-white">
+                            <div class="row mb-2">
+                                <span class="col-5 text-dark">{{ 'Delivered at' | trans }}</span><span class="text-danger col-1">*</span>
+                                <input class="col-6 font-weight-bold" type="date" name="date_delivrance" id="date_delivrance"  style="font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="row mb-2 text-dark">
+                                <span class="col-5">{{ 'First Page No' | trans }}</span><span class="text-danger col-1">*</span>
+                                <input class="col-6 font-weight-bold" type="number" name="premiere_page" id="premiere_page" style="font-size: 16px;background-color: #f2eaeb; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="row justify-content-end">
+                                <a href="#" class="btn btn-sm  text-white font-weight-light col-md-6"  id="btn_save" style="background: #045c6a; font-size: 16px;"><i class="mdi mdi-settings text-white" style="font-size: 18px; margin-right: 5px;height: 30px;"></i>{{ 'Generate document' | trans }}</a>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                {#Table des documents créés#}
+
+                <script src="{{ asset('assets/bootstrap-5.3.2/dist/js/bootstrap.min.js') }}"></script>
+                <hr>
+                <div class="table_document mt-3" style="border-top: 3px solid #053369;">
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Générer les pages du document-->
+        <div class="modal fade" id="generer" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/generate_doc.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Generate Operator Document' | trans}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="display: none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'Nous avons besoin de votre autorisation ' |trans}}</label>
+                                <h6  class="text-danger ">Voulez-vous générer ce document dans le système ?</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  terminate" id="btn_generate" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-settings text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Generate'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+		<!-- Supprimer un document-->
+        <div class="modal fade" id="supprimer" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/generate_doc.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Generate Operator Document' | trans}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="display: none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="supprimer" class="text-danger h3 font-weight-bold">Vous êtes sur le point de supprimer ce document !</label>
+                                <div class="suppression_doc"></div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-success text-white font-weight-light" data-bs-dismiss="modal" id="#"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-danger font-weight-light  delete_doc" id="btn_delete_doc" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-settings text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Supprimer
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+        let annee =  "{{ annee }}";
+        let infos_operateur = false;
+        let id_doc_suivi = 0;
+        document.querySelector('#doc_type').selectedIndex = 0;
+
+        suivi_docs();
+
+
+
+
+            $('#reprises').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                get_exploitant_reprise(this.value)
+            });
+
+            $('#fc').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                if (this.value === "" || this.value === null || this.value === "0"){
+                    document.querySelector('.contrats').style = "display:none";
+                } else {
+                    document.querySelector('.contrats').style = "display:inline";
+                    recherche_contrats(this.value)
+                }
+            });
+
+            $('#contrats').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                get_exploitant_contrat_bcbgfh(this.value)
+            });
+
+			$('body').on('click', '.btn_supprimer', function () {
+                id_doc_suivi = this.id;
+            });
+
+            $('#usines').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                get_usine(this.value)
+            });
+            $('#exportateurs').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                get_exportateur(this.value)
+            });
+
+            $('#parcelles').on('change', function () {
+                document.querySelector('.infos').innerHTML = "";
+                infos_operateur = false;
+                get_exploitant_pv(this.value)
+            });
+
+            $('#doc_type').on('change', function (){
+            initialise ();
+            display_lettre(this.value);
+            document.querySelector('#docname').value = this.options[this.selectedIndex].text;
+            if (this.value === "1" || this.value === "2" ){
+                document.querySelector('.reprises').style = "display:inline";
+            } else if (this.value === "3"){
+                document.querySelector('.parcelles').style = "display:inline";
+            }else if (this.value === "4"){
+                document.querySelector('.reprises').style = "display:inline";
+            }else if (this.value === "21"){
+                document.querySelector('.fc').style = "display:inline";
+            }else if (
+                this.value === "5" ||
+                this.value === "6" ||
+                this.value === "7" ||
+                this.value === "8" ||
+                this.value === "9" ||
+                this.value === "10" ||
+                this.value === "11" ||
+                this.value === "12" ||
+                this.value === "13" ||
+                this.value === "15"
+            ){
+                document.querySelector('.usines').style = "display:inline";
+            }else if (this.value === "14" || this.value === "19"  ){
+                document.querySelector('.exportateurs').style = "display:inline";
+            }else if (this.value === "18" || this.value === "20"  ){
+                document.querySelector('.commercants').style = "display:inline";
+            }
+
+        })
+
+
+        $('#btn_delete_doc').on('click', function () {
+            infos_suppression(id_doc_suivi)
+        });
+
+        $('#btn_save').on('click', function () {
+
+            if (
+                document.querySelector('#date_delivrance').value === "" ||
+                document.querySelector('#premiere_page').value === "" ||
+                document.querySelector('#premiere_page').value === "0" ||
+                document.querySelector('#doc_type').value === "0" ||
+                document.querySelector('#numero_doc').value === "" ||
+                document.querySelector('#docname').value === "" ||
+                document.querySelector('#annee').value === "" ||
+                infos_operateur  === false
+            ){
+                render_toast_value("Merci de renseigner SVP toutes les informations étoilées!", 0)
+
+            } else {
+                let date_jour = new Date();
+                let date_doc = new Date(document.querySelector('#date_delivrance').value);
+
+                if (date_doc > date_jour){
+                    render_toast_value("Assurez-vous que la date sélectionnée soit antérieure ou égale à la date du jour", 2)
+                } else {
+                    $('#generer').modal('show');
+                }
+
+            }
+        });
+
+
+        $('#btn_generate').on('click', function (){
+                    ajout_doc();
+            })
+
+
+		$('#generer').on('hidden.bs.modal', function () {
+				this.render();
+			})
+
+        function initialise (){
+            //document.querySelector('#doc_type').selectedIndex = 0;
+            document.querySelector('.reprises').style = "display:none";
+            document.querySelector('.contrats').style = "display:none";
+            document.querySelector('.fc').style = "display:none";
+            document.querySelector('.usines').style = "display:none";
+            document.querySelector('.exploitants').style = "display:none";
+            document.querySelector('.usines').style = "display:none";
+            document.querySelector('.parcelles').style = "display:none";
+            document.querySelector('.commercants').style     = "display:none";
+            document.querySelector('.exportateurs').style = "display:none";
+
+            document.querySelector('#reprises').selectedIndex = 0;
+            document.querySelector('#contrats').selectedIndex = 0;
+            document.querySelector('#fc').selectedIndex = 0;
+            document.querySelector('#usines').selectedIndex = 0;
+            document.querySelector('#exploitants').selectedIndex = 0;
+            document.querySelector('#usines').selectedIndex = 0;
+            document.querySelector('#parcelles').selectedIndex = 0;
+            document.querySelector('#commercants').selectedIndex = 0;
+            document.querySelector('#exportateurs').selectedIndex = 0;
+
+            document.querySelector('#annee').value= annee.substr(2);
+
+            libere_champs()
+        }
+
+        function libere_champs(){
+            document.querySelector('#lettre').selectedIndex = -1;
+            document.querySelector('#docname').value = null;
+            document.querySelector('#numero_doc').value = null;
+            document.querySelector('#date_delivrance').value = null;
+            document.querySelector('#premiere_page').value = 0;
+            document.querySelector('.infos').innerHTML = "";
+            infos_operateur = false;
+        }
+
+        function ajout_doc(){
+            var obj = {};
+
+            let type_doc =  $('#doc_type').val();
+            let valeur = "";
+            if ($('#lettre').val()){
+                valeur = $('#lettre').val() + " " + $('#docname').val() + " " + $('#annee').val() + " - " + $('#numero_doc').val();
+            } else {
+                valeur = $('#docname').val() + " " + $('#annee').val() + " - " + $('#numero_doc').val();
+            }
+
+            obj.numero = valeur;
+            obj.date_delivrance = $('#date_delivrance').val();
+            obj.type_doc = $('#doc_type').val();
+            obj.reprise = $('#reprises').val();
+            obj.contrat = $('#contrats').val();
+            obj.parcelles = $('#parcelles').val();
+            obj.usine = $('#usines').val();
+            obj.exploitant = $('#exploitants').val();
+            obj.exportateur = $('#exportateurs').val();
+            obj.commercant = $('#commercants').val();
+
+           // obj.commercant = $('#soit_transmis').val();
+            obj.premiere_page = $('#premiere_page').val();
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/add_doc_admin/' + data,
+                type : 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+
+                    if (reponse[0].code === "SUCCESS"){
+                        suivi_docs()
+                        initialise()
+                        render_toast_value("Le document a été généré avec succès!", 1)
+
+                    } else if (reponse[0].code === "ERROR_DOC"){
+                        render_toast_value("Aucun document saisi!", 0)
+
+                    } else if (reponse[0].code === "NUMBER_EXISTS"){
+                        render_toast_value("Le document a été déjà généré!", 0)
+                    }
+                    $("#generer .btn-close").click()
+                }
+            })
+
+        }
+
+        function suivi_docs(){
+            let contenu_table ="";
+            document.querySelector('.table_document').innerHTML = '<div class="text-center mt-4"><img class="spinload my-auto mt-4 mb-4" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="200" style="margin-top: -8px;"><div class="text-center"></div></div>';
+
+            $.ajax({
+                url:'{{ path('suivi_doc') }}',
+                type: 'POST',
+                success : function (response){
+                    let doc_liste = JSON.parse(response);
+                    contenu_table = '<h3 class="text-center text-dark mb-3 p-1 font-weight-light" style="background-color: #9bccda">Liste des documents générés</h3>'
+                    contenu_table = contenu_table + '<div class="p-2" ><table class="table mt-2 table-responsive" style="width: 100%;" id="table_doc_generes">'+
+                                                    '<thead style="width: 100%;">' +
+                                                    '<tr class="text-white font-weight-bold" style="width: 100%;background-color: rgba(36,94,58,0.99);">'+
+                                                    '<th>{{ 'Document Type' | trans}}</th>'+
+                                                    '<th>{{ 'No' | trans}}</th>'+
+                                                    '<th>{{ 'Operator' | trans}}</th>'+
+                                                    '<th>{{ 'Number of pages' | trans}}</th>'+
+                                                    '<th>{{ 'Delivery date' | trans}}</th>'+
+                                                    '<th>{{ 'Created at' | trans}}</th>'+
+                                                    '<th>{{ 'Created by' | trans}}</th>'+
+													{% if(app.user.codeGroupe.id == 1) %}
+                                                    '<th>{{ 'Actions' | trans}}</th>'+
+													{% endif %}
+                                                    '</tr>'+
+                                                    '</thead>'+
+                                                    '<tbody class="body_contenu">';
+
+                                    for(var i = 0; i < doc_liste.length ; i++){
+
+                                        if (doc_liste[i].operateur === 2){
+                                            contenu_table = contenu_table +'<tr class="alert-success">';
+                                        } else if (doc_liste[i].operateur === 3){
+                                            contenu_table = contenu_table +'<tr class="alert-warning">';
+                                        } else if (doc_liste[i].operateur === 9){
+                                            contenu_table = contenu_table +'<tr class="alert-primary">';
+                                        } else {
+                                            contenu_table = contenu_table +'<tr>';
+                                        }
+
+
+
+                        contenu_table = contenu_table + '<td>' + doc_liste[i].type_doc + '</td>' +
+                            '<td>' + doc_liste[i].numero + '</td>' +
+                            '<td>' + doc_liste[i].operator + '</td>' +
+                            '<td>' + doc_liste[i].nb_pages + '</td>' +
+                            '<td>' + doc_liste[i].date_delivrance + '</td>' +
+                            '<td>' + doc_liste[i].cree_le + '</td>' +
+                            '<td>' + doc_liste[i].cree_par + '</td>' +
+							{% if(app.user.codeGroupe.id == 1) %}
+                            '<td><img src="{{ asset('assets/icons/16x16/edit.png') }}"  data-bs-target="#editer" data-bs-toggle="modal" class="btn_modifier" style="cursor:pointer;height:16px;width:16px;" alt="editer" id="' + doc_liste[i].id_doc_suivi + '"><img src="{{ asset('assets/icons/16x16/delete_2.png') }}" class="btn_supprimer" style="cursor:pointer;margin-left:5px;height:16px;width:16px;" alt="supprimer" data-bs-target="#supprimer" data-bs-toggle="modal" id="' + doc_liste[i].id_doc_suivi + '"></td>'+
+							{% endif %}
+							'</tr>';
+                    }
+                    contenu_table = contenu_table + '</tbody></table></div>';
+                    document.querySelector('.table_document').innerHTML = contenu_table;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#table_doc_generes');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                }
+            })
+        }
+
+        function get_exploitant_reprise(id_reprise){
+            let contenu ="";
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/generate_doc_exploitant/' + id_reprise,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = contenu + '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].rs + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].code + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].marteau + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].cef + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 mb-2">' + infos[0].dr + '</h5>' ;
+
+                    document.querySelector('.infos').innerHTML = contenu;
+                    infos_operateur = true;
+                }
+            })
+        }
+
+        function recherche_contrats(id_fc){
+            let contenu ="";
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/search_fc/' + id_fc,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = '<option value="0">-- Sélectionnez le contrat SVP</option>'
+                    for (var i=0; i< infos.length; i++){
+                        contenu = contenu + '<option value="' + infos[i].id + '">' + infos[i].contrat + '</option>' ;
+                    }
+                    document.querySelector('#contrats').innerHTML = contenu;
+                    //infos_operateur = true;
+                }
+            })
+        }
+
+        function get_exploitant_contrat_bcbgfh(id_contrat){
+            let contenu ="";
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/generate_doc_contrat/' + id_contrat,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = contenu + '<h5 class="font-weight-bold text-dark mt-2 p-1"> <b class="text-danger">Raison sociale</b> :' + infos[0].rs + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1"> <b class="text-danger">Code</b> : ' + infos[0].code + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1"> <b class="text-danger">Marteau</b> :' + infos[0].marteau + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1"> <b class="text-danger">CEF</b> :' + infos[0].cef + '</h5>' +
+                                        '<h5 class="font-weight-bold text-dark mt-2 p-1"><b class="text-danger">DR</b> :' + infos[0].dr + '</h5>' ;
+
+                    document.querySelector('.infos').innerHTML = contenu;
+                    infos_operateur = true;
+                }
+            })
+        }
+
+        function get_usine(id_usine){
+            let contenu ="";
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/generate_doc_usine/' + id_usine,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = contenu + '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].rs + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].code + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].cef + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 mb-2">' + infos[0].dr + '</h5>' ;
+
+                    document.querySelector('.infos').innerHTML = contenu;
+                    infos_operateur = true;
+                }
+            })
+        }
+        function get_exportateur(id_auto_export){
+            let contenu ="";
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/generate_doc_export/' + id_auto_export,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = contenu + '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].rs + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">Agrément N° ' + infos[0].agreement + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">Autorisation N° ' + infos[0].autorisation + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">Code Exportateur : ' + infos[0].code + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].cef + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 mb-2">' + infos[0].dr + '</h5>' ;
+
+                    document.querySelector('.infos').innerHTML = contenu;
+                    infos_operateur = true;
+                }
+            })
+        }
+        function get_exploitant_pv(id_parcelle){
+            let contenu ="";
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/generate_doc_parcelle/' + id_parcelle,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    contenu = contenu + '<h5 class="font-weight-bold text-dark mt-2 p-1"> Attribué à ' + infos[0].attributaire + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1"> Autorisé à ' + infos[0].rs + " - " + infos[0].code + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 p-1">' + infos[0].cef + '</h5>' +
+                        '<h5 class="font-weight-bold text-dark mt-2 mb-2">' + infos[0].dr + '</h5>' ;
+
+                    document.querySelector('.infos').innerHTML = contenu;
+                    infos_operateur = true;
+                }
+            })
+        }
+
+		function display_lettre(id_doc){
+            let contenu ="";
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/generate_display_lettre/' + id_doc,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+					//alert(infos[0].lettre);
+                    if ( infos[0].lettre === "OUI") {
+                        document.querySelector('#lettre').style = "display:inline;font-size: 16px;background-color: #f4f2d7; border: 1px solid lightgrey;margin-right: 4px;";
+						$('#lettre').focus();
+                    } else {
+
+                        document.querySelector('#lettre').style = "display:none";
+						$('#numero_doc').focus();
+                    }
+
+                }
+            })
+        }
+
+		function infos_suppression(id_doc){
+            let contenu ="";
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/generate_doc/supprimer/' + id_doc,
+                type: 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+					//alert(infos[0].lettre);
+                    if ( infos[0].code === "SUCCESS") {
+                        render_toast_value("Succès! Le document " + infos[0].description + " a été supprimé", 1);
+                        suivi_docs()
+                        initialise()
+                    }else if ( infos[0].code === "HAS_DATA") {
+                        render_toast_value("Désolé! Ce document contient des données et ne peut être supprimé sur cette page", 2);
+                    } else if ( infos[0].code === "ERROR"){
+                        render_toast_value("Erreur lors de la suppression du document", 0)
+                    }
+
+                }
+            })
+            $("#supprimer .btn-close").click()
+        }
+    </script>
+{% endblock %}

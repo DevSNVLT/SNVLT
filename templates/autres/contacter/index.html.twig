@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}SNVLT - Contactez-nous{% endblock %}
+
+{% block banniere %}
+    <!-- Page Header Start -->
+    <div class="container-fluid page-contacter py-5 mb-5 wow fadeIn" data-wow-delay="0.9s">
+        <div class="container text-center py-5">
+            <h1 class="display-4 text-white animated slideInDown mb-4">Contactez-Nous</h1>
+            <nav aria-label="breadcrumb animated slideInDown">
+                <ol class="breadcrumb justify-content-center mb-0" style="border-radius: 10px;">
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- Page Header End -->
+{% endblock %}
+
+{% block Contenu %}
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
+                    <h1 class="display-6 mb-5" style="color: #0c4128">Vous avez des préoccupations ? Merci de nous contacter</h1>
+                    <p class="mb-4">Le service de gestion de plaintes est disponible <b>24h/*24</b> et <b>7j/7</b></p>
+
+
+                    {{ form_start(form)}}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_row(form.nom, {'attr': {id: 'name'}}) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_row(form.email) }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    {{ form_row(form.contact) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    {{ form_row(form.subject) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    {{ form_row(form.message) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary py-3 px-5" type="submit">Envoyer votre Message</button>
+                            </div>
+                        </div>
+
+                    {{ form_end(form) }}
+                </div>
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s" style="min-height: 450px;">
+                    <div class="position-relative overflow-hidden h-100">
+                        <div class="mapouter"><div class="gmap_canvas"><iframe class="gmap_iframe" width="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?width=644&amp;height=559&amp;hl=en&amp;q=Plateau, Tour D, Cité administrative&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"></iframe><a href="https://connectionsgame.org/">Connections NYT</a></div><style>.mapouter{position:relative;text-align:right;width:100%;height:559px;}.gmap_canvas {overflow:hidden;background:none!important;width:100%;height:559px;}.gmap_iframe {height:559px!important;}</style></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

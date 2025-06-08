@@ -1,0 +1,90 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Office Printer{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/imprimeur.png') }}" alt="{% trans %}Imprimeur{% endtrans %}">  {% trans %}Office Printer{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set i = 0 %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.codeImprimeur) }}</div>
+                        <div class="">{{ form_row(form.raisonSocialeImprimeur) }}</div>
+                        <div class="">{{ form_row(form.ville) }}</div>
+                        <div class="">{{ form_row(form.adresse) }}</div>
+                    </div>
+                    <div class="col-md-6 row">
+                        <div class="col-4">
+                            {% if (infos_imprimeur.logo) %}
+                                    <img src="{{ asset('images/uploads/printers/') }}{{ infos_imprimeur.logo }}" class="" width="150"  alt="user-avatar" id="uploadedAvatar"/>
+                            {% else %}
+                                <img src="" class="" width="150"  alt="" id="uploadedAvatar"/>
+                            {% endif %}
+                        </div>
+                        <div class="col-8">
+                            <div class="w-100 mt-3">
+                                {{form_row(form.logo, {'attr':{'class':'account-file-input','id':'upload','hidden':'true', 'accept':'image/png, image/jpeg'}})}}
+                                <button type="button" class="btn btn-outline-danger account-image-reset mb-4" style="font-size: 16px; font-weight: bold;">
+                                    <i class="bx bx-reset d-block d-sm-none"></i>
+                                    <span class="d-none d-sm-block">{% trans %}Reset{% endtrans %}</span>
+                                </button>
+
+                                <p class="text-dark mb-0">{% trans %}Allowed JPG, GIF or PNG. Max size of 800K{% endtrans %}</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ path('ref_imprimeurs') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                    {% if (titre is same as "Ajouter un service MINEF") %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Printer{% endtrans %}
+                    {% else %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Edit Printer{% endtrans %}
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+    <script src='{{ asset('assets/assets_other/js/pages-account-settings-account.js') }}'></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+{% endblock %}
+

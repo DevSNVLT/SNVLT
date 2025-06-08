@@ -1,0 +1,81 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Commission d'Analyse{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}OI | Commission d'Analyse{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-info">Cliquez SVP sur le titre du rapport pour mettre à jour l'analyse</h3>
+                <table class="table table-responsive" id="oi">
+                    <thead>
+                    <tr style="background: linear-gradient(#b2f0ea,#d0eaf2);color: #323030">
+                        <th>{% trans %}N°{% endtrans %}</th>
+                        <th>{% trans %}Structure{% endtrans %}</th>
+                        <th>{% trans %}Sujet{% endtrans %}</th>
+                        <th>{% trans %}Status{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for rp in rapports %}
+                        <tr>
+                            <td class="font-weight-bold text-danger" style="font-size: 18px;">{{ rp.id }}</td>
+                            <td>{{ rp.codeOi.sigle }}</td>
+                            <td class="text-dark font-weight-bold"><a class="alert-light p-1" style="font-size: 16px;" href="{{ path('infos_admin_analyse_fiche_oi_edit', {'id_rapport': rp.id })}}">
+                                    {% if (rp.libelle | length > 99 ) %}
+                                        {{ rp.libelle | slice(0,100)}}...
+                                    {% else %}
+                                        {{ rp.libelle }}
+                                    {% endif %}
+                                </a></td>
+                            <td class="text-center">
+                                {% if (rp.statut == "PROPOSITION") %}
+                                <span class="bg-warning p-2" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "EN COURS") %}
+                                    <span class="alert-success p-2" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "REJETTE") %}
+                                    <span class="bg-danger p-2" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "A CONCLURE") %}
+                                    <span class="bg-info p-2 text-white" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "PUBLIE") %}
+                                    <span class="bg-success p-2 text-white" style="border-radius: 10px;">
+                                      {% endif %}
+                                        {{ rp.statut }}
+                                    </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#oi');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}

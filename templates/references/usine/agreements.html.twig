@@ -1,0 +1,135 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Wood Factories{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+<h2 class="text-dark font-weight-bold mb-2">
+    <img src="{{ asset('assets/images/webapp/usine.png') }}" alt="factory">  Cochez les transformateurs agréés pour cet exercice
+</h2>
+
+{% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <div class="d-flex-inline">
+                    <a href="{{ path('ref_usines') }}" class="btn btn-danger p-2 m-2" id="btn_annuler">Retour</a>
+                    <a href="#" class="btn btn-primary p-2 m-2" id="btn_enregistrer" data-bs-target="#chargement" data-bs-toggle="modal">Enregistrer</a>
+                </div>
+                <table class="table" id="usines_cocher">
+                    <thead>
+                    <tr class="sticky-top sticky" style="background: #e2ffed">
+                        <th>{% trans %}Code{% endtrans %}</th>
+                        <th>{% trans %}Name{% endtrans %}</th>
+                        <th>Est Agréé ?</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for usine in liste_usines %}
+
+                        <tr>
+                            <td>{{ usine.numeroUsine }}</td>
+                            <td><a class="new-link text-dark font-weight-bold editBtn" href="#" id="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</a></td>
+                            <td>
+                                {% if  usine.agree %}
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" style="cursor: pointer;" type="checkbox" role="switch" value="1" id="{{ usine.id }}" checked>
+                                </div>
+                                {% else %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input"  style="cursor: pointer;" type="checkbox" value="0"  role="switch" id="{{ usine.id }}">
+                                    </div>
+                                {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <div class="d-flex-inline">
+                    <a href="{{ path('ref_usines') }}" class="btn btn-danger p-2 m-2" id="btn_annuler">Retour</a>
+                    <a href="#" class="btn btn-primary p-2 m-2" id="btn_enregistrer">Enregistrer</a>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="chargement" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="width: 500px;">
+                <div class="text-center mt-2">
+                    <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+                <br>
+                <h4 class="alert-primary p-2" id="txt_chargement"></h4>
+				</div>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        
+        $('#btn_enregistrer').on('click', function (){
+
+            let table = document.getElementById("usines_cocher");
+            let columnIndex = 2; //
+
+            let columnData = [];
+            let valeur  = 0;
+			let index = 0;
+			let nb_usines = 0;
+            nb_usines = table.rows.length;
+            for (let i = 0; i < table.rows.length; i++) {
+                setInterval(function() {
+                    let cellValue = table.rows[i].cells[columnIndex];
+                    let checkbox = cellValue.querySelector('input[type="checkbox"]');
+					index = i +1 ;
+                    if (checkbox) {
+                        let isChecked = checkbox.checked;
+                        
+                        if(isChecked === true){
+                            valeur = 1;
+                        } else {
+                            valeur = 0;
+                        }
+                        enregistrer_agreement(checkbox.id, valeur, index, nb_usines)
+                        //alert(i);
+
+                    }
+                }, 1000);
+
+
+            }
+
+        })
+        function enregistrer_agreement(id_usine, valeur, index, nb_usines) {
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/ref/usines/agreement_usine/' + id_usine + '/' + valeur,
+                type: 'POST',
+                success: function (response){
+                    if (index === nb_usines){
+                        document.querySelector('#txt_chargement').innerText = "Actualisation de la page"
+                        document.location.reload();
+                    } else {
+                        document.querySelector('#txt_chargement').innerText = index + " / " + nb_usines
+                    }
+
+                }
+            });
+        }
+    </script>
+
+{% endblock %}
+

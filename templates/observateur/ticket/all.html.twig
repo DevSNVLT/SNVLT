@@ -1,0 +1,106 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Independent observers{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/observer.png') }}" alt="oi">  {% trans %}Gestion des alertes{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card alert-warning">
+            <div class="card-body">
+                <table class="table table-responsive" id="drs" style="background: linear-gradient(#f9fefb, #d7d9d7)">
+                    <thead>
+                    <tr style="background: #f55e04;color: #fcf8f8">
+                        <th>{% trans %}Subject{% endtrans %}</th>
+                        <th>{% trans %}OI{% endtrans %}</th>
+                        <th>{% trans %}Status{% endtrans %}</th>
+                        <th>{% trans %}Emis le{% endtrans %}</th>
+                        <th>{% trans %}Pièces jointes{% endtrans %}</th>
+                        <th>{% trans %}Recipients{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ticket in mes_tickets %}
+                        <tr>
+
+                            <td><a class="font-weight-bold text-dark" href="{{ path('details_ticket', {'id_ticket': ticket.id}) }}"  style="font-size: 20px;"> {{ ticket.sujet }} </a></td>
+                            <td><span class="badge bg-dark p-1 font-weight-light m-1 text-white" style="font-size: 20px;">{{ ticket.codeOi.sigle }}</span></td>
+                            {% if (app.user.codeGroupe.id == 1) %}
+                                <td><select class="form-control" name="resolution" id="{{ statut.id }}">{{ ticket.statut }}
+                                        <option value="TRAITE PAR BSI"></option>
+                                        <option value="TRAITE PAR BSI">TRAITE PAR BSI</option>
+                                        <option value="PV">PV</option>
+                                        <option value="AUTRE TRAITEMENT">AUTRE TRAITEMENT</option>
+                                        <option value="ANNULEE">ANNULEE</option>
+                                        <option value="TRAITE">TRAITE</option>
+                                    </select></td>
+                            {% else %}
+                                <td>{{ ticket.statut }}</td>
+                            {% endif %}
+                            <td>{{ ticket.createdAt | date('d/m/Y') }}</td>
+                            <td><span class="badge bg-google-plus text-center" style="font-size: 24px;">{{ ticket.ticketFiles.count }}</span></td>
+                            <td  style="font-size: 20px;">
+                                {% for dr_rec in ticket.codeDirection %}
+                                    <span class="badge bg-primary p-1 font-weight-light m-1 text-white" style="font-size: 20px;">{{ dr_rec.sigle }}</span>
+                                {% endfor %}
+                                {% for dr_rec in ticket.codeService %}
+                                    <span class="badge bg-primary p-1 font-weight-light m-1 text-white" style="font-size: 20px;">{{ dr_rec.sigle }}</span>
+                                {% endfor %}
+                                {% for dr_rec in ticket.codeDr %}
+                                    <span class="badge bg-primary p-1 font-weight-light m-1 text-white" style="font-size: 20px;">{{ dr_rec.denomination }}</span>
+                                {% endfor %}
+                                {% for dr_rec in ticket.codeCef %}
+                                    <span class="badge bg-primary p-1 font-weight-light m-1 text-white" style="font-size: 20px;">{{ dr_rec.nomCantonnement }}</span>
+                                {% endfor %}
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+        $('.resolution').on('change', function(){
+            let id_statut = this.id;
+            let valeur = this.value;
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/oi/statut/alerte/'  + id_statut + '/' +  valeur,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                        document.location.reload();
+                }
+            })
+        })
+    </script>
+{% endblock %}

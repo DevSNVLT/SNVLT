@@ -1,0 +1,69 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - Agréements Produits Secondaires
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="attribution">  Agréements Produits Secondaires
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('agreementps.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style_snvlt.css') }}">
+    <section class="section">
+        <table class="table table-responsive-sm bg-white" id="agreementps">
+            <thead>
+            <tr style="background: #0e5e73; color: #f0fcf0;">
+                <th style="font-size: 18px;">{% trans %}Dossier{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Owner{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Open Date{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Type of Activity{% endtrans %}</th>
+                <th style="font-size: 18px;" class="text-center">{% trans %}Amount{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for agreement in agreementpss %}
+                {% if(agreement.statut) %}
+                    <tr class="alert-success">
+                {% else %}
+                    <tr class="alert-danger">
+                {% endif %}
+                    <td class="text-dark fw-bold"><a class=" editBtn" style="font-size: 16px; font-weight: bold;" href="#" id="{{ agreement.id }}">{{ agreement.numeroDossier }}</a></td>
+                <td class="text-dark fw-bold"><span class="badge p-1 bg-dark text-white" style="font-size: 16px;border-radius: 10px;">{{ agreement.codeAttributairePs.raisonSociale }}</span></td>
+                    <td class="text-dark fw-bold text-center">{{ agreement.dateOuverture | date('d m Y') }}</td>
+                    <td class="text-dark fw-bold">{{ agreement.codeTypeDossier.libelle }}</td>
+                    <td class="text-dark fw-bold text-center">{{ agreement.montantAgrement }}</a></td>
+                    <td class="text-dark fw-bold"><a class="btn btn-sm text-danger"><i class="mdi mdi-cancel" style="font-size:  24px;" title="Retirer / Abandonner..."></i></a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#agreementps');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+{% endblock %}
+

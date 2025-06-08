@@ -1,0 +1,314 @@
+{#
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Administrator Groups{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/groupe.png') }}" alt="groupe">  Gestion des groupes
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-primary p-2 mt-2" style="border: 0; font-size: 16px;" href="{{ path('group.add') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+    <hr>
+{% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+    <style>
+        .row {
+            margin: 10px;
+        }
+    </style>
+
+    <section class="section row p-2" style="background: lightgrey">
+        <div class="card col-md-8">
+
+            <div class="card-body">
+                <div class="p-2" style="height: 600px;overflow-y: scroll">
+                    <div id="jstree_demo_div">
+                    </div>
+                    <table class="table" id="groupes">
+                        <thead>
+                        <tr class="alert-info  sticky-top">
+                            <th class="font-weight-bold">{% trans %}Group{% endtrans %}</th>
+                            <th class="font-weight-bold">{% trans %}Number of users{% endtrans %}</th>
+                            <th class="font-weight-bold">{% trans %}Modifier{% endtrans %}</th>
+                            <th class="font-weight-bold text-center">{% trans %}Gérer les permissions{% endtrans %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for groupe in ref_groupes %}
+                            <tr>
+
+                                <td class="text-dark fw-bold">
+
+
+
+                                        <a class="btntest" href="#" id="{{ groupe.id }}" title="Cliquez-ici pour afficher les détails"><i class="mdi mdi-database" style="font-size: large;"></i></a>
+                                        <a class="btn alert-light btn-sm fw-bold text-dark drpBtn" href="#" type='button' id="{{ groupe.id }}">
+                                            {{ groupe.nomGroupe }}
+                                        </a>
+
+                                </td>
+                                <td>{{ groupe.users.count }}</td>
+                                <td class="text-center"><a href="{{ path('group.add', {'id_groupe': groupe.id}) }}" class="edit_group" id="{{ groupe.id }}"><i class="mdi mdi-pencil" style="height: 32px;"></i> </a></td>
+                                <td class="text-center"><a href="{{ path('group.edit_permissions', {'id_groupe': groupe.id}) }}" class="gerer_permissions" id="{{ groupe.id }}"><i class="mdi mdi-settings" style="height: 32px;"></i> </a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card col-md-4" style="height: 700px;background: #e1eef2">
+            <div class="liste_menus ">
+
+            </div>
+        </div>
+
+
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/bootstrap-5.3.2/dist/js/bootstrap.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script>
+
+
+        let listeMenus = document.querySelector('.liste_menus');
+        let htmlParent ='';
+
+
+        $('.btntest').on('click', function(e){
+            // alert('ok');
+            e.preventDefault();
+            $.ajax({
+                url:'{{ path('ref_groupe_show_menu') }}/' + this.id ,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    //console.log(response);
+                    let parentMenuInfo = JSON.parse(response);
+
+                    htmlParent = "<aside class='bd-aside  alert-light-secondary text-muted align-self-start mb-3 mb-xl-5 px-2 bg-white' style='height: 700px;overflow-y: auto;'>" +
+                        "<h2 class='h6 pt-4 pb-3 mb-4 border-bottom' id='roleLbl'>Rôles</h2>" +
+                        "<nav class='small alert-light-secondary' id='toc'>" +
+                        "<ul class='list-unstyled alert-light-success'>";
+                    for(var i=0; i< parentMenuInfo.length; i++ ) {
+                        htmlParent = htmlParent + '<li class="my-2">' +
+                            '<a class="btn d-inline-flex align-items-center collapsed fw-bold" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse"><img class="me-2" src="{{ asset('assets/icons/16x16/') }}'+ parentMenuInfo[i].icon_menu+'.png">' + parentMenuInfo[i].nommenu + '<a href="{{ '/snvlt/ref/r_menu/' }}'+ parentMenuInfo[i].id +'" ><img class="ms-2"  id="'+parentMenuInfo[i].id+'" src="{{ asset('assets/icons/16x16/delete.png') }}'+ '"></a></a>';
+                    }
+                    htmlParent = htmlParent + '</ul></nav></aside>';
+                    listeMenus.innerHTML = htmlParent;
+                    //listeMenus.append(htmlParent);
+                }
+            })
+        })
+
+        $('.drpBtn').on('click', function(e){
+            //alert('ok');
+            //e.preventDefault();
+            $.ajax({
+                url:'{{ path('ref_groupe_show_menu') }}/' + this.id ,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    console.log(response);
+                    let parentMenuInfo = JSON.parse(response);
+
+                    htmlParent = "<aside class='bd-aside  alert-light-secondary text-muted align-self-start mb-3 mb-xl-5 px-2 bg-white' style='height: 690px;overflow-y: auto;'>" +
+                        "<h2 class='h6 pt-4 pb-3 mb-4 border-bottom' id='roleLbl'>Rôles</h2>" +
+                        "<nav class='small alert-light-secondary' id='toc'>" +
+                        "<ul class='list-unstyled alert-light-success'>";
+                    for(var i=0; i< parentMenuInfo.length; i++ ) {
+                        htmlParent = htmlParent + '<li class="my-2">' +
+                            '<a class="btn d-inline-flex align-items-center collapsed fw-bold" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse"><img class="me-2" src="{{ asset('assets/icons/16x16/') }}'+ parentMenuInfo[i].icon_menu+'.png">' + parentMenuInfo[i].nommenu + '<a href="{{ '/snvlt/ref/r_menu/' }}'+ parentMenuInfo[i].id +'" ><img class="ms-2"  id="'+parentMenuInfo[i].id+'" src="{{ asset('assets/icons/16x16/delete.png') }}'+ '"></a></a>';
+                    }
+                    htmlParent = htmlParent + '</ul></nav></aside>';
+                    listeMenus.innerHTML = htmlParent;
+                    //listeMenus.append(htmlParent);
+                }
+            })
+        })
+    </script>
+
+
+
+{% endblock %}
+
+#}
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Administrator Groups{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/groupe.png') }}" alt="groupe">  Gestion des groupes
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-primary p-2 mt-2" style="border: 0; font-size: 16px;" href="{{ path('group.add') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+    <hr>
+{% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/css/bootstrap.css') }}">
+    <style>
+        .row {
+            margin: 10px;
+        }
+    </style>
+
+    <section class="section row p-2" style="background: lightgrey">
+        <div class="card col-md-8">
+
+            <div class="card-body">
+                <div class="p-2" style="height: 600px;overflow-y: scroll">
+                    <table class="table" id="groupes">
+                        <thead>
+                        <tr class="alert-info  sticky-top">
+                            <th class="font-weight-bold">{% trans %}Group{% endtrans %}</th>
+                            <th class="font-weight-bold">{% trans %}Number of users{% endtrans %}</th>
+                            <th class="font-weight-bold">{% trans %}Modifier{% endtrans %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for groupe in ref_groupes %}
+                            <tr>
+
+                                <td class="text-dark fw-bold">
+                                    <div class='dropdown'>
+
+                                        <a class="link-dark editBtn" href="#" id="{{ groupe.id }}"></a>
+                                        <a class="btntest" href="#" id="{{ groupe.id }}" title="Cliquez-ici pour afficher les détails"><i class="mdi mdi-database" style="font-size: large;"></i></a>
+                                        <a class='btn alert-light btn-sm fw-bold text-dark drpBtn ' type='button' id="{{ groupe.id }}" data-bs-toggle='dropdown' aria-expanded='false'>
+                                            {{ groupe.nomGroupe }}
+                                        </a>
+
+                                        <ul class='dropdown-menu alert-light-success ms-5' style="height: 400px; overflow-y: scroll; background-color: #f0fffb;" aria-labelledby='dropdownMenuButtonSM'>
+
+                                            {% for menu  in menu_groupe.findNotInPermissionAndByGroupe(groupe.id) %}
+                                                <li style="width: 100%">
+                                                    <a class='dropdown-item menuBtn text-dark' id='{{ menu.id }}' href='{{ path('ref_groupe_persist_menu', {'id_groupe': groupe.id, 'id_menu': menu.id },) }}'>
+                                                        <img src='{{ asset('assets/icons/16x16/') }}{{ menu.iconMenu }}.png' style="height: 24px; width: 24px;"  alt=''>
+
+                                                        <span class='ms-2'>{{ menu.nomMenu }}</span>
+                                                    </a></li>
+                                            {% endfor %}
+                                        </ul>
+
+                                    </div>
+                                </td>
+                                <td>{{ groupe.users.count }}</td>
+                                <td><a href="{{ path('group.add', {'id_groupe': groupe.id}) }}" class="edit_group" id="{{ groupe.id }}"><i class="mdi mdi-pencil" style="height: 32px;"></i> </a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card col-md-4" style="height: 700px;background: #e1eef2">
+            <div class="liste_menus ">
+
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script>
+
+
+
+        // Simple Datatable
+        /*let table1 = document.querySelector('#groupes');
+        let dataTable = new simpleDatatables.DataTable(table1);*/
+        let listeMenus = document.querySelector('.liste_menus');
+        let htmlParent ='';
+
+        $('.btntest').on('click', function(e){
+            // alert('ok');
+            e.preventDefault();
+            $.ajax({
+                url:'{{ path('ref_groupe_show_menu') }}/' + this.id ,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    //console.log(response);
+                    let parentMenuInfo = JSON.parse(response);
+
+                    htmlParent = "<aside class='bd-aside  alert-light-secondary text-muted align-self-start mb-3 mb-xl-5 px-2 bg-white' style='height: 700px;overflow-y: auto;'>" +
+                        "<h2 class='h6 pt-4 pb-3 mb-4 border-bottom' id='roleLbl'>Rôles</h2>" +
+                        "<nav class='small alert-light-secondary' id='toc'>" +
+                        "<ul class='list-unstyled alert-light-success'>";
+                    for(var i=0; i< parentMenuInfo.length; i++ ) {
+                        htmlParent = htmlParent + '<li class="my-2">' +
+                            '<a class="btn d-inline-flex align-items-center collapsed fw-bold" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse"><img class="me-2" src="{{ asset('assets/icons/16x16/') }}'+ parentMenuInfo[i].icon_menu+'.png">' + parentMenuInfo[i].nommenu + '<a href="{{ '/snvlt/ref/r_menu/' }}'+ parentMenuInfo[i].id +'" ><img class="ms-2"  id="'+parentMenuInfo[i].id+'" src="{{ asset('assets/icons/16x16/delete.png') }}'+ '"></a></a>';
+                    }
+                    htmlParent = htmlParent + '</ul></nav></aside>';
+                    listeMenus.innerHTML = htmlParent;
+                    //listeMenus.append(htmlParent);
+                }
+            })
+        })
+
+        $('.drpBtn').on('click', function(e){
+            alert('ok');
+            e.preventDefault();
+            $.ajax({
+                url:'{{ path('ref_groupe_show_menu') }}/' + this.id ,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    console.log(response);
+                    let parentMenuInfo = JSON.parse(response);
+
+                    htmlParent = "<aside class='bd-aside  alert-light-secondary text-muted align-self-start mb-3 mb-xl-5 px-2 bg-white' style='height: 690px;overflow-y: auto;'>" +
+                        "<h2 class='h6 pt-4 pb-3 mb-4 border-bottom' id='roleLbl'>Rôles</h2>" +
+                        "<nav class='small alert-light-secondary' id='toc'>" +
+                        "<ul class='list-unstyled alert-light-success'>";
+                    for(var i=0; i< parentMenuInfo.length; i++ ) {
+                        htmlParent = htmlParent + '<li class="my-2">' +
+                            '<a class="btn d-inline-flex align-items-center collapsed fw-bold" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse"><img class="me-2" src="{{ asset('assets/icons/16x16/') }}'+ parentMenuInfo[i].icon_menu+'.png">' + parentMenuInfo[i].nommenu + '<a href="{{ '/snvlt/ref/r_menu/' }}'+ parentMenuInfo[i].id +'" ><img class="ms-2"  id="'+parentMenuInfo[i].id+'" src="{{ asset('assets/icons/16x16/delete.png') }}'+ '"></a></a>';
+                    }
+                    htmlParent = htmlParent + '</ul></nav></aside>';
+                    listeMenus.innerHTML = htmlParent;
+                    //listeMenus.append(htmlParent);
+                }
+            })
+        })
+    </script>
+
+
+
+{% endblock %}

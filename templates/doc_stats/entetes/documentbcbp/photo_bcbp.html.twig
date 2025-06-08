@@ -1,0 +1,76 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Photo Feuillet BCBP{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Pho{% endtrans %}">
+        {% trans %}Photo Feuillet BCBP{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="alert-success">Feuillet N° {{ feuillet.numeroPagebcbp }} - [BCBP N° {{ feuillet.codeDocbcbp.numeroDocbcbp }}]</h3>
+
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+
+                <div class="row form-group p-1">
+
+                        {{ form_row(form.photo) }}
+                        <span class="bg-dark badge text-white fichiername mt-4" style="font-size: 18px;height: 30px;margin-left: 5px;"></span>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" id="btn_temp" class="btn alert-light" style="width: 300px; font-size: 16px;"><i class="mdi mdi-upload" style="font-size: 16px;"></i>Charger la photo</button>
+                </div>
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        let fichiername = document.querySelector('.fichiername')
+
+
+        $('.monfichier').on('change', function (){
+            var fn = $(this).val();
+            var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+            fichiername.innerHTML = filename;
+
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/admin/prospect/'+ code_attibution,
+                type: 'POST',
+                data: code_attibution,
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        })
+
+        function getFileName(elm) {
+            var fn = $(elm).val();
+            var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+            fichiername.innerHTML = filename;
+        }
+    </script>
+{% endblock %}

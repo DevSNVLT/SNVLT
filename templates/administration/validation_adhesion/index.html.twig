@@ -1,0 +1,55 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} -  {% trans %}Membership validation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/membership_validation.png') }}" alt="validation_users"> {% trans %}Membership validation{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="font-weight-bold  p-2 mb-2 text-dark alert-success" >{{ notif_en_cours.sujet }}</h3>
+            </div>
+            <div class="card-body">
+                <span class="font-weight-bold col-md-5  text-danger ms-4">{% trans %}Message{% endtrans %} :</span>
+                <h5 style="margin-left: 25px;">
+                    {{ notif_en_cours.description }}
+                </h5>
+                <span class="font-weight-bold  text-danger mt-5 ms-4">{% trans %}Description{% endtrans %} :</span>
+                <h5  style="margin-left: 25px;">
+                  <div class="row alert-light p-2" style="width: 50%"> <span class="text-dark col-md-5 font-weight-bold">{% trans %}Sender{% endtrans %} : </span> <span class="col-md-7 text-secondary">{{ sender.nomUtilisateur }} {{ sender.prenomsUtilisateur }}</span></div>
+                    <br>
+                    <div class="row alert-light p-2" style="width: 50%"><span class="text-dark col-md-5 font-weight-bold">{% trans %}Mobile number{% endtrans %} : </span> <span class="col-md-7 text-secondary">{{ sender.mobile }} </span></div>
+                    <br>
+                    <div class="row alert-light p-2" style="width: 50%"><span class="text-dark col-md-5 font-weight-bold">{% trans %}Email{% endtrans %} : </span> <span class="col-md-7 text-secondary">{{ sender.email }} </span></div>
+
+                    <br>
+
+                </h5>
+                <hr>
+                <br>
+                <h4 class="text-danger mb-3 mt-3">{% trans %}Do you want to accept this requester as a member of your organization?{% endtrans %}</h4>
+                <a  class="btn btn-success m-1 p-2" style="font-size: 20px;" href="{{ path('app_administration_validation_adhesion_add', {'id_notification': notif_en_cours.id }) }}"><i class="bi bi-check me-3"></i>{% trans %}Accept the member{% endtrans %}</a>
+                <a  class="btn btn-danger m-1 p-2" style="font-size: 20px;" href="#"><i class="bi bi-arrow-return-left me-3"></i>{% trans %}Refuse Member{% endtrans %}</a>
+            </div>
+        </div>
+
+
+
+
+    </section>
+
+{% endblock %}

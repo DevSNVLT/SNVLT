@@ -1,0 +1,634 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Webmapping{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+
+    <style>
+
+        #root{
+            width: 100%;
+        }
+        .container {
+            max-width: 100%;
+            margin: 5px;
+            padding: 5px;
+            background: #2b3f03;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        }
+        .controls {
+            display: flex;
+            justify-content: end;
+            align-items:center;
+            gap:10px;
+            margin-bottom: 20px;
+            margin: 20px;
+
+        }
+        .controls select,
+        .controls .controle_btn {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid rgba(232, 234, 238, 0.4);
+            border-radius: 5px;
+            cursor: pointer;
+            background:rgba(232, 234, 238, 0.4);
+            transition:0.3s all ease;
+        }
+        .controls .controle_btn:hover{
+            box-shadow:0 1px 4px rgba(167, 167, 167, 0.4);
+            background:rgba(232, 234, 238, 0.35);
+            
+        }
+        .controls .controle_btn:active{
+            box-shadow:none;
+            background:rgba(232, 234, 238, 0.4);
+            
+        }
+
+        /*PEF style*/
+        .chargement-treed{
+            border:1px #006400 solid;
+            padding:4px;
+            border-radius:6px;
+        }
+
+
+
+        /*Bille style*/
+        .bille-treed{
+            border:1px #006400 solid;
+            padding:4px;
+            border-radius:6px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:3px;
+
+        }
+        .bille-treed>button{
+            background:#006400;
+            border:none;
+            border-radius:4px;
+            color:#fff;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            height:36px;
+        }
+
+        .bille-treed>input{
+            background:rgba(232, 234, 238, 0.3);
+            border:none;
+            border-radius:4px;
+            color:#000;
+            outline:none;
+            padding:4px;
+            text-transform:uppercase;
+            font-weight:bold;
+            height:90%;
+        }
+
+        /*Hidden div*/
+        .chargement-treed,.bille-treed{
+            display:none;
+        }
+
+        #map {
+            height: 65vh;
+            border-radius: 8px;
+        }
+
+        /*Style legende*/
+        .legend {
+            display: flex;
+            justify-content: space-between;
+            align-items:center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-item span {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .element1 { background: #005e56; } /* Foret */
+        .element2 { background: #b58d39; } /* Bille */
+
+
+    </style>
+
+    <div id="root" class="bg-white">
+        <h2 class="alert-success p-2">Cartographie</h2>
+        <div class="controls">
+            <div class="legend">
+                <div class="legend-item" title="Périmetre d'exploitation"><span class="element1"></span> PEF</div>
+                <div class="legend-item" title="Bille dans le périmetre"><span class="element2"></span> Bille</div>
+            </div>
+
+            <div id="control-main">
+                <button id="pef" class="chargement controle_btn"><i class="ph ph-truck-trailer text-danger"></i> Chargement Grumes</button>
+                <button id="bille" class="bille controle_btn"><i class="ph ph-log text-danger"></i> Rechercher Bille</button>
+                <button id="laac" class="laac controle_btn"><i class="ph ph-circle-notch text-danger"></i> LAAC</button>
+            </div>
+
+            <div id="chargement-treed" class="chargement-treed" >
+
+                <select id="pefList">
+                    <option value="" disabled>Choisir une zone</option>
+                    {%for value in data%}
+                        <option value="{{value.id_foret }}">{{value.numero_foret }}</option>
+                    {%endfor%}
+                </select>
+
+                <select name="liste_chargements" id="liste_chargements"></select>
+
+            </div>
+
+            <div id="bille-treed" class="bille-treed">
+                <select id="pefList2">
+                    <option value="" disabled>Choisir une zone</option>
+                    {%for value in data%}
+                        <option value="{{value.id_foret }}">{{value.numero_foret }}</option>
+                    {%endfor%}
+                </select>
+                <select name="liste_chargements" id="liste_chargements2"></select>
+
+                <input type="" name="bille" placeholder="Numéro de Bille" id="billeNum">
+
+                <button id="rechercheBille">
+                    <i class="ph ph-magnifying-glass" style="font-size:17px;"></i>
+                    <span>Rechercher</span>
+                </button>
+            </div>
+
+        </div>
+        <div class="container">
+
+
+
+
+            <div id="map"></div>
+
+
+            <label for="" class="text-danger font-weight-bold" style="margin-left: 5px;" id="lbl_pef"></label>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/terraformer@1.0.8/terraformer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/terraformer-wkt-parser@1.1.2/terraformer-wkt-parser.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+    <div id="map"></div>
+    
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+
+        var ForetCode = 0;
+        var pefPolygone = null;
+        var billePoint = null;
+        var idChargementForSearch = null
+
+        let chargements = document.querySelector('#liste_chargements');
+        const pef = document.getElementById("pef")
+        const bille = document.getElementById("bille")
+        const laac = document.getElementById("laac")
+        
+        const bille_treed = document.getElementById("bille-treed")
+        const chargement_treed = document.getElementById("chargement-treed")
+
+        // Initialize the map
+        const maptilerApiKey = 'WydFNLpS6gHVVGqhkpYB';
+        const coteDivoire = [6.246855, -5.5471]; // Latitude, Longitude
+        const map = L.map('map').setView(coteDivoire, 8); // Zoom sur la basilique
+
+        //osm layer
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        osm.addTo(map);
+        // map.addLayer(osm)
+
+        // water color
+        var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            subdomains: 'abcd',
+            minZoom: 1,
+            maxZoom: 16,
+            ext: 'jpg'
+        });
+        // watercolor.addTo(map)
+
+        // dark map
+        var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        });
+        // dark.addTo(map)
+
+        // google street
+        googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        });
+        // googleStreets.addTo(map);
+
+        //google satellite
+        googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        });
+
+        var baseMaps = {
+            "OSM": osm,
+            "Water color map": watercolor,
+            'Dark': dark,
+            'Google Street': googleStreets,
+            "Google Satellite": googleSat,
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+        const perimetreData = [
+            {% for value in data_layer %}
+                {
+                    geom: JSON.parse('{{ value.geom|raw }}'),
+                    zone: "{{ value.zone_}}",
+                    numero_pef: "{{value.numero_pef}}",
+                },
+            {% endfor %}
+        ];
+
+
+        perimetreData.forEach(function(value) {
+            if(value.zone === '30N'){
+                const geoJSONPerimetre = value.geom;
+                const polygon = L.geoJSON(geoJSONPerimetre, {
+                    color: '#005e56',
+                    fillColor: '#00392a',
+                    fillOpacity: 0.3,
+                    weight: 1,
+                    lineCap: 'round'
+                }).bindTooltip(`
+                    <strong>Numéro PEF :</strong> ${value.numero_pef}<br>
+                    <strong>Zone :</strong> ${value.zone}
+                `, {
+                    permanent: false,  // Tooltip s'affiche seulement au survol
+                    direction: 'top',  // Position du tooltip
+                    offset: [0, -10]   // Décalage du tooltip par rapport à la souris
+                }).addTo(map);
+            }
+            else{
+                const geoJSONPerimetre = value.geom;
+                const polygon = L.geoJSON(geoJSONPerimetre, {
+                    color: '#b06338',
+                    fillColor: '#b94f3b',
+                    fillOpacity: 0.3,
+                    weight: 1,
+                    lineCap: 'round'
+                }).bindTooltip(`
+                    <strong>Numéro PEF :</strong> ${value.numero_pef}<br>
+                    <strong>Zone :</strong> ${value.zone}
+                `, {
+                    permanent: false,  // Tooltip s'affiche seulement au survol
+                    direction: 'top',  // Position du tooltip
+                    offset: [0, -10]   // Décalage du tooltip par rapport à la souris
+                }).addTo(map);
+            }
+            
+        });
+
+        
+        document.getElementById('pefList').addEventListener('change', async (event) => {
+            const ForetId = event.target.value;
+            console.log('ForetId:'+ ForetId)
+            liste_tous_chargements(ForetId)
+
+            const selectedOption = event.target.options[event.target.selectedIndex];
+
+            ForetCode = parseInt(selectedOption.text);
+
+            console.log('ForetCode: '+ForetCode)
+
+            if (ForetId) {
+                try {
+                    let response = await fetch(`{{api_route['pef']}}?id_foret=${ForetId}`);
+                    let data = await response.json();
+                    if (data.success==true) {
+                        let geoJSON = JSON.parse(data.data[0].geom)
+                        updatePefMap(geoJSON,data)
+                    }else{
+                        alert(data.message)
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        // Créer un groupe de couches pour les marqueurs
+        var markerGroup = L.layerGroup().addTo(map);
+
+        // Fonction anonyme pour gérer le changement de la liste déroulante
+        document.getElementById('liste_chargements').addEventListener('change', async (event) => {
+            const id_chargement = event.target.value;
+            console.log(id_chargement)
+            if (id_chargement) {
+                try {
+                    let response = await fetch(`{{ path('app_portail') }}api/spacial-data-layer/getPointBrh?id_chargement=${id_chargement}`);
+                    let data = await response.json();
+                    if (data.success === true) {
+                        // Supprimer tous les marqueurs précédents
+                        markerGroup.clearLayers();
+
+                        // Tableau pour stocker les coordonnées des marqueurs
+                        let bounds = [];
+
+                        // Ajouter les nouveaux marqueurs
+                        for (let i = 0; i < data.data.length; i++) {
+                            let geoJSON = JSON.parse(data.data[i].geom);
+                            let bille = data.data[i].numero_lignepagebrh.toString().concat(data.data[i].lettre_lignepagebrh.toString());
+                            console.log('Bille: ' + bille);
+
+                            let ZoneH = '';
+                            switch (data.data[i]['zh_lignepagebrh_id']) {
+                                case 1:
+                                    ZoneH = '29N';
+                                    break;
+                                case 2:
+                                    ZoneH = '30N';
+                                    break;
+                                case 3:
+                                    ZoneH = '29P';
+                                    break;
+                                case 4:
+                                    ZoneH = '30P';
+                                    break;
+                            }
+
+                            L.geoJSON(geoJSON, {
+                                pointToLayer: function (feature, latlng) {
+                                    let marker = L.circleMarker(latlng, {
+                                        radius: 12,
+                                        color: '#b58e3a',
+                                        fillColor: '#c39745',
+                                        fillOpacity: 0.5,
+                                        weight: 2
+                                    });
+
+                                    marker.bindPopup(`
+                                <h3>${data.data[i]['nom_vernaculaire']} - <span style="background:#60b4b4;">${data.data[i]['numero_lignepagebrh']}${data.data[i]['lettre_lignepagebrh']}</span></h3>
+
+                                <p>
+                                    <span><b>Long:</b> ${data.data[i]['longeur_lignepagebrh']}</span> |
+                                    <span><b>Diam:</b> ${data.data[i]['diametre_lignepagebrh']}</span> |
+                                    <span><b>Cub:</b> ${data.data[i]['cubage_lignepagebrh']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Zone H:</b> ${ZoneH}</span> |
+                                    <span><b>X:</b> ${data.data[i]['x_lignepagebrh']}</span>
+                                    <span><b>Y:</b> ${data.data[i]['y_lignepagebrh']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Doc:</b> ${data['docBrh']}</span> |
+                                    <span><b>N.Feuillet:</b> ${data['feuillet']}</span>
+                                </p>
+
+                                <p><b>Forêt:</b> ${ForetCode}</p>
+
+                                <img src="{{asset('assets/images/bille.png')}}" alt="Image" style="width:100%; height:auto;">
+                            `);
+
+                                    // Ajouter les coordonnées du marqueur au tableau des limites
+                                    bounds.push(latlng);
+
+                                    return marker;
+                                }
+                            }).addTo(markerGroup); // Ajouter le marqueur au groupe
+                        }
+
+                        // Ajuster la carte pour afficher tous les marqueurs
+                        if (bounds.length > 0) {
+                            let latlngBounds = L.latLngBounds(bounds); // Créer un objet LatLngBounds
+                            map.fitBounds(latlngBounds); // Ajuster la carte aux limites
+                            map.setZoom(16);
+                        }
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        document.getElementById('liste_chargements2').addEventListener('change', async (event) => {
+            idChargementForSearch = event.target.value;
+        });
+
+
+
+        document.getElementById('pefList2').addEventListener('change', async (event) => {
+            const ForetId = event.target.value;
+
+            liste_tous_chargements2(ForetId)
+
+            const selectedOption = event.target.options[event.target.selectedIndex];
+
+            ForetCode = parseInt(selectedOption.text);
+
+            console.log('ForetCode: '+ForetCode)
+
+            if (ForetId) {
+                try {
+                    let response = await fetch(`{{api_route['pef']}}?id_foret=${ForetId}`);
+                    let data = await response.json();
+                    if (data.success==true) {
+                        let geoJSON = JSON.parse(data.data[0].geom)
+                        updatePefMap(geoJSON,data)
+                    }else{
+                        alert(data.message)
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        document.getElementById('rechercheBille').addEventListener('click',async(event) =>{
+            let bille = document.getElementById('billeNum').value;
+            let id_chargement = idChargementForSearch
+            let url =  "{{ path('app_portail') }}api/spacial-data-layer/billes-recherche"
+            console.log('Bille Numero: ' + bille);
+            console.log('id chargement: ' + idChargementForSearch);
+
+            try {
+                let response = await fetch(`${url}?id_chargement=${id_chargement}&billeNum=${bille}`);
+                let data = await response.json();
+                console.log(data)
+                if (data.success === true) {
+                        let geoJSON = JSON.parse(data.geom.geom);
+
+                        L.geoJSON(geoJSON, {
+                            pointToLayer: function (feature, latlng) {
+                                let marker = L.circleMarker(latlng, {
+                                    radius: 12,
+                                    color: '#b58e3a',
+                                    fillColor: '#c39745',
+                                    fillOpacity: 0.5,
+                                    weight: 2
+                                });
+
+                                marker.bindPopup(`
+                                <h3>${data.data['essence']} - <span style="background:#60b4b4;">${data.data['numeroBille']}${data.data['lettre']}</span></h3>
+
+                                <p>
+                                    <span><b>Long:</b> ${data.data['long']}</span> |
+                                    <span><b>Diam:</b> ${data.data['diam']}</span> |
+                                    <span><b>Cub:</b> ${data.data['cub']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Zone H:</b> ${data.data['zoneH']}</span> |
+                                    <span><b>X:</b> ${data.data['x']}</span>
+                                    <span><b>Y:</b> ${data.data['y']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Doc:</b> ${data.data['docBrh']}</span> |
+                                    <span><b>N.Feuillet:</b> ${data.data['feuillet']}</span>
+                                </p>
+
+                                <p><b>Forêt:</b> ${data.data['numeroForet']}</p>
+
+                                <img src="https://i.postimg.cc/y6cyVTw4/bois.png" alt="Image" style="width:100%; height:auto;">
+                            `);
+                                return marker;
+                            }
+                        }).addTo(map);
+
+
+
+
+                }else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+
+
+
+        });
+
+        function liste_tous_chargements(id_pef){
+            let contenu = '<option>{{ 'Select loading' | trans}}</option>';
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/chargements/lst/'+ id_pef,
+                type : 'POST',
+                success : function (response){
+                    let liste_forets = JSON.parse(response);
+                    for(var i = 0; i< liste_forets.length ; i++){
+                        contenu = contenu + '<option value="' + liste_forets[i].pageid + '">' + liste_forets[i].numero_page + '</option>'
+                    }
+                    document.querySelector('#liste_chargements').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_tous_chargements2(id_pef){
+
+            let contenu = '<option>{{ 'Select loading' | trans}}</option>';
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/chargements/lst/'+ id_pef,
+                type : 'POST',
+                success : function (response){
+                    let liste_forets = JSON.parse(response);
+                    for(var i = 0; i< liste_forets.length ; i++){
+                        contenu = contenu + '<option value="' + liste_forets[i].pageid + '">' + liste_forets[i].numero_page + '</option>'
+                    }
+                    document.querySelector('#liste_chargements2').innerHTML = contenu;
+                }
+            })
+        }
+
+
+        function updatePefMap(geoJSON, data) {
+            // Supprimer l'ancien polygone s'il existe
+            if (pefPolygone) {
+                map.removeLayer(pefPolygone);
+            }
+            // Vider aussi les autres éléments de la crte
+            markerGroup.clearLayers()
+
+            // Créer le nouveau polygone
+            pefPolygone = L.geoJSON(geoJSON, {
+                color: '#005e56',
+                fillColor: '#00392a',
+                fillOpacity: 0.5,
+                weight:2,
+                lineCap:'round'
+            }).bindTooltip(`
+                            <strong>Numéro PEF :</strong> ${data.data[0]['numero_pef']}<br>
+                            <strong>Zone H.:</strong> ${data.data[0]['zone_h']}
+                        `, {
+                permanent: true,
+                direction: 'top',
+                offset: [0, -10],
+            }).addTo(map);
+
+            map.fitBounds(pefPolygone.getBounds());
+        }
+
+
+        pef.onclick = function(argument) {
+            chargement_treed.style.display = 'block'
+            bille_treed.style.display = 'none'
+        }
+
+        bille.onclick = function(argument) {
+            bille_treed.style.display = 'flex'
+            chargement_treed.style.display = 'none'
+        }
+
+        laac.onclick = function(argument) {
+            bille_treed.style.display = 'none'
+            chargement_treed.style.display = 'none'
+        }
+
+    </script>
+{% endblock %}

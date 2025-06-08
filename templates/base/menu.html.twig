@@ -1,0 +1,35 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<nav class="sidebar sidebar-offcanvas text-center" id="sidebar">
+    <ul class="nav">
+        {#<li class="nav-item nav-category">Main</li>#}
+        <li class="nav-item">
+            <a class="nav-link"  href="{{ path('app_tdb_admin') }}">
+                <span class="icon-bg"><i class="fa fa-dashboard menu-icon"></i></span>
+                <span class="menu-title">{% trans %}Dashboard{% endtrans %}</span>
+            </a>
+        </li>
+        {% for menu in liste_menus %}
+            {% if (liste_parent.findOnlyParent(menu.id, app.user.codeGroupe.id)) %}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="collapse" href="#ui-basic{{ menu.id }}">
+                        <span class="icon-bg"><i class="fa {{ menu.iconMenu }} menu-icon"></i></span>
+                        <span class="menu-title">{{ menu.nomMenu }}</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+
+                    <div class="collapse" id="ui-basic{{ menu.id }}">
+                        <ul class="nav flex-column sub-menu"  style="margin-left: 30px;">
+                            {% for detail_menu in menus %}
+                                {% if ( detail_menu.parentMenu  == menu.id ) %}
+                                    <li class="nav-item"> <a class="nav-link" href="{{ path(  detail_menu.classnameMenu) }}">{{ detail_menu.nomMenu }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+    </ul>
+    {#<img class="" src="{{ asset('assets/images/logo_snvlt.png') }}" alt="minefrci" height="128">#}
+</nav>

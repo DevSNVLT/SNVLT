@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}My Coupon {{ coupon.codeCoupon }}{% endblock %}
+
+{% block Contenu %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div class="h-100 border-1  p-2 ms-5" style="min-height: 400px;">
+        <h3 style="color: #027a7a;">Informations about Coupon {{ coupon.codeCoupon }}</h3>
+        <hr>
+
+        <ul class="nav nav-tabs mt-2 p-2  bg-light" style="font-size: 24px;">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#contract">Contract information</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#documents">Documentation and Legality</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#packages">My packages</a>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content  m-2 p-2" style="font-size: 18px;min-height: 500px;border: 1px solid lightgrey;">
+            <div class="tab-pane bg-white active" style="min-height: 400px;" id="contract">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h3 style="color: #9a2502;background: #e9fcf5;">Supplier</h3><hr>
+                        <h4><span style="min-width: 200px;">Name : </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.raisonSocialeUsine }}</span></h4>
+                        <h4><span style="min-width: 200px;">Phone : </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.telUsine }}</span></h4>
+
+                        <h4><span style="min-width: 200px;">Country : </span><span class="text-danger">Côte d'Ivoire</span></h4>
+                        <h4><span style="min-width: 200px;">Adress : </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.adresseUsine }}</span></h4>
+                        <h4><span style="min-width: 200px;">Local code : </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.numeroUsine }}</span></h4>
+                        <h4><span style="min-width: 200px;">Lead name: </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.personneRessource }}</span></h4>
+                        <h4><span style="min-width: 200px;">Lead phone: </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.mobilePersonneRessource }}</span></h4>
+                        <h4><span style="min-width: 200px;">Lead email: </span><span class="text-danger">{{ coupon.codeContrat.codeUsine.emailPersonneRessource }}</span></h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 style="color: #9a2502;background: #e9fcf5;">Contract</h3><hr>
+                        <h4><span style="min-width: 200px;">Code : </span><span class="text-danger">{{ coupon.codeContrat.numeroContrat }}</span></h4>
+                        <h4><span style="min-width: 200px;">Transformation : </span><span class="text-danger">{{ coupon.codeContrat.typeTransfo.libelle }}</span></h4>
+
+                        <h4><span style="min-width: 200px;">Species : </span>
+                            {% for ess in  coupon.codeContrat.essence%}
+                                <span class="badge bg-warning p-1 m-1 text-dark fw-bold">
+                                    {{ ess.nomVernaculaire }}
+                                </span>
+                            {% endfor %}
+                        </h4>
+
+                        <h4><span style="min-width: 200px;">Established : </span><span class="text-danger">{{ coupon.codeContrat.dateContrat | date('m-d-Y')}}</span></h4>
+                        <h4><span style="min-width: 200px;">Destination : </span><span class="text-danger">{{ coupon.codeContrat.destinationColis }}</span></h4>
+                        <h4><span style="min-width: 200px;">Volume : </span><span class="text-danger">{{ coupon.codeContrat.volumeDemande }}</span></h4>
+                        <h4><span style="min-width: 200px;">Lead : </span><span class="text-danger">{{ coupon.codeContrat.personneResource }}  {{ coupon.codeContrat.contactPersonneRessource }}</span></h4>
+                        <h4><span style="min-width: 200px;">Conditions: </span><span class="text-danger">{{ coupon.codeContrat.conditions }}</span></h4>
+                        {% if (coupon.codeContrat.cloture) %}
+                            <h4><span style="min-width: 200px;">State: </span><span class="text-danger">closed</span></h4>
+                        {% else %}
+                            <h4><span style="min-width: 200px;">State: </span><span class="text-success">in process</span></h4>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="#" class="btn btn-primary p-1" >Print informations</a>
+            </div>
+
+            {# Documents#}
+            <div class="tab-pane fade" id="documents">
+                <div class="row">
+                    <div class="col-md-9">
+                        <h3 class="p-1" style="background: #bdfade;">List of required documents</h3>
+                        <p>Click on doucument name to display content</p><hr>
+                        <table class="table table-responsive m-3 table-striped" style="max-height: 400px;width:95%;">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Establishment Date</th>
+                                    <th>Expired Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            <tbody>
+                                {% for doc in coupon.documentsCoupons %}
+                                    <tr>
+                                        <td><a class="doc_name" id ="{{ doc.codeDocOp.id }}" href="#" data-bs-target=".affiche_doc" data-bs-toggle="modal">{{ doc.codeDocOp.codeDocumentGrille.libelleDocument }}</a></td>
+                                        <td>{{ doc.codeDocOp.dateEtablissement | date('m-d-Y') }}</td>
+                                        <td>{{ doc.codeDocOp.dateExpiration | date('m-d-Y') }}</td>
+                                        <td>{{ doc.codeDocOp.statut }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            </thead>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="packages">...</div>
+        </div>
+
+    </div>
+
+{#    Modal Documents#}
+    <div class="modal fade affiche_doc" tabindex="-1" role="dialog" data-bs-backdrop="static"  aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered  bg-light" style="min-height: 800px;">
+
+            <div class="modal-content">
+                <h5 class="modal-title ms-2 text-center text-danger" id="backDropModalTitle"></h5>
+                <br>
+
+                <div id="div_fichier ms-2">
+                    <iframe id="fr_doc" src="" height="500" width="95%" style="border: 0; box-shadow: 10px 10px lightgrey;margin:15px;"></iframe>
+                    <a class="btn btn-danger mx-auto ms-2 mt-2"  href="#" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#affiche_doc">Close</a>
+                    <a href="#"  class="btn btn-success mx-auto mt-2 btn-print" download>Download</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        let id_doc = 0;
+        let fichier = "";
+
+        $('.doc_name').on('click', function (){
+            id_doc = this.id;
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/doc_op/inf/' + id_doc + '/{{ coupon.id }}',
+                type: 'POST',
+                success : function (response){
+                    let infos_doc = JSON.parse(response);
+                    if (infos_doc.length > 0){
+                        $('.modal-title').text(infos_doc[0].doc_name);
+                        fichier = '{{ asset('images/doc_operateurs/') }}' + infos_doc[0].fichier;
+                        document.querySelector('#fr_doc').setAttribute("src", fichier );
+                        document.querySelector('.btn-print').setAttribute("href", fichier );
+                    }
+                }
+            })
+        })
+
+        // $('.btn-print').click(function(e) {
+        //     e.preventDefault();  //stop the browser from following
+        //     window.location.href = fichier;
+        // });
+
+    </script>
+
+{% endblock %}

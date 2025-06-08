@@ -1,0 +1,478 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Cutting sheet{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold">
+        <img src="{{ asset('assets/images/webapp/tronconnage.png') }}" alt="{% trans %}clipping-tool{% endtrans %}">  {% trans %}Cutting sheet{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+
+            <span class="font-weight-bold mt-3"> Date de tronçonnage</span><input class="form-control mt-2 mb-2 text-dark alert-success " id="date_tronconnage"  type="date" style="margin-left: 5px;width: 200px;font-size: 16px;border: solid green 1px;" placeholder="{% trans %}Date Tronçonnage{% endtrans %}">
+
+        </div>
+    </div>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <section class="section">
+        <div class="alert-danger div_date"></div>
+        <div class="row">
+            <div class="col-md-5">
+                <table class="table table-responsive bg-white" style="max-height: 800px; border: 1px solid grey; width: 100%;" id="liste_billes">
+                    <thead>
+                    <h4 class="text-dark alert-success p-1">{{ 'Logs Stock' | trans }}</h4>
+                    <tr style="background: #045125;color: #fcf8f8;width: 100%;">
+                        <th>{% trans %}Log{% endtrans %}</th>
+                        <th>{% trans %}Length{% endtrans %}</th>
+                        <th>{% trans %}Dm{% endtrans %}</th>
+                        <th>{% trans %}Vol{% endtrans %}</th>
+                        <th>{% trans %}Forest{% endtrans %}</th>
+                        <th>{% trans %}species{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="body_bille">
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-7" id="div_content" style="">
+
+                <div class="alert-success" style="color: black;"> <i class="mdi mdi-tree text-dark" style="margin-left: 5px;font-size: 32px;"></i> Détails Billonnage
+                    <div class="alert-warning">
+                        <input class="mt-2 mb-2 font-weight-bold text-danger text-center" id="numero_bille" type="text" style="width: 120px;font-size: 16px;margin-left: 10px; text-transform: uppercase" placeholder="{% trans %}N° de la Bille{% endtrans %}">
+                        <select class="contenu_source" name="select_source" id="select_source">
+
+                        </select>
+                        <button  id="btn_search_bille" class=" mt-2 mb-2 btn btn-sm text-dark alert-primary" style="margin-left: 5px;border: blue 1px solid;font-size: 14px; border-radius: 10px;"> <i class="mdi mdi-file-search" style="font-size: 16px;"></i> Rechercher</button>
+
+                        <label for="" id="lbl_longueur" class="text-danger font-weight-bold" style="margin-right: 10px;" ></label>
+                        <label for="" id="lbl_essence" class="text-primary font-weight-bold" style="margin-right: 10px;" ></label>
+
+                        <label for="" id="lbl_infos" class="alert-success p-2 font-weight-bold" style="margin-right: 10px;font-size: 18px" ></label>
+                        <button  id="btn_cloturer" data-bs-target="#cloturer_bille" data-bs-toggle="modal" class="mt-2 mb-2 btn btn-sm text-white font-weight-bold btn-danger" style="float: right;"><i class="mdi mdi-close-box-multiple" style="font-size: 20px;"></i> {{ 'Complete Cutting' | trans }}</button>
+                    </div>
+
+                </div>
+
+                <div class="alert-secondary   m-2 p-1">
+                    <input class=" mt-2 mb-2 text-dark font-weight-bold text-center" id="txt_lng" type="number" style="margin-left: 10px;font-size: 20px;" placeholder="{{ 'Enter billon length (cm)' | trans}}">
+                    <span class="font-weight-bold m-3"> X </span>
+                    <input class=" mt-2 mb-2 text-danger text-center"  id="txt_times"  type="number" style="margin-left: 5px;font-size: 20px;width: 100px;">
+                    {#<select class=" mt-2 mb-2 text-dark font-weight-bold text-center" id="type_transformation" style="margin-left: 10px;font-size: 20px;">
+
+                        </select>#}
+                    <button id="btn_decoupe" class=" mt-1 mb-2 btn btn-sm text-white font-weight-bold btn-primary" style="margin-left: 5px;border: 0px;font-size: 16px;"> <i class="mdi mdi-content-cut" style="font-size: 20px;"></i> {{ 'Cut' | trans}}</button>
+                    <span class="text-white bg-danger badge p-1 mb-3 mt-2" style="margin-left: 20px;font-size: 18px; border-radius: 20px;" id="lbl_lng_restant"></span>
+
+                    <hr>
+                </div>
+                <table class="table m-2" id="liste_billons" style="">
+                    <thead>
+                    <tr style="background: #7e7d7c;color: #fbf9f9">
+                        <th>{% trans %}Billon No{% endtrans %}</th>
+                        <th>L (cm)</th>
+                        <th>D (cm)</th>
+                        <th>Vol (m<sup>3</sup>)</th>
+                        <th>Date</th>
+                    </tr>
+                    </thead>
+                    <tbody class="body_billons">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cloturer le la bille-->
+        <div class="modal fade" id="cloturer_bille" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/tronconnage.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Cutting sheet' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation ' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to end this operation for this log? ' |trans}}</h6>
+                                <p class="text-dark">{{ 'This operation will create a final log' | trans}}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  terminate" id="terminate" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Terminate'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script>
+
+        /*let table1 = document.querySelector('#liste_billes');
+        let dataTable = new simpleDatatables.DataTable(table1);*/
+        let numero_bille = 0;
+        let code_bille_lje = 0;
+        let lng_remaining = 0; // Longueur restante de la bille sélectionnée
+        let cloture_date = false;
+        var input = document.getElementById("numero_bille");
+
+        $('body').on('click', '.bille_select', function (){
+            let valeur =this.id ;
+            $('#numero_bille').val(valeur);
+            document.querySelector('#btn_search_bille').click();
+        })
+
+        $('#btn_search_bille').on('click', function (){
+            document.querySelector("#lbl_infos").innerText = "";
+            if (!document.querySelector('#numero_bille').value){
+
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: '{% trans %}Billon{% endtrans %}',
+                    html: "<h4 class='text-danger'>{% trans %}Please enter Log number{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+                document.querySelector('#numero_bille').focus()
+            } else {
+                numero_bille = document.querySelector('#numero_bille').value;
+                recherche_bille(numero_bille);
+            }
+        })
+        $('#date_tronconnage').on('change', function (){
+            verifie_date_tr(this.value);
+        })
+        function verifie_date_tr(valeur){
+            let contenu = "";
+            document.querySelector('.div_date').innerHTML = '';
+            $('#numero_bille').prop("disabled",false);
+            $('#select_source').prop("disabled",false);
+            $('#btn_search_bille').prop("disabled",false);
+            $('#btn_cloturer').prop("disabled",false);
+            $('#btn_decoupe').prop("disabled",false);
+            $('#liste_billes').find('*').removeAttr('disabled');
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/fiche_lot/chk/' + valeur,
+                type : 'POST',
+                success : function (response){
+                    let info_cloture = JSON.parse(response);
+                    if (info_cloture[0].CODE === true){
+                        cloture_date = true;
+                        document.querySelector('.div_date').innerHTML = '<h1 class="alert-danger">Cette fiche Jour de tronçonnage est déjà cloturée</h1>';
+                        $('#numero_bille').prop("disabled",true);
+                        $('#select_source').prop("disabled",true);
+                        $('#btn_cloturer').prop("disabled",true);
+                        $('#btn_decoupe').prop("disabled",true);
+                        $('#liste_billes').find('*').attr('disabled', 'disabled')
+                        //$('#').disabled();
+                        document.querySelector('#btn_search_bille').disabled = true
+                        $('#liste_billes').disabled = true
+                    }
+                }
+            })
+        }
+
+        input.addEventListener("keypress", function (event){
+            if(event.key === "Enter"){
+                event.preventDefault();
+                document.querySelector('#numero_bille').click();
+            }
+        });
+
+        $('#btn_decoupe').on('click', function (){
+            if (!document.querySelector('#date_tronconnage').value || !document.querySelector('#txt_lng').value || !document.querySelector('#txt_times').value /*|| !document.querySelector('#type_transformation').value*/){
+
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: '{% trans %}Billon{% endtrans %}',
+                    html: "<h4 class='text-danger'>{% trans %}Please fill all required values{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            } else {
+                let lng_demande  = $('#txt_lng').val() * $('#txt_times').val();
+
+                if (lng_remaining < lng_demande){
+
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: '{% trans %}Billon{% endtrans %}',
+                        html: "<h4 class='text-danger'>{% trans %}The total length requested is greater than the length available{% endtrans %}</h4>",
+                        padding: '1em'
+                    });
+                    $('#txt_lng').val("");
+                    $('#txt_times').val(1);
+                    document.querySelector('#txt_lng').focus();
+                } else {
+                    let date_tronconnage = document.querySelector('#date_tronconnage').value;
+                    let d = new Date()
+                    let lng = document.querySelector('#txt_lng').value;
+                    let nb = document.querySelector('#txt_times').value;
+                    /*let type_transformation = document.querySelector('#type_transformation').value;*/
+
+
+                    if (new Date(date_tronconnage) > d){
+                        Swal.fire({
+                            toast: true,
+                            background: '#f8e9e9',
+                            icon: "error",
+                            allowEscapeKey: false,
+                            title: '{% trans %}Cuting sheet{% endtrans %}',
+                            html: "<h4 class='text-danger'>{% trans %}the selected date cannot be later than today{% endtrans %}</h4>",
+                            padding: '1em'
+                        });
+
+                    } else {
+                        add_billons(lng, nb, code_bille_lje, date_tronconnage);
+                    }
+
+                }
+
+            }
+        });
+
+        $('body').on('click','#terminate', function (){
+            var nb_billons = document.querySelector('#liste_billons').rows
+            //alert(nb_billons.length );
+            if (document.querySelector('#numero_bille').value === "" && document.querySelector('#liste_billons').rows.length === 0){
+
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: '{% trans %}Billon{% endtrans %}',
+                    html: "<h4 class='text-danger'>{% trans %}Sorry no log was selected{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+                $('#numero_bille').focus();
+            } else {
+                cloturer();
+            }
+        })
+
+        liste_billes_dispo();
+        //types_transformation();
+        initialise();
+
+        //Functions
+        function liste_billes_dispo(){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('liste_billes_dispo_lje') }}',
+                type : 'POST',
+                success : function (response){
+                    let liste_billes = JSON.parse(response);
+                    for (let i = 0;  i < liste_billes.length; i++){
+                        contenu = contenu + '<tr><td class="font-weight-bold"><button class="btn btn-primary bille_select" id="' + liste_billes[i].numero + '"> ' + liste_billes[i].numero + '</button></td>';
+                        contenu = contenu + '<td class="alert-warning">' + liste_billes[i].lng_lje + '</td>';
+                        contenu = contenu + '<td class="alert-warning">' + liste_billes[i].dm_lje + '</td>';
+                        contenu = contenu + '<td class="alert-warning">' + liste_billes[i].vol_lje + '</td>';
+                        contenu = contenu + '<td>' + liste_billes[i].foret + '</td>';
+                        contenu = contenu + '<td>' + liste_billes[i].essence + '</td><tr>';
+                    }
+                    document.querySelector('#body_bille').innerHTML = contenu;
+                    let table1 = document.querySelector('#liste_billes');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                }
+            })
+        }
+        function liste_billons_dispo(id_billon){
+            let contenu = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/liste_billons/' + id_billon,
+                type : 'POST',
+                success : function (response){
+                    let liste_billes = JSON.parse(response);
+                    for (let i = 0;  i < liste_billes.length; i++){
+                        if ( liste_billes[i].rebus === true){
+                            contenu = contenu + '<tr class="alert-danger">';
+                        } else {
+                            contenu = contenu + '<tr class="bg-white">';
+                        }
+                        contenu = contenu + '<td class="font-weight-bold">' + liste_billes[i].numero_billon + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold">' + liste_billes[i].lng_billon + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold">' + liste_billes[i].dm_billon + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold">' +  liste_billes[i].volume_billon + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold">' + liste_billes[i].date_billon + '</td><tr>';
+                    }
+                    document.querySelector('.body_billons').innerHTML = contenu;
+                }
+            })
+        }
+        function initialise(){
+            document.querySelector('#txt_lng').disabled = true;
+            document.querySelector('#txt_times').disabled = true;
+            document.querySelector('#btn_decoupe').disabled = true;
+            document.querySelector('#lbl_longueur').innerText = "" ;
+            document.querySelector('#lbl_essence').innerText = "";
+        }
+        function restaure(){
+            document.querySelector('#txt_lng').disabled = false;
+            document.querySelector('#txt_times').disabled = false;
+            document.querySelector('#btn_decoupe').disabled = false;
+            document.querySelector('#type_transformation').disabled = false;
+        }
+        function recherche_bille(numero_bille){
+            let contenu = "";
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/search_bille/clipping/' + numero_bille,
+                type: 'POST',
+                success: function (response) {
+                    let liste_forets = JSON.parse(response)
+                    if ( liste_forets.length > 0){
+                        for (let i=0; i< liste_forets.length; i++){
+                            contenu = contenu + '<option>' + liste_forets[0].foret + '</option>'
+                        }
+                        document.querySelector(".contenu_source").innerHTML = contenu;
+
+
+                        document.querySelector('#lbl_longueur').innerHTML = liste_forets[0].lng + " cm" ;
+                        document.querySelector('#lbl_essence').innerHTML = liste_forets[0].essence ;
+
+                        code_bille_lje = liste_forets[0].code_bille_lje;
+                        lng_restante(code_bille_lje);
+                        liste_billons_dispo(code_bille_lje);
+                        //alert(liste_forets[0].tronconnee)
+                        if(liste_forets[0].tronconnee === true){
+                            initialise();
+                            document.querySelector('.body_billons').disabled = true;
+                            document.querySelector('#lbl_infos').innerHTML = "Cette bille a déjà terminé le processus de découpage";
+
+                            //alert("ok")
+                        } else {
+                            restaure();
+                            document.querySelector('.body_billons').disabled = false;
+                            document.querySelector('#lbl_infos').innerHTML = "";
+                            document.querySelector('#txt_lng').focus();x
+                        }
+
+                        //document.querySelector('#lbl_lng_restant').innerText =  liste_forets[0].lng_restant + " {{ ' cm remaining' | trans }}";
+
+                    } else {
+
+                        Swal.fire({
+                            toast: true,
+                            background: '#f8e9e9',
+                            icon: "error",
+                            allowEscapeKey: false,
+                            title: '{% trans %}Billon{% endtrans %}',
+                            html: "<h4 class='text-danger'>{% trans %}Sorry there is no transformed log with this number in LJE file{% endtrans %}</h4>",
+                            padding: '1em'
+                        });
+                        initialise();
+                        document.querySelector(".contenu_source").listindex = -1
+                        document.querySelector('#txt_lng').focus();
+                        document.querySelector('#text_search').focus();
+                    }
+
+                }
+            });
+        }
+
+        function add_billons (longueur, nombre, code_bille_lje, date_tronconnage){
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/billon/add_data/' + longueur + '/' + nombre + '/' + code_bille_lje + '/' + date_tronconnage ,
+                type: 'POST',
+                success: function(){
+                    liste_billons_dispo(code_bille_lje);
+                    lng_restante(code_bille_lje)
+                    liste_billes_dispo();
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Successful operation !{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                    $('#txt_lng').val("");
+                    $('#txt_times').val(1);
+                    document.querySelector('#txt_lng').focus();
+                }
+            });
+
+        }
+        function lng_restante (code_bille_lje){
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/lje_bille/lng_rest/' +  code_bille_lje,
+                type: 'POST',
+                success: function(response){
+                    let valeur = JSON.parse(response)
+                    lng_remaining = valeur[0].lng_restant;
+                    let content_lng = valeur[0].lng_restant  + '{{ ' cm remaining'  | trans}}';
+                    document.querySelector('#lbl_lng_restant').innerHTML = content_lng;
+                }
+            });
+        }
+        function types_transformation (){
+            let contenu_transfo = "";
+            $.ajax({
+                url: '{{ path('type_transfo') }}',
+                type: 'POST',
+                success: function(response){
+                    let valeur = JSON.parse(response)
+                    for (let i = 0; i < valeur.length; i++){
+                        contenu_transfo = contenu_transfo + '<option value="' + valeur[i].id_transfo + '">' + valeur[i].libelle + '</option>'
+                    }
+                    /* document.querySelector("#type_transformation").innerHTML = contenu_transfo
+                     document.querySelector('#type_transformation').selectedIndex = -1;*/
+                }
+            });
+        }
+        function cloturer (){
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/billon/clb/' +  code_bille_lje,
+                type: 'POST',
+                success: function(response){
+                    console.log(response)
+                    document.location.reload()
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            });
+        }
+    </script>
+{% endblock %}

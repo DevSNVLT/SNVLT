@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>SNVLT - Page non trouvée</title>
+
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+
+    <style>
+        .swal2-container {
+            z-index: 10000;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="p-2 alert-danger mb-4 text-center"><img class="mx-auto my-auto" src="{{ asset('assets/images/logo_snvlt - Copie.png') }}" style="height: 64px;margin-right: 10px"  alt="logo_snvlt"> L'url entrée est incorrecte</h1>
+    <div class="row p-2 container bg-white center mt-4 mx-auto mb-4" style="border-top: 3px solid orangered;border-bottom: 1px solid darkgreen">
+        <div class="col-md-4">
+            <img class="mx-auto" src="{{ asset('assets/images/404.png') }}" style="height: 300px;"  alt="error404">
+        </div>
+        <div class="col-md-8 text-center mx-auto mb-4">
+            <h1 class="text-danger text-center" style="font-size: 128px;">Oops !</h1>
+            <h1 class="text-dark mt-4 text-center"> Cette page n'a pas été trouvée</h1>
+            <a href="{{ app.request.headers.get('referer') }}" class="btn btn-sm btn-danger h1 mt-5" style="font-size: 32px;">RETOUR</a>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js" integrity="sha512-ykZ1QQr0Jy/4ZkvKuqWn4iF3lqPZyij9iRv6sGqLRdTPkY69YX6+7wvVGmsdBbiIfN/8OdsI7HABjvEok6ZopQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{{ asset('assets/bootstrap-5.3.2/dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="{{ asset('assets/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ asset('assets/assets/vendors/jquery-circle-progress/js/circle-progress.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/dashboard.js') }}"></script>
+    <script src="{{ asset('assets/node_modules/jquery/dist/jquery.min.js') }}"></script>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/js/bootstrap.bundle.min.js') }}"></script>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/apexcharts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/js/pages/dashboard.js') }}"></script>
+
+</body>
+</html>

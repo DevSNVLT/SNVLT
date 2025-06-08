@@ -1,0 +1,950 @@
+{% extends 'template_base.html.twig' %}
+{% set user_minef = 0 %}
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}My LJE{% endtrans %} - [ {{ document_name.numeroDoclje }} ]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}lje{% endtrans %}">  {% trans %}My LJE{% endtrans %} -
+        [
+        <span class="alert-success p-2" style="font-size: 14px;">{{ document_name.numeroDoclje }}</span>
+        ]
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+            <button class="btn text-dark p-2 " style="border: 0px; font-size: 14px;background: linear-gradient(#4bf4c3, #d1f8bf)" id="charger_donnees" data-bs-toggle="modal" data-bs-target="#load_source"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}Load data from BRH, BCBP, BTGU, ...{% endtrans %}</button>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <style>
+        .swal2-container {
+            z-index: 10000;
+        }
+    </style>
+    <section class="section p-3" style="background:radial-gradient(#f3fbda, #e4fafe); border: 1px lightgrey solid">
+        <div class="" style="background: transparent">
+            <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                <div class="col-md-3 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Page No' | trans }}</span><select class="col-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 14px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Month' | trans }}</span><span class="text-danger col-1">*</span>
+                        <select name="mois" id="mois" style="font-size: 14px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            <option value="1">Jan</option>
+                            <option value="2">Fev</option>
+                            <option value="3">Mar</option>
+                            <option value="4">Avr</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juin</option>
+                            <option value="7">Juil</option>
+                            <option value="8">Aout</option>
+                            <option value="9">Sep</option>
+                            <option value="10">Oct</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dec</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Year' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="number" name="annee" id="annee"  style="font-size: 14px;background-color: #fcf378; border: 1px solid lightgrey;">
+                    </div>
+                </div>
+                <div class="col-md-3" style="width: 100%;">
+                    <div class="row mb-2 justify-content-center">
+                        <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_search_data" style="background: #507f87; font-size: 14px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>{{ 'Save' | trans }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+            <div style="background: #f4f2f2">
+
+                <div class="p-3 bg-white" id="div_contenu">
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </section>
+
+    {#Ajout from SourceLignepagelje#}
+    <div class="modal fade" id="load_source" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Add LJE Data' | trans}}</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <div>
+                        <h4 class="text-danger">{{ 'Select the source please and search loading number' | trans}}</h4>
+                        <div class="">
+                            <select name="source" id="source"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+                                {% for doc in docs %}
+                                    {% if (doc.id == 2 or doc.id == 3 or doc.id == 2 or doc.id == 6 or doc.id == 16 or doc.id == 21) %}
+                                        <option value="{{ doc.id }}">{{ doc.abv }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% for role in app.user.roles %}
+                                {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_DPIF" or role == "ROLE_ADMIN" or role == "ROLE_EXPLOITANT" ) %}
+                                    {% set user_minef = 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            <input class="text-center" type="text" id="numero_page" style="background-color: #f4feff; width:100px; font-weight: bold" placeholder="N° Feuillet">
+                            <button  id="btn_search_numero_page" style="margin-right:10px;background: #0b511b" ><i class="mdi mdi-file-search text-white"></i></button>
+
+                            <select name="chargements" id="chargements"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+                            </select>
+
+                            Déchargé le : <input type="date" id="date_dechargement" style="background-color: #fffff4; font-weight: bold">
+                            {#<a class="btn font-weight-bold" id="searchData" style="color: #4c4402;font-size: 14px;" href="#"><img src="{{ asset('assets/images/webapp/search.png') }}" alt="*search"></a>#}
+
+                            <div id="lbl_source"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <table class="table table-responsive mt-3 mb-3" style="height: 400px; border: 1px solid lightgray" id="data_connaissement">
+                                    <thead>
+                                    <tr style="background-color: #ebe9e9;">
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;">Connaissements</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;">Reçu le</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body_connaissement" class="bg-white">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-responsive mt-3 mb-3" style="height: 400px; border: 1px solid lightgray" id="data_lje">
+                                    <thead>
+                                    <tr style="background-color: #ebe9e9;">
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;">{{ 'Letter' |trans}}</th>
+                                        <th class="font-weight-bold" style="font-size: 14px;width: 15%;">{{ 'species' |trans }}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 7%;">{{ 'X' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 7%;">{{ 'Y' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 7%;">{{ 'length' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 14px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body_contenu_brh" class="bg-white">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <a type="button" class="btn btn-primary mt-3" href="#" id="btn_save_lje" style="width: 100%; font-size: 20px;">{{ 'Transcribe into the LJE' | trans}}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="chargement"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center" style="border: 3px solid #05d010">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="display: none;"></button>
+                    <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+
+    <script>
+        let donnees_brh = "";
+        let brh_page_id = 0;
+        let bcbp_page_id = 0;
+        let index_page = 0;
+
+
+        $('#charger_donnees').prop("disabled", true)
+        window.addEventListener("load", ()=>{
+
+            $('#chargement').modal('show');
+
+
+            $('#charger_donnees').on('click', function (){
+                $('#source').val(null);
+
+
+            })
+            $('#source').on('change', function (){
+                let numero_chargement = $('#numero_page').val();
+                let value = this.value;
+                if (value === "2"){
+                    recherche_connaissement_brh()
+                } else if (value === "3"){
+                    recherche_connaissement_bcbp()
+                }
+
+                if (numero_chargement){
+                    $('#btn_search_numero_page').click()
+                }
+
+            })
+            $('#btn_search_numero_page').on('click', function (){
+                let source = $('#source').val();
+                let numero_chargement = $('#numero_page').val();
+
+                if (source === "2"){
+                    combo_chargements_brh(numero_chargement)
+                } else if(source === "3"){
+                    combo_chargements_bcbp(numero_chargement)
+                } else {
+                    render_toast_value("SVP, Veuillez sélectionner une source", 0)
+                }
+            })
+
+
+
+
+
+
+            // Index de la page courante
+            //Affiche les pages du document LJE
+            affiche_pages({{ document_name.id }});
+
+
+
+        });
+
+
+        $('#numero_page_select').on('change', function (){
+            //document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+            index_page = this.value;
+            $('#chargement').modal('show');
+            initialiser_page();
+            document.querySelector('#div_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+            affiche_page_courante(index_page)
+
+            affiche_lignes_courante(index_page)
+
+        })
+        $('#chargements').on('change', function (){
+            let valeur = $("#source").val();
+            if (valeur === "2"){
+                rechercher_chargement(this.value)
+            } else if (valeur === "3"){
+                rechercher_chargement_bcbp(this.value)
+            }
+        })
+
+        $('#btn_search_data').on('click', function (){
+            maj_page_lje();
+
+        })
+        $('#numero_page').on('keypress',function(e) {
+            if(e.which == 13) {
+                $('#source').val("1");
+                let valeur = "1";
+
+                {% if(user_minef == 0)   %}
+                execute_recherche_chargement(valeur);
+                {% endif %}
+            }
+        });
+        /* document.querySelector('#searchData').addEventListener( "click", function (){
+             rechercher_chargement();
+         })*/
+
+
+
+
+
+        function affiche_pages(id_lje){
+
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/doclje/op/pages_lje/' +id_lje,
+                type: 'POST',
+                data: {'id_lje': id_lje},
+                success: function(response) {
+
+                    let page_lje = JSON.parse(response);
+                    var contenu = '';
+                    let select_page = document.querySelector("#numero_page_select");
+
+
+
+                    for(var i = 0; i < page_lje.length ; i++){
+
+                        contenu = contenu + '<option value="' + page_lje[i].id_page + '">' + page_lje[i].numero_page + '</option>';
+                    }
+                    contenu = contenu + '</div>'
+                    select_page.innerHTML = contenu;
+
+                    affiche_page_courante(select_page.value);
+                    $('#numero_page_select').val(page_lje[0].id_page)
+                    index_page =  $('#numero_page_select').val();
+
+                    affiche_lignes_courante(index_page)
+                    //affiche_lignes_courante(page_lje[0].id_page);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+
+
+        //Affiche la page_courante
+        function affiche_page_courante(id_page){
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/doclje/op/pages_lje/data/' +id_page,
+                type: 'POST',
+                data: {'id_lje': id_page},
+                success: function(response) {
+
+                    let page_lje = JSON.parse(response);
+
+                    let date_chargement = page_lje[0].date_chargement;
+
+                    $('#mois').val(page_lje[0].mois);
+                    $('#annee').val(page_lje[0].annee);
+
+
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_lignes_courante(id_page){
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/doclje/op/lignes_lje/data/' +id_page,
+                type: 'POST',
+                data: {'id_lje': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    var contenu = '';
+                    let cubage_total = 0;
+
+
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#div_contenu').innerHTML = '<h3 class="text-center text-primary font-weight-bold bg-transparent" style="font-size:20px;">Ce feuillet ne contient aucune donnée</h3>'
+                    } else{
+                        contenu = '<div class="div_infos p-1 mb-1"></div><hr><table class="table table-responsive w-100" style="border: 1px lightgrey solid;" id="data_lje">';
+                        contenu = contenu +    '<thead>' +
+                            '<tr class="alert-secondary">' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Source</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">N° Document source</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">N° Feuillet</th>' +
+
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Exploitant</th>' +
+                            '<th class="font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Code</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Marteau</th>' +
+
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Forêt</th>' +
+
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Date déchargement</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">N° Bille</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Zone</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">X</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Y</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Essence</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Code Essence</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Longueur</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Diamètre</th>' +
+                            '<th class="text-center font-weight-bold" style="font-size: 14px;border: 1px lightgrey solid;">Volume m<sup>3</sup></th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody id="" class="bg-white">';
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<tr>' +
+                                '<td class="text-center alert-success">' + lignes[i].source + '</td>' +
+                                '<td class="text-center alert-success">' + lignes[i].document + '</td>' +
+                                '<td class="text-center alert-success">' + lignes[i].feuillet + '</td>' +
+
+                                '<td class="text-center">' + lignes[i].exploitant + '</td>' +
+                                '<td><span>' + lignes[i].code  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].marteau  + '</span></td>'+
+
+                                '<td class="text-center alert-success font-weight-bold"><span class="text-dark"style="font-size: 14px;">' + lignes[i].foret  + '</span></td>'+
+
+                                '<td class="text-center"><span>' + lignes[i].date_dechargement  + '</span></td>'+
+                                '<td class="text-center font-weight-light p-1 bg-dark text-white" style="font-size: 14px;">' + lignes[i].numero_ligne  + lignes[i].lettre + '</td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh_lje + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x_lje + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y_lje + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].essence + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].essence_code + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng_lje + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm_lje + '</span></td>'+
+                                '<td class="text-center font-weight-bold text-danger"><span>' +  Math.round(lignes[i].cubage_lje * 1000)/1000   + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].cubage_lje) * 1000)/1000;
+                        }
+
+
+                        contenu = contenu + '</tbody></table>';
+                        document.querySelector('#div_contenu').innerHTML = contenu;
+                        document.querySelector('.div_infos').innerHTML = '<span class="text-center font-weight-bold" style="font-size: 18px;"> Volume grumes : <span class="text-danger">' + cubage_total  + ' m<sup>3</sup></span></span>';
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+
+                        let table = new DataTable('#data_lje', {
+                            responsive: true,
+                            pageLength: 30,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Données LJE  - ',
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+
+
+                    }
+                    $('#chargement .btn-close').click();
+                    $('#charger_donnees').prop("disabled", false)
+                },
+                error: function(error) {
+                    $('#chargement .btn-close').click();
+                    $('#charger_donnees').prop("disabled", false)
+                    console.log(error);
+                }
+            })
+        }
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('.txt_essence').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('.txt_zone').innerHTML = contenu;
+                }
+            })
+        }
+
+        function maj_page_lje(){
+
+            if ($("#mois").val() && $("#annee").val()){
+                var obj = {};
+                obj.mois =  $("#mois").val();
+                obj.annee =  $("#annee").val();
+                obj.code_doclje=  {{ document_name.id }};
+
+
+                var data = JSON.stringify(obj);
+
+                $.ajax({
+                    'url': '{{path('app_portail')}}snvlt/doclje/op/pages_lje/data/edit/'+ index_page + '/'  + data,
+                    'type': 'POST',
+
+                    success: function(response) {
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#dffbdd',
+                            timer : 3000,
+                            icon: "success",
+                            title: '{% trans %}Page header saved !{% endtrans %}',
+                            showConfirmButton: false
+                        });
+
+                    }
+                })
+            } else {
+
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#fbddde',
+                    timer : 3000,
+                    icon: "error",
+                    title: 'Merci de renseigner le mois et l\'année SVP!',
+                    showConfirmButton: false
+                });
+
+
+            }
+
+        }
+
+
+
+
+        function initialiser_page(){
+
+            document.querySelector('#mois').value ="";
+            document.querySelector('#annee').value ="";
+            document.querySelector('#mois').focus();
+
+        }
+
+
+        function expand(obj)
+        {
+            obj.size = 5;
+        }
+
+        function unexpand(obj)
+        {
+            obj.size = 1;
+        }
+
+
+        //Enregistrer les billes dans le LJE
+
+        document.querySelector('#btn_save_lje').addEventListener('click', function (){
+
+            let date_dechargement = document.querySelector('#date_dechargement').value;
+            let mois = document.querySelector('#mois').value;
+            let annee = document.querySelector('#annee').value;
+            let rowCount = $('#body_contenu_brh tr').length;
+            let dateJour = new Date();
+            var otherDate = new Date($('#date_dechargement').val());
+            let source_id = $('#source').val();
+            let page_source_id = 0;
+
+            if (date_dechargement === null || date_dechargement === "" ||
+                mois === null || mois === "" ||
+                annee === null || annee === "" ||
+                rowCount < 1
+            ){
+                render_toast_value("Merci de renseigner tous les champs obligatoires : Mois, Année et Date déchargement", 0);
+                render_toast_value("Vérifiez que la table ci-dessous contienne des valeurs", 2);
+
+
+                document.querySelector('#date_dechargement').focus()
+            } else {
+                if (source_id === "2"){
+                    page_source_id = brh_page_id;
+                } else if (source_id === "3"){
+                    page_source_id = bcbp_page_id;
+                }
+                $('#chargement').modal('show');
+                ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
+                //liste_chargements_brh();
+            }
+        })
+        function ajoute_donnees(index_page_lje, source_id, chargement_id, date_dechargement){
+            
+			if (index_page_lje && source_id && chargement_id && date_dechargement){
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/lje/save/'+ index_page_lje + '/' + source_id + '/' + chargement_id + '/' + date_dechargement,
+                    'type': 'POST',
+                    success: function(response) {
+                        let liste_essence = JSON.parse(response)
+
+                        reinitialise_table();
+                        $('#numero_page').val('');
+                        $('#chargements').empty();
+                        $('#numero_page').focus();
+                        affiche_lignes_courante(index_page)
+                        $('#source').change();
+
+                    },
+                    error: function (error){
+                        console.log(error);
+                    }
+                })
+            } else {
+
+                render_toast_value("Erreur dans l'envoi de données vers le serveur", 0)
+            }
+
+        }
+
+
+        function rechercher_chargement(id_page){
+            let contenu = "";
+            document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-bold"></h3>'
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/docbrh/op/lignes_brh/data/' +id_page,
+                type: 'POST',
+                data: {'id_brh': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    donnees_brh = lignes;
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-lighter bg-transparent">{{ 'No Data Available' | trans }}</h3>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh_brh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x_brh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y_brh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng_brh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm_brh  + '</span></td>'+
+                                '<td class="text-center"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].cubage_brh ) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr style="background-color: #ebe9e9"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu_brh').innerHTML = contenu;
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+                        document.querySelector('#btn_save_lje').classList.add('w-100');
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        function rechercher_chargement_bcbp(id_page){
+            let contenu = "";
+            document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-bold"></h3>'
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/docbcbp/op/lignes_bcbp/data/' +id_page,
+                type: 'POST',
+                data: {'id_bcbp': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    donnees_bcbp = lignes;
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-lighter bg-transparent">{{ 'No Data Available' | trans }}</h3>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr style="background-color: #ebe9e9"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu_brh').innerHTML = contenu;
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+                        document.querySelector('#btn_save_lje').classList.add('w-100');
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        function liste_chargements_brh(){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/doc/stats/lje/liste_chrg_acc/' + index_page,
+                type : 'POST',
+                success : function (response){
+                    let liste = JSON.parse(response);
+                    if(liste.length > 0){
+                        for (var i = 0; i < liste.length; i++){
+                            contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
+                        }
+                        document.querySelector('#chargements').innerHTML = contenu
+                        brh_page_id = liste[0].id_page;
+                        rechercher_chargement(brh_page_id);
+                    } else {
+                        render_toast_value("Aucun chargement disponible", 2);
+                    }
+
+                }
+            })
+        }
+
+        function combo_chargements_brh(numero_chargement){
+            let contenu = "";
+
+            if(numero_chargement){
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/doc/stats/lje/cmb_chrg_acc/' + index_page + '/' + numero_chargement,
+                    type : 'POST',
+                    success : function (response){
+                        let liste = JSON.parse(response);
+                        if(liste.length > 0){
+                            for (var i = 0; i < liste.length; i++){
+                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                            }
+                            document.querySelector('#chargements').innerHTML = contenu
+                            brh_page_id = liste[0].id_page;
+                            rechercher_chargement(brh_page_id);
+                        } else {
+                            render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2);
+                        }
+                    }
+                })
+            } else {
+                render_toast_value('Merci de renseigner le N° du feuillet en premier. ', 0)
+            }
+
+        }
+
+        function combo_chargements_bcbp(numero_chargement){
+            let contenu = "";
+
+            if(numero_chargement){
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/doc/stats/lje/cmb_chrg_bcbp/' + index_page + '/' + numero_chargement,
+                    type : 'POST',
+                    success : function (response){
+                        let liste = JSON.parse(response);
+                        if(liste.length > 0){
+                            for (var i = 0; i < liste.length; i++){
+                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                            }
+                            document.querySelector('#chargements').innerHTML = contenu
+                            bcbp_page_id = liste[0].id_page;
+
+                            rechercher_chargement_bcbp(bcbp_page_id);
+                        } else {
+                            render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
+                        }
+                    }
+                })
+            } else {
+                render_toast_value('Merci de renseigner le N° du feuillet en premier.', 2)
+            }
+
+        }
+
+        function liste_chargements_btgu(){
+            let contenu = "";
+
+        }
+
+        function execute_recherche_chargement(valeur){
+            // Si la source est égale à 1 alors liste les chargements BRH
+            if(valeur === "1"){
+                liste_chargements_brh();
+            } else if (valeur === "4"){
+                liste_chargements_btgu();
+            }
+        }
+
+        function reinitialise_table(){
+
+            let contenu = "";
+
+
+            document.querySelector('#body_contenu_brh').innerHTML = contenu;
+        }
+        // Calcul de dates
+        function calculate_diff_date(otherDate) {
+            var now = new Date();
+
+
+            if (isNaN(otherDate.getTime())) {
+                $('#result').text('SVP, Renseignez une date correcte.');
+                return;
+            }
+
+            var timeDiff = Math.abs(now.getTime() - otherDate.getTime());
+            var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            return 'Difference: ' + daysDiff + ' jours(s)';
+        }
+
+        function recherche_connaissement_brh(){
+            let contenu = '';
+            reinitialise_table();
+            $('#numero_page').val('');
+
+
+            document.querySelector('#body_connaissement').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('lje_connaissement_brh') }}',
+                type : 'POST',
+                success : function(response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        for(var i=0 ; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td>' + reponse[i].brh + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_connaissement').innerHTML = contenu;
+                    }
+            }
+            })
+        }
+
+        function recherche_connaissement_bcbp(){
+            let contenu = '';
+            reinitialise_table();
+            $('#numero_page').val('');
+            document.querySelector('#body_connaissement').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('lje_connaissement_bcbp') }}',
+                type : 'POST',
+                success : function(response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        for(var i=0 ; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_connaissement').innerHTML = contenu;
+                    }
+                }
+            })
+        }
+        $('body').on('click', '.num_connaissement', function (){
+            let valeur  = this.id;
+            $('#numero_page').val(valeur);
+            $('#btn_search_numero_page').click();
+        })
+
+    </script>
+{% endblock %}

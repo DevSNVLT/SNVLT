@@ -1,0 +1,30 @@
+{% extends 'base/email_template.html.twig' %}
+
+{% block salutation %}
+    Bonjour {{ destinataire }}
+{% endblock %}
+
+{% block titre %}
+    {{ titre }}
+{% endblock %}
+
+{% block boutton_url %}
+    <a href="{{ url }}" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#562d2b;border-radius:0px;width:auto;border-top:0px solid transparent;font-weight:400;border-right:0px solid transparent;border-bottom:0px solid transparent;border-left:0px solid transparent;padding-top:10px;padding-bottom:10px;font-family:Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:35px;padding-right:35px;font-size:15px;display:inline-block;letter-spacing:1px;"><span style="word-break: break-word; line-height: 30px;">Connectez-vous</span></span></a>
+
+{% endblock %}
+
+{% block contenu %}
+    {{ message }}
+    <div class="mt-3 p-2">
+       <u>Infos Rapport :</u>
+        <hr>
+        <div class="d-inline-flex"><span class=" font-weight-bold" style="font-weight: bold;">Titre  :</span><span style="background-color: #17843c;color: white;padding: 5px;border-radius: 10px;">{{ rapport.libelle }}</span></div>
+        <div class="row d-inline-flex mt-3" style="margin-top: 15px;"><span class="font-weight-bold" style="font-weight: bold;">Auteur :</span><span style="background-color: orangered;color: white;padding: 5px;border-radius: 10px;">{{ rapport.codeOi.sigle }}</span></div>
+        <a class="btn btn-primary" href="{{ url('app_portail') }}/images/uploads/reports/{{ rapport.fichier }}" target="_blank">Télécharger la proposition de rapport</a>
+        {#<div class="row"><div class="col-md-2">Statut :</div><div class="col-md-10">{{ rapport.statut }}</div></div>#}
+    </div>
+{% endblock %}
+
+{% block pied %}
+    Cordialement,
+{% endblock %}

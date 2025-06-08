@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}Rapport OI - N°{{ rapport.id }}{% endblock %}
+
+{% block Contenu %}
+    <div class="text-center">
+        <h3 class="alert-light text-dark p-1 font-weight-bold"><span class="badge bg-danger p-2">{{ rapport.codeOi.sigle }}</span> <span class="text-dark font-weight-bold p-2">{{ rapport.libelle }}</span> </h3>
+        <iframe src="{{ asset('images/uploads/reports/') }}{{ derniere_analyse.fichier }}" height="1000" width="100%" style="border: 0px; box-shadow: 10px 10px lightgrey;"></iframe>
+    </div>
+{% endblock %}
+
+

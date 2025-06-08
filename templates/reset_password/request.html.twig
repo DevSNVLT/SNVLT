@@ -1,0 +1,98 @@
+{#<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('assets/login/style_login.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}/">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+
+    <title>{% trans %}Reset your password{% endtrans %}</title>
+</head>#}
+
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% trans %}Reset your password{% endtrans %}</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}/">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+</head>
+<body>
+<div class="container-scroller bg-success">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="content-wrapper d-flex align-items-center auth" style="background-image: url('{{ asset('assets/images/fond_login - Copie.jpg') }}'); background-size: cover; background-repeat: no-repeat;">
+            <div class="row flex-grow">
+                <div class="col-lg-4 mx-auto">
+                    <div class="text-left p-5" style="background-color: rgba(190,254,116,0.3)">
+                        <div class="brand-logo row">
+                            <img class="text-center" src="{{ asset('assets/images/logo_snvlt.png') }}" height="25%" style="width: 25%;" alt="snvlt">
+                            <h3 class="text-dark col-9 justify-content-md-start my-auto">{% trans %}National System for Verification of wood Tracking and Legacy {% endtrans %}</h3>
+                        </div>
+
+                        {{ form_start(requestForm, {'attr' : {'class' : 'form-login'}}) }}
+                        {% for flash_error in app.flashes('reset_password_error') %}
+                            <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+                        {% endfor %}
+                        <h4 class="text-dark fw-bold">{% trans %}Reset your password{% endtrans %}</h4>
+                        {{ form_row(requestForm.email, {'attr':{'class': 'form-control mb-3', 'placeholder':'email'}}) }}
+
+                        <div class="text-center font-weight-bold text-dark text-primary alert-success p-1" style="border-radius: 25px;">
+                            <small>
+                                {% trans %}vous recevrez un lien de réinitialisation dans votre boîte email.{% endtrans %}
+                            </small>
+                        </div>
+                        <br>
+                        <button class="btn p-2 font-weight-light text-white mt-2" style="width: 100%;font-size: 16px;background-color: green;">{% trans %}Send password reset email{% endtrans %}</button>
+                        <button class="btn p-2 font-weight-light text-white mt-2 btn_annuler" style="width: 100%;font-size: 16px;background-color: red;">Annuler</button>
+                        {{ form_end(requestForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- content-wrapper ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+</div>
+<!-- container-scroller -->
+<!-- plugins:js -->
+<script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+
+<script>
+    $('.btn_annuler').on('click', function (){
+       document.location.href="{{ app.request.headers.get('referer') }}"
+    })
+</script>
+<!-- endinject -->
+</body>
+</html>

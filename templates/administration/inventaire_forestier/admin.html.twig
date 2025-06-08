@@ -1,0 +1,445 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Forest Prospection{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/foret.png') }}" alt="forest">  {% trans %}Forest Prospection{% endtrans %}
+    </h2>
+    <div class="mb-2 mt-2">
+        <span id="lbl_exploitant" class="h5 text-danger font-weight-bold"></span>
+        <select name="exploitant" id="exploitant" data-placeholder="exploitant" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+
+        </select>
+        <select name="parc_usine" id="foret" data-placeholder="foret" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+            {#{% for usine in usines %}
+            <option value="{{ usine.id }}">{{ usine.sigle }}</option>
+        {% endfor %}#}
+        </select>
+
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <!-- Latest compiled and minified CSS -->
+
+    <section class="section bg-white p-3">
+        <div class="p-2" style="border: orange; min-height: 500px;" id="liste_arbres">
+
+        </div>
+    </section>
+
+
+    {#Modal Edit Inventaire#}
+    <div class="modal fade" id="edit_inv" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Modifier les données d\'inventaire' | trans}}</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                           {# <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;" id="lbl_alert"></div>#}
+                            <input type="hidden" id="id_ligne">
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select id="essence"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;">
+                                    <option value=0>-- Sélectionnez une essence ---</option>
+                                    {% for essence in essences %}
+                                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select id="zh" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;">
+                                    <option value=0>-- Sélectionnez une zone ---</option>
+                                    {% for zone in zones %}
+                                        <option value="{{ zone.id }}">{{ zone.zone }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="x" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="y" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;"></div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="lng" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="dm" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 300px;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="vol" style="font-weight: bold;background-color: #047104;color: white;;width: 300px;"></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button"  class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    {#Liens Javascript#}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+
+
+    <script>
+        let code_attribution = 0;
+
+        exploitants_json();
+
+        $('#foret').on('change', function (){
+            code_attribution = this.value;
+            actualise_inventaire(this.value)
+        })
+
+        $('#exploitant').on('change', function (){
+            // document.querySelector('#lbl_infos').innerHTML ="";
+            liste_attributions(this.value)
+        })
+
+        $('body').on('click', '.edit_inventaire', function (){
+            affiche_ligne(this.id)
+        })
+
+        $('#lng').on('change', function (){
+            $("#vol").val(calcul_volume(this.value, $('#dm').val()))
+        })
+
+        $('#dm').on('change', function (){
+            $("#vol").val(calcul_volume($('#lng').val(), this.value))
+        })
+
+
+        //Enregistrement de la modification
+        $("#save_data").on('click', function (){
+
+            if (
+
+                $('#essence').val() === "" ||
+                $('#x').val() === "" ||
+                $('#y').val() === "" ||
+                $('#lng').val() === "" ||
+                $('#dm').val() === "" ||
+                $('#zh').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+                alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+
+            }else if ( $('#lng').val() > 2000 || $('#lng').val() < 0 ||
+                $('#dm').val() > 200 || $('#dm').val() < 0 ||
+                ($('#x').val()).length > 7 || ($('#x').val()).length  < 6 ||
+                ($('#y').val()).length > 7 || ($('#y').val()).length  < 6
+            ) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: "{% trans %}The values seem to be invalid{% endtrans %}",
+                    padding: '1em'
+                });
+            } else {
+                edit_ligne($('#id_ligne').val());
+            }
+
+        });
+
+
+        function attributions_inventaire() {
+            let contenu_att = "";
+            $.ajax({
+                url : '{{path('atributions_inventaire_admin')}}',
+                type: 'POST',
+                success: function(response){
+                    let liste_att = JSON.parse(response)
+                    if (liste_att.length > 0){
+                        contenu_att = '<option value="0">--{{ 'Select a forest'|trans }}--</option>';
+                        for (let i = 0; i < liste_att.length ; i++){
+                            contenu_att = contenu_att + '<option value="' + liste_att[i].id_attribution + '">' + liste_att[i].denomination + '</option>'
+                        }
+                    }
+                    document.querySelector('#foret').innerHTML = contenu_att;
+
+                }
+            })
+        }
+        function exploitants_json() {
+            let contenu_op = "";
+            $.ajax({
+                url : '{{path('json_exploitants')}}',
+                type: 'POST',
+                success: function(response){
+                    let liste_op = JSON.parse(response)
+                    if (liste_op.length > 0){
+                        contenu_op = '<option value="0">--Opérateurs--</option>';
+                        for (let i = 0; i < liste_op.length ; i++){
+                            if (liste_op[i].sigle === "" || liste_op[i].sigle === null ){
+                                contenu_op = contenu_op + '<option value="' + liste_op[i].id + '">' + liste_op[i].rs + '</option>'
+                            } else {
+                                contenu_op = contenu_op + '<option value="' + liste_op[i].id + '">' + liste_op[i].sigle + '</option>'
+                            }
+
+                        }
+                    }
+                    document.querySelector('#exploitant').innerHTML = contenu_op;
+                }
+            })
+        }
+        function liste_attributions(id_exploitant){
+            let contenu = '<option>{{ 'Select Forest' | trans}}</option>';
+            $.ajax({
+                url :'{{ path('app_portail') }}snvlt/liste_forets/lst/' + id_exploitant,
+                type : 'POST',
+                success : function (response){
+                    let lignes = JSON.parse(response);
+                    for(var i = 0; i < lignes.length ; i++){
+                        contenu = contenu + '<option value="' + lignes[i].id_foret + '">' + lignes[i].numero_foret + '</option>'
+                    }
+                    document.querySelector('#foret').innerHTML = contenu;
+                }
+            })
+        }
+        function actualise_inventaire(code_attibution) {
+            let contenu_arbres = "";
+            let exp = "";
+            document.querySelector('#liste_arbres').innerHTML = '<h2 class="text-success font-weight-bold p-2">Chargement en cours...</h2>'
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/admin/inventaire_list/' + code_attibution,
+                type: 'POST',
+                success: function(response){
+                    let liste_arbres = JSON.parse(response)
+                    if (liste_arbres.length > 0){
+
+                        contenu_arbres = contenu_arbres + '<table class="row-border" style="width:100%" id="table_inventaire">' +
+                            '<thead class=" bg-primary text-white">' +
+                            '<tr class="alert-light sticky-top" style="border:1px solid lightgrey">' +
+                            '<th>{% trans %}No{% endtrans %}</th>' +
+                            '<th>{% trans %}spices{% endtrans %}</th>' +
+                            '<th>{% trans %}Zone{% endtrans %}</th>' +
+                            '<th>{% trans %}X{% endtrans %}</th>' +
+                            '<th>{% trans %}Y{% endtrans %}</th>' +
+                            '<th>{% trans %}L{% endtrans %}</th>' +
+                            '<th>{% trans %}d{% endtrans %}</th>' +
+                            '<th>{% trans %}LAAC{% endtrans %}</th>' +
+                            '<th>{% trans %}Statut{% endtrans %}</th>' +
+                            '<th>{% trans %}N° arbre CP{% endtrans %}</th>' +
+                            '<th>{% trans %}Volume{% endtrans %}</th>' +
+                            {% if(app.user.codeGroupe.id == 1) %}
+                            '<th>{% trans %}Action{% endtrans %}</th>' +
+                            {% endif %}
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody>';
+
+                        for (let i = 0; i < liste_arbres.length ; i++){
+                            if(liste_arbres[i].lac === true && !liste_arbres[i].cp){
+                                contenu_arbres = contenu_arbres + '<tr style="background: #cd8303; color: white;">'
+                            }else if(liste_arbres[i].lac === true && liste_arbres[i].cp){
+                                contenu_arbres = contenu_arbres + '<tr style="background: #217434; color: white;">'
+                            }else{
+                                contenu_arbres = contenu_arbres + '<tr>'
+                            }
+                            var num = i +1;
+                            contenu_arbres = contenu_arbres + '<td class="text-center"><span class="badge p-1 alert-success text-dark" style="font-size: 16px;">' + liste_arbres[i].numero + '</span></td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>';
+                            
+                            if(liste_arbres[i].lac){
+                                contenu_arbres = contenu_arbres + '<td><img src="{{ asset('assets/images/valider.png') }}"></td>'
+                            } else {
+                                    contenu_arbres = contenu_arbres + '<td>-</td>'
+                            }
+                            if(liste_arbres[i].statut === true){
+                                contenu_arbres = contenu_arbres + '<td><img src="{{ asset('assets/images/valider.png') }}"></td>'
+                            } else if (liste_arbres[i].statut === false) {
+                                contenu_arbres = contenu_arbres + '<td><i class="mdi mdi-cancel text-danger" style="font-size: 24px;"></i></td>'
+                            } else {
+                                contenu_arbres = contenu_arbres + '<td><span class="p-1 badge alert-light">Non validé</span></td>'
+                            }
+                            if(liste_arbres[i].cp){
+                                contenu_arbres = contenu_arbres + '<td class="text-center"><span class="badge p-1 bg-white text-dark font-weight-bold" style="font-size: 16px;">' + liste_arbres[i].cp_arbre + '</span></td>'
+                            } else {
+                                contenu_arbres = contenu_arbres + '<td class="text-center">-</td>'
+                            }
+
+
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td>'
+
+                            if(!liste_arbres[i].cp){
+                                {% if(app.user.codeGroupe.id == 1) %}
+                                contenu_arbres = contenu_arbres + '<td><a href="#" class="edit_inventaire" data-bs-target="#edit_inv" data-bs-toggle="modal"  id="'+ liste_arbres[i].id_inv + '"><img src="{{ asset('assets/webapp/assets/vendors/bootstrap-icons/pencil-fill.svg') }}" alt="edit"></a></td></tr>'
+                                {% endif %}
+                            } else {
+                                contenu_arbres = contenu_arbres + '<td>-</td>'
+                            }
+
+                            exp = liste_arbres[0].exp;
+                        }
+                        contenu_arbres = contenu_arbres + '</tbody></table>';
+
+                    } else {
+                        contenu_arbres = '<h2 class="text-danger font-weight-bold p-2">Aucun inventaire repertorié</h2>'
+                    }
+
+
+                    document.querySelector('#lbl_exploitant').innerHTML = exp;
+                    document.querySelector('#liste_arbres').innerHTML = contenu_arbres;
+
+                    {% set url_lng = "" %}
+
+                    {% if (app.locale == "fr") %}
+                    {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/fr-FR.json' %}
+                    {% else %}
+                    {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/en-EN.json' %}
+                    {% endif %}
+
+                    new DataTable('#table_inventaire', {
+                        layout: {
+                            topStart: {
+                                buttons: [/*'copy', 'csv', */'excel', 'pdf', 'print']
+                            }
+                        },
+                        language: {
+                            url: '{{ url_lng }}',
+                        }
+                    });
+
+                }
+            })
+        }
+
+        function affiche_ligne(id_ligne) {
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/inventaire/searchligne/' + id_ligne,
+                type: 'POST',
+                success: function(response){
+                    let ligne = JSON.parse(response)
+                    if (ligne.length > 0){
+                        $('#id_ligne').val(ligne[0].id_ligne);
+                        $('#essence').val(ligne[0].essence);
+                        $('#zh').val(ligne[0].zh);
+                        $('#x').val(ligne[0].x);
+                        $('#y').val(ligne[0].y);
+                        $('#lng').val(ligne[0].lng);
+                        $('#dm').val(ligne[0].dm);
+                        $('#vol').val(ligne[0].vol);
+                        
+                    }
+
+                }
+            });
+        }
+        function calcul_volume(lng, dm){
+            return Math.round((((dm * dm)/4)*3.14159 * (lng/1000000)) * 1000)/1000
+        }
+
+        //Mise à jour Ligne
+        function edit_ligne(id_ligne){
+            var obj = {};
+
+
+            obj.essence =  $("#essence").val();
+            obj.zh =  $("#zh").val();
+            obj.x =  $("#x").val();
+            obj.y =  $("#y").val();
+            obj.lng =  $("#lng").val();
+            obj.dm =  $("#dm").val();
+            obj.vol =  $("#vol").val();
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/inventaire/admin/edit_ligne/'  + data + "/" + id_ligne,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+                    //alert(retour[0].code_brh)
+                    //alert(retour)
+                    if (retour[0].code_brh === "SUCCESS") {
+                        actualise_inventaire(code_attribution);
+                        $('#edit_inv').modal('toggle');
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#dffbdd',
+                            timer : 3000,
+                            icon: "success",
+                            title: '{% trans %}Mise à jour Inventaire Forestier effectuée !{% endtrans %}',
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#f5c8b8',
+                            timer : 3000,
+                            icon: "success",
+                            title: "{% trans %}Un problème est survenu dans l'enregistrement de la ligne{% endtrans %}",
+                            padding: '1em'
+                        });
+                    }
+
+                    }
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Structure Manager{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/responsable.png') }}"  alt="{% trans %}users{% endtrans %}">  {% trans %}Add a Manager{% endtrans %}
+    </h2>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(responsableForm, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-12">
+
+                        <div class="">{{ form_row(responsableForm.nom_utilisateur, {'attr' : {'class' : 'form-control'}}) }}</div>
+                        <div class="">{{ form_row(responsableForm.prenoms_utilisateur, {'attr' : {'class' : 'form-control'}}) }}</div>
+                        <div class="">{{ form_row(responsableForm.email, {'attr' : {'class' : 'form-control'}}) }}</div>
+                        <div class="">{{ form_row(responsableForm.mobile, {'attr' : {'class' : 'form-control'}}) }}</div>
+
+
+                        <div class="row">
+                            <div class="col-md-3">{{ form_row(responsableForm.titre) }}</div>
+                            <div class="col-md-3">{{ form_row(responsableForm.locale) }}</div>
+                        </div>
+
+                        <div class="groupe">{{ form_row(responsableForm.code_groupe) }}</div>
+                        <div class="">{{ form_row(responsableForm.code_operateur) }}</div>
+                        <div class="codeexploitant"> {{ form_row(responsableForm.codeexploitant) }}</div>
+
+                        <div class="row">
+                            <div class="code_direction col-md-6">{{ form_row(responsableForm.code_direction) }}</div>
+                            <div class="code_service col-md-6">{{ form_row(responsableForm.code_service) }}</div>
+                        </div>
+
+                        <div class="codeindustriel">{{ form_row(responsableForm.codeindustriel) }}</div>
+                        <div class="codeexportateur">{{ form_row(responsableForm.code_exportateur) }}</div>
+
+                        <div class="codedr">{{ form_row(responsableForm.code_dr) }}</div>
+                        <div class="codecantonnement">{{ form_row(responsableForm.code_cantonnement) }}</div>
+                        <div class="d_def"> {{ form_row(responsableForm.code_ddef) }}</div>
+
+                        <div class="p_f">{{ form_row(responsableForm.code_poste_controle) }}</div>
+                        <div class="codeoi">{{ form_row(responsableForm.code_oi) }}</div>
+                        {{ form_rest(responsableForm) }}
+
+                    </div>
+                </div>
+
+                <hr>
+                <a href="{{ path('app_utilisateur') }}" class="bg-danger p-2 me-2 text-white font-weight-light"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2 font-weight-light" style="margin-left: 10px;">
+                    <i class="mdi mdi-bag-personal" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Add Manager{% endtrans %}
+                </button>
+                </div>
+            {{ form_end(responsableForm) }}
+            </div>
+    </section>
+
+    <script
+            src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous">
+    </script>
+    <script src="{{ asset('assets/node_modules/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js">
+
+    </script>
+    <script>
+        const codeexploitant = document.querySelector(".codeexploitant");
+        const codeservice = document.querySelector(".code_service");
+        const codeindustriel = document.querySelector(".codeindustriel");
+        const codedirection = document.querySelector(".code_direction");
+        const codedr = document.querySelector(".codedr");
+        const codecantonnement = document.querySelector(".codecantonnement");
+        const codeddf = document.querySelector(".d_def");
+        const codepc = document.querySelector(".p_f");
+        const codeoi = document.querySelector(".codeoi");
+        const codeoperateur = document.querySelector(".codeexploitant");
+        const codeexportateur = document.querySelector(".codeexportateur");
+
+
+        $('.code_groupe').select2({
+            placeholder: "-- {% trans%}Group{% endtrans%} --",
+            allowClear: true,
+            width: '100%',
+            theme: 'classic'
+        });
+        $('.role_user').select2({
+            placeholder: "--{% trans%}You are{% endtrans%} --",
+            allowClear: true,
+            theme: 'classic'
+        });
+        $('.code_exploitant').select2({
+            placeholder: "-- {% trans%}Logger{% endtrans%} --",
+            width: '100%',
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        $('.code_industriel').select2({
+            placeholder: "-- {% trans%}Industry{% endtrans%} --",
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        $('.exportateur').select2({
+            placeholder: "-- {% trans%}Exporter{% endtrans%} --",
+            width: '100%',
+            allowClear: true,
+            theme: 'classic'
+        });
+
+
+        $('.code_dr').select2({
+            placeholder: "-- {% trans%}Regional Direction{% endtrans%} -",
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        $('.code_cantonnement').select2({
+            placeholder: "-- {% trans%}Forest Cantonment{% endtrans%} --",
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        $('.ddef').select2({
+            placeholder: '-- {% trans%}Departemental Direction{% endtrans%} --',
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        $('.pf').select2({
+            placeholder: '-- {% trans%}Checking Point{% endtrans%} --',
+            allowClear: true,
+            theme: 'classic'
+        });
+        $('.code_oi').select2({
+            placeholder: '-- {% trans%}Observateurs indépendants{% endtrans%} --',
+            allowClear: true,
+            theme: 'classic'
+        });
+
+        window.onload = () =>{
+            codeexploitant.style = 'display:none';
+            codeservice.style = 'display:none';
+            codedirection.style = 'display:none';
+            codeindustriel.style = 'display:none';
+            codedr.style = 'display:none';
+            codecantonnement.style = 'display:none';
+            codeddf.style = 'display:none';
+            codepc.style = 'display:none';
+            codeexportateur.style = 'display:none';
+            codeoi.style = 'display:none';
+            $('.role_user').val(null);
+
+            // on va chercher la direction MINEF
+            let direction_minef = document.querySelector('#utilisateur_form_code_direction');
+            direction_minef.addEventListener('change', function(){
+                let form = this.closest("form");
+                let data = this.name + "=" + this.value ;
+                //alert(data);
+                fetch(form.action, {
+                    method: form.getAttribute("method"),
+                    body: data,
+                    headers:{
+                        "Content-Type":"application/x-www-form-urlencoded;charset:UTF-8"
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html=>{
+                        let content = document.createElement("html");
+                        content.innerHTML = html;
+                        let nouveauSelect = content.querySelector("#utilisateur_form_code_service");
+                        document.querySelector("#utilisateur_form_code_service").replaceWith(nouveauSelect);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+
+            });
+
+            const phoneInputField = document.querySelector("#utilisateur_form_mobile");
+            phoneInputField.value = "+225";
+            const phoneInput = window.intlTelInput(phoneInputField, {
+                utilsScript:
+                    "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            });
+        }
+
+
+
+
+        $(".direction_minef").change(function () {
+            var me = this.value;
+            if (me){
+                codeservice.style = 'display:inline';
+                $('.service_minef').select2('open');
+            } else {
+                codeservice.style = 'display:none';
+                $('.service_minef').val(null).trigger('change');
+            }
+        });
+
+        $(".role_user").change(function () {
+            var me = this.value;
+
+            codeexploitant.style = 'display:none';
+            codeservice.style = 'display:none';
+            codedirection.style = 'display:none';
+            codeindustriel.style = 'display:none';
+            codedr.style = 'display:none';
+            codecantonnement.style = 'display:none';
+            codeddf.style = 'display:none';
+            codepc.style = 'display:none';
+            codeexportateur.style = 'display:none';
+            codeoi.style = 'display:none';
+
+            $('.code_exploitant').val(null).trigger('change');
+            $('.code_industriel').val(null).trigger('change');
+            $('.code_dr').val(null).trigger('change');
+            $('.code_cantonnement').val(null).trigger('change');
+            $('.ddef').val(null).trigger('change');
+            $('.pf').val(null).trigger('change');
+            $('.direction_minef').val(null).trigger('change');
+            $('.service_minef').val(null).trigger('change');
+            $('.exportateur').val(null).trigger('change');
+            $('.code_oi').val(null).trigger('change');
+
+            switch(me) {
+                case "1":
+                    codedirection.style = 'display:inline';
+                    /*$('.direction_minef').select2('open');*/
+
+                    break;
+                case "2":
+                    codeexploitant.style = 'display:inline';
+                    $('.code_exploitant').select2('open');
+
+                    break;
+                case "3":
+                    codeindustriel.style = 'display:inline';
+
+                    $('.code_industriel').select2('open');;
+                    break;
+
+                    case "4":
+                        codeexportateur.style = 'display:inline';
+
+                        $('.exportateur').select2('open');;
+                        break;
+
+                case "5":
+                    codedr.style = 'display:inline';
+
+                    $('.code_dr').select2('open');;
+                    break;
+
+                case "7":
+                    codecantonnement.style = 'display:inline';
+
+                    $('.code_cantonnement').select2('open');;
+                    break;
+
+                case "6":
+                    codeddf.style = 'display:inline';
+
+                    $('.ddef').select2('open');;
+                    break;
+
+                case "9":
+                    codeoi.style = 'display:inline';
+
+                    $('.code_oi').select2('open');;
+                    break;
+
+                case "10":
+                    codepc.style = 'display:inline';
+
+                    $('.pf').select2('open');;
+                    break;
+
+
+                default:
+                // code block
+            }
+        });
+    </script>
+
+{% endblock %}

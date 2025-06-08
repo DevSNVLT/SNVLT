@@ -1,0 +1,81 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Suivi des saisies{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/request.jpg') }}" height="64" alt="requests" style="border-radius:10px; box-shadow: 2px 2px;">  Requêtes et Extraction de données
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <div class="contenu_div sticky-top">
+        <h2 class="" style="background: #0b511b; color: white; padding: 5px;">Données SNVLT</h2>
+        <ul class="nav nav-pills">
+			<li class="nav-item">
+						<a class="nav-link active" aria-current="page" style="background:#0c5460" href="#home">Tous</a>
+			</li>
+			{% for type_req in listes_type_req %}
+				
+					<li class="nav-item">
+						<a class="nav-link text-white" aria-current="page" style="background:green" href="#">{{ type_req.libelle }}</a>
+					</li>
+				
+			{% endfor %}
+        </ul>
+		
+		<div id="myTabContent" class="tab-content">
+			<div id="home" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade px-4 py-5 show active">
+					<div class="row text-center">
+						{% for req in listes_req %}
+                            {% if (req.reference) %}
+							    <a href="{{ path(req.reference) }}" {#target="_blank"#} class="badge m-3 col-md-2" style="height:75px;border:2px solid green;background-color: #fbfffb;">
+                            {% else %}
+                                <a href="#" {#target="_blank"#} class="badge m-3 col-md-2" style="height:75px;border:2px solid green;background-color: #fbfffb;">
+                            {% endif %}
+								<h5 class="h5 text-dark p-1 w-100 mb-2 font-weight-light" style="background: #eceae8;">{{ req.libelle }}</h5>
+								<img src="{{ asset('assets/images/webapp/loupe.png') }}" alt="loupe">
+							</a>
+						{% endfor %}
+					</div>
+			</div>
+		</div>
+    </div>
+
+    
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+
+    <script>
+    
+
+    </script>
+
+{% endblock %}

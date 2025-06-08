@@ -1,0 +1,101 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Regional Directions{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/batiment.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Regional Directions{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="#">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('dr.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <table class="table" id="drs">
+                    <thead>
+                    <tr style="background: #f55e04;color: #fcf8f8">
+                        <th>{% trans %}RD Name{% endtrans %}</th>
+                        <th>{% trans %}Manager{% endtrans %}</th>
+                        <th>{% trans %}Manager email{% endtrans %}</th>
+                        <th>{% trans %}Manager Phone{% endtrans %}</th>
+                        <th>{% trans %}Number of DD{% endtrans %}</th>
+                        <th>{% trans %}Number of Cantonments{% endtrans %}</th>
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                    {% for dr in liste_drs %}
+
+                        <tr>
+                            <td class="text-dark fw-bold"><a class="link-dark editBtn" style="font-weight: bold;color: #370905"  href="{{ path('dr.edit', {'id_dr': dr.id })}}" id="{{ dr.id }}">{{ dr.denomination }}</a></td>
+                            <td>{{ dr.personneRessource }}</td>
+                            <td>{{ dr.emailPersonneRessource }}</td>
+                            <td>{{ dr.mobilePersonneRessource }}</td>
+                            <td>{{ dr.ddefs.count}}</td>
+                            <td>{{ dr.cantonnements.count}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+        /*$('body').on('click', '.editBtn', function(e){
+            e.preventDefault();
+            $.ajax({
+                url:'{{ path('edit-essence') }}/' + this.id,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    console.log(response);
+                    let essenceInfo = JSON.parse(response);
+
+                    $('#essences_numero_essence').val(essenceInfo.code_essence);
+                    $('#essences_nom_vernaculaire').val(essenceInfo.nom_vernaculaire);
+                    $('#essences_nom_scientifique').val(essenceInfo.nom_scientifique);
+                    $('#essences_categorie_essence').val(essenceInfo.categorie);
+                    $('#essences_dm_minima').val(essenceInfo.dm_minima);
+                    $('#essences_famille_essence').val(essenceInfo.famille_essence);
+                    $('#essences_taxe_abattage').val(essenceInfo.taxe_abattage);
+                    $('#essences_taxe_preservation').val(essenceInfo.taxe_preservation);
+
+                }
+            })
+        })*/
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}
+

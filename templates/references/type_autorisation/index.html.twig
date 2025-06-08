@@ -1,0 +1,53 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {% trans %}Authorization type{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/type_autorisation.png') }}" alt="autorisations">  {% trans %}Authorization type{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('type_autorisation.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <section class="section">
+        <table class="table table-responsive-sm w-100 p-2 bg-white" id="type_autorisations">
+            <thead>
+            <tr style="background: #46a46a; color: #f0fcf0;">
+                <th style="font-size: 18px;">{% trans %}Authorization{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Operator{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for autorisation in types_autorisations %}
+
+            <tr>
+                <td><a class="text-dark editBtn" style="font-size: 16px;" href="{{ path('type_autorisation.edit', {'id_type_autorisation':autorisation.id}) }}" id="{{ autorisation.id }}">{{ autorisation.libelle }}</a></td>
+                <td>{{ autorisation.typeOperateur.libelleOperateur}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        let table1 = document.querySelector('#type_autorisations');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+{% endblock %}

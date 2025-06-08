@@ -1,0 +1,370 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Coupons{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/tag.png') }}" alt="coupons">  {% trans %}Ajouter un Coupon{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <section class="section">
+
+        <div class="card">
+            <p class="text-danger m-2 alert-success">Générez en premier le coupon puis associer la documentation souhaitée</p>
+            <div class="card-body">
+                <div class="d-inline-flex"><h4>coupon N° </h4> <span class="text-center alert-danger txt_coupon" style="border: red 1px solid;color: red;font-weight: bold;min-width: 100px;margin-left: 10px;">{{ le_coupon.codeCoupon }}</span></div>
+                <br>
+                <div class="p-2 row">
+
+                    <div class="col-md-4 p-2">
+                        <div class="input-group input-group-sm mb-2" style="border: 1px solid lightgrey">
+                            <span class="input-group-text  h4 alert-light" style="min-width: 250px;">Contrat</span>
+                            <input type="text"  disabled class="form-control h5 bg-white italic text-primary" required style="font-size: large;text-transform: uppercase;min-width: 200px;border:1px white solid;" id="select_contrat"  aria-label="contrat" aria-describedby="contrat" value="{{ le_coupon.codeContrat.numeroContrat }}">
+                        </div>
+                        <div class="input-group input-group-sm mb-2" style="border: 1px solid lightgrey">
+                            <span class="input-group-text  h4 alert-light" style="min-width: 250px;">Client</span>
+                            <input type="text"  disabled class="form-control h5 bg-white italic text-primary" required style="font-size: large;text-transform: uppercase;min-width: 200px;border:1px white solid;" id="client"  aria-label="client" aria-describedby="client" value="{{ le_coupon.codeContrat.raisonSocialeClt }}">
+                        </div>
+                        <div class="input-group input-group-sm mb-2" style="border: 1px solid lightgrey">
+                            <span class="input-group-text  h4 alert-light" style="min-width: 250px;">Pays</span>
+                            <input type="text"  disabled class="form-control h5 bg-white  italic text-primary" required style="font-size: large;text-transform: uppercase;min-width: 200px;border:1px white solid;background: #fcf5d3" id="pays"  aria-label="pays" aria-describedby="pays"  value="{{ le_coupon.codeContrat.pays}}">
+                        </div>
+                        <div class="input-group input-group-sm mb-2" style="border: 1px solid lightgrey">
+                            <span class="input-group-text  h4 alert-light" style="min-width: 250px;">Personne ressource</span>
+                            <input type="text"  disabled class="form-control h5 bg-white  italic text-primary" required style="font-size: large;text-transform: uppercase;min-width: 200px;border:1px white solid;background: #fcf5d3" id="lead"  aria-label="lead" aria-describedby="lead"  value="{{ le_coupon.codeContrat.personneResource }}">
+                        </div>
+                        <div class="input-group input-group-sm mb-2" style="border: 1px solid lightgrey">
+                            <span class="input-group-text  h4 alert-light" style="min-width: 250px;">Contact</span>
+                            <input type="text" disabled class="form-control h5 bg-white  italic text-primary" required style="font-size: large;text-transform: uppercase;min-width: 200px;border:1px white solid;" id="contact"  aria-label="adresse" aria-describedby="contact" value="{{ le_coupon.codeContrat.contactPersonneRessource }}">
+                        </div>
+                        <hr>
+                        <a href="{{ path('app_coupons') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter;font-size: 18px;"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        {% if (le_coupon.finalise) %}
+                            <button type="submit" disabled class="btn btn-sm text-white p-2 btn_finaliser" style="margin-left: 10px;font-weight: lighter;font-size: 18px;background: #0b9d0d;">
+                                <i class="mdi mdi-database-edit"  style="font-size: 18px;margin-right: 10px"></i>Finaliser le coupon
+                            </button>
+                        {% else %}
+                            <button type="submit"  class="btn btn-sm text-white p-2 btn_finaliser" style="margin-left: 10px;font-weight: lighter;font-size: 18px;background: #0b9d0d;">
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Finaliser le coupon
+                            </button>
+                        {% endif %}
+
+                    </div>
+                    <div class="col-md-7 offset-1">
+                        {% if (le_coupon.finalise) %}
+                            <h2 style="color: #0C9A9A;">Documents légaux à mettre à disposition <span class="text-danger fw-bold">(déjà transmi au client)</span></h2>
+                        {% else %}
+                            <h2 style="color: #0C9A9A;">Documents légaux à mettre à disposition</h2>
+                        {% endif %}
+
+                        <div class="d-inline-flex">
+
+                            {% if (le_coupon.finalise) %}
+                                <select name="select_doc" id="select_doc" disabled style="background: #fdef9e;color:blue;max-width: 75%;font-size: 18px;">
+                                    <option class="text-dark fw-bold" value="0">Liste des documents</option>
+                                    {%for doc in mes_docs %}
+                                        <option value="{{ doc.id }}">{{ doc.denomination }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-primary" disabled id="btn_valider">Ajouter</button>
+                            {% else %}
+                                <select name="select_doc" id="select_doc" style="background: #fdef9e;color:blue;max-width: 75%;font-size: 18px;">
+                                    <option class="text-dark fw-bold" value="0">Liste des documents</option>
+                                    {%for doc in mes_docs %}
+                                        <option value="{{ doc.id }}">{{ doc.denomination }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-primary" id="btn_valider">Ajouter</button>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <table class="table mt-2 table_docs">
+                                <thead>
+                                    <tr class="alert-success">
+                                        <th></th>
+                                        <th>Dénomination</th>
+                                        <th>Expire le</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                    <tbody class="body_contenu">
+                                        <tr></tr>
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Delete Doc-->
+        <div class="modal fade" id="deleteDoc" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle">SNVLT - Suppression  Document Coupon</h5>
+                        <button
+                                type="button"
+                                style="display:none"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                data-bs-target="#deleteDoc"
+                                data-bs-toggle="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="motif" class="text-dark font-weight-bold">Voulez-vous vraiment retirer le document du coupon ?</label>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-success text-white font-weight-light btn_annuler" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                                <i class="mdi mdi-pen text-white ms-4" style="font-size: 24px;margin-right: 5px;"></i>Ne pas retirer
+                            </a>
+                            <a  class="btn btn-danger font-weight-light retirer_doc"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-cancel text-white me-2" style="font-size: 24px;margin-right: 5px;"></i> Retirer
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let id_doc = 0;
+        let nb_lignes_docs= 0;
+
+
+        $('body').on('click', '.doc_delete', function (e){
+            id_doc = this.id;
+        })
+
+        $('.retirer_doc').on('click', function (e){
+            $('#deleteDoc .btn-close').click();
+            retirer_document(id_doc);
+        })
+        liste_docs();
+
+        $('#btn_valider').on('click', function (e){
+            ajouter_document();
+        })
+
+        $('.btn_finaliser').on('click', function (){
+            //let nb_lignes = $('.body_contenu tr').length;
+            if (nb_lignes_docs > 0){
+                Swal.fire({
+                    title: '{% trans %}Gestion des coupons{% endtrans %}',
+                    text: "Voulez-vous finaliser le coupon ?",
+                    imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                    showCancelButton: true,
+                    confirmButtonColor: '#5daf11',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'OUI, Finaliser',
+                    cancelButtonText: 'NON',
+                    toast: true,
+                    padding: '1em',
+                    background: '#e6f8e8'
+
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        finaliser_coupon({{ le_coupon.id }});
+                    }
+                });
+
+            } else {
+                Swal.fire(
+                    {
+                        title: 'Finalisation du coupon',
+                        html: '<h3 class="text-danger">Merci d\'affecter au moins un document au coupon avant de le finaliser!</h3>',
+                        confirmButtonColor: '#ff0000',
+                        confirmButtonText: 'OK',
+                        toast: true,
+                        padding: '1em',
+                        background: '#f8d7d5'
+
+                    });
+            }
+
+        })
+
+        function ajouter_document(){
+            let code_doc = $('#select_doc').val();
+            let contenu = '';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/add-doc/' + code_doc + '/{{ le_coupon.id }}',
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === 'SUCCESS'){
+                        liste_docs();
+                        rafraichir_docs_liste();
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Affectation de documents',
+                                html: '<h3 class="text-danger">Erreur lors de l\'affectation du document</h3>',
+                                confirmButtonColor: '#ff0000',
+                                confirmButtonText: 'OK',
+                                toast: true,
+                                padding: '1em',
+                                background: '#f8d7d5'
+
+                            });
+                    }
+                }
+            })
+        }
+
+        function liste_docs(){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/all-docs/{{ le_coupon.id }}',
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    let index = 0;
+                    if (reponse.length > 0){
+                        for(var i=0; i < reponse.length; i++){
+                            index = index + 1;
+                            let fichier = "{{ asset('images/doc_operateurs/') }}" + reponse[i].fichier;
+                            let dimensions_frame = "'width=600,height=800,margin=auto'";
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td>' + index + '</td>';
+                            contenu = contenu + '<td style="font-size: 16px;font-weight: bold;"><a href="#" target="popup" onclick="window.open(' + fichier + ',' + fichier +',' + dimensions_frame + ')">' + reponse[i].denomination + '<a></td>';
+                            contenu = contenu + '<td style="font-size: 16px;font-weight: bold;">' + reponse[i].expire_le + '</td>';
+                            {% if (le_coupon.finalise) %}
+                                contenu = contenu + '<td>-</td>';
+                            {% else %}
+                                contenu = contenu + '<td><a class="doc_delete" id="' + reponse[i].id_op + '" href="#" data-bs-target="#deleteDoc" data-bs-toggle="modal"><img src="{{ asset('assets/icons/16x16/trash.png') }}"  style="height: 24px;width: 24px;"></a></td>';
+                            {% endif %}
+                            contenu = contenu + '</tr>';
+                        }
+                    }
+                    document.querySelector('.body_contenu').innerHTML = contenu;
+                    nb_lignes_docs = $('.body_contenu tr').length
+                }
+            })
+        }
+
+        function rafraichir_docs_liste(){
+            let contenu = '<option class="text-dark fw-bold" value="0">Liste des documents</option>';
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/list-doc/{{ le_coupon.id }}',
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+
+                        for(var i=0; i < reponse.length; i++){
+                            contenu = contenu + '<option value="' + reponse[i].id + '">' + reponse[i].denomination + '</option>'
+                        }
+                        document.querySelector('#select_doc').innerHTML = contenu;
+                    }
+                }
+            });
+        }
+
+        function retirer_document(doc){
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/remove-doc/' + doc,
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "SUCCESS"){
+                        rafraichir_docs_liste()
+                        liste_docs()
+                        Swal.fire(
+                            {
+                                title: 'Finalisation du coupon',
+                                html: '<h3 class="text-danger">Succès! Le document a été retiré</h3>',
+                                confirmButtonColor: '#229304',
+                                confirmButtonText: 'OK',
+                                toast: true,
+                                padding: '1em',
+                                background: '#ebf8d5'
+
+                            });
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Suppression de document Coupon',
+                                html: '<h3 class="text-danger">Erreur constaté lors du retrait du document! Le document semble ne pas exister</h3>',
+                                confirmButtonColor: '#ff0000',
+                                confirmButtonText: 'OK',
+                                toast: true,
+                                padding: '1em',
+                                background: '#f8d7d5'
+
+                            });
+                    }
+                }
+            });
+        }
+
+        function finaliser_coupon(id_coupon){
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/finalise-coupon/' + id_coupon,
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "SUCCESS"){
+                        Swal.fire(
+                            {
+                                title: 'Finalisation du coupon',
+                                html: '<h3 class="text-danger">"Coupon finalisé. Un lien a été envoyé à votre client par mail"</h3>',
+                                confirmButtonColor: '#229304',
+                                confirmButtonText: 'OK',
+                                toast: true,
+                                padding: '1em',
+                                background: '#ebf8d5'
+
+                            });
+                        document.location.href = "{{ path('app_coupons') }}"
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Finalisation Coupon',
+                                html: '<h3 class="text-danger">Erreur dans la clôture du coupon</h3>',
+                                confirmButtonColor: '#ff0000',
+                                confirmButtonText: 'OK',
+                                toast: true,
+                                padding: '1em',
+                                background: '#f8d7d5'
+
+                            });
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}
+

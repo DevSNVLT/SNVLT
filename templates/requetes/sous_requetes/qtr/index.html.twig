@@ -1,0 +1,725 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Quotas transférables
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/alert_sd.png') }}" height="64" alt="alertes"> Quotas Transférables
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+
+    <div class="bg-white" style="min-height: 500px; border: 1px lightblue solid;">
+        <div class="p-1 alert-primary text-center">
+            <label class="ms-2" for="foret" style="font-size: 19px;">Critère</label>
+            <select class="ms-2" name="critere" id="critere" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                <option value="0">Toutes les forêts</option>
+                <option value="1">Par Exploitant</option>
+                <option value="2">Par Forêt</option>
+            </select>
+
+            <div class="exploitant" style="display: none;">
+
+                <select class="ms-2" name="exploitant" id="exploitant" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for exploitant in exploitants %}
+                        {% if (exploitant.sigle) %}
+                            <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                        {% else %}
+                            <option value="{{ exploitant.id }}">{{ exploitant.raisonSocialeExploitant }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="foret" style="display: none;">
+
+                <select class="ms-2" name="foret" id="foret" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for foret in forets %}
+                            <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check form-switch div_check d-inline-flex alert-warning" style="font-size: 16px;border-radius: 25px; border: 1px solid orangered;margin-left: 25px;">
+                <label class="form-check-label font-weight-bold text-danger" style="margin-right: 5px;" for="ecart">Afficher uniquement les dépassements de quota ?</label>
+                <input class="form-check-input" type="checkbox" id="ecart">
+            </div>
+
+            <label for="foret ms-4 mt-2" style="font-size: 19px;margin-left: 50px;">Exercice</label>
+            <select class="ms-2 text-center"  name="exercice" id="exercice" style="height: 30px;width: 100px;background: white;font-size: 18px;border:1px lightgrey solid;margin-left: 5px;">
+                {% for exercice in exercices %}
+                    <option value="{{ exercice.id }}">{{ exercice.annee }}</option>
+                {% endfor %}
+            </select>
+            <a class="btn btn-primary btn-sm" style="height: 30px;font-size: 16px;margin-left:15px;" id="btn_rechercher">Rechercher</a>
+        </div>
+
+        <hr>
+        <div class="text-center">
+            <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="display: none;margin-top: -8px;">
+        </div>
+        <div class="contenu_div p-2">
+            <div class="text-center">
+                <img class="mx-auto" src="{{ asset('assets/images/quota.png') }}"  alt="stock_image">
+                <h3 class="text-danger">Quotas Superfice</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete Bille-->
+    <div class="modal fade" id="détails_qrt" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title ms-2 text-center text-danger" id="backDropModalTitle"></h5>
+                </div>
+                <div class="modal-body">
+                    <div class="div_data ms-2 p-4">
+
+                    </div>
+                    <a  class="btn btn-success text-white font-weight-light w-100" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                        Fermer
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+    <script src="{{ asset('assets/mdb/js/mdb.umd.min.js') }}"></script>
+    <script>
+
+        document.querySelector('.spinload').style = "display:none";
+
+
+        $('#critere').on('change', function () {
+            let value = this.value
+            document.querySelector('.exploitant').style= "display:none;"
+            document.querySelector('#exploitant').value= null
+            document.querySelector('.foret').style= "display:none;"
+            document.querySelector('#foret').value= null
+            document.querySelector('.contenu_div').innerHTML = "";
+            document.querySelector('.div_check').style = "display:inline;font-size: 16px;border-radius: 25px; border: 1px solid orangered;margin-left: 25px;";
+            document.querySelector('.form-check-label').style = "display:inline;margin-right: 5px;";
+            document.querySelector('.form-check-input').style = "display:inline;";
+            if(value === "0" ){
+                document.querySelector('.exploitant').style= "display:none;"
+                document.querySelector('.foret').style= "display:none;"
+            } else if (value === "1" ){
+                document.querySelector('.exploitant').style= "display:inline;"
+            } else if (value === "2" ){
+                document.querySelector('.div_check').style = "display:none;";
+                document.querySelector('.form-check-label').style = "display:none;";
+                document.querySelector('.form-check-input').style = "display:none;";
+                document.querySelector('.foret').style= "display:inline;"
+            }
+        });
+        $('#btn_rechercher').on('click', function (){
+
+            let critere = document.getElementById('critere').value;
+            let exploitant = document.getElementById('exploitant').value;
+            let foret = document.getElementById('foret').value;
+            let exercice = document.getElementById('exercice').value;
+
+            if (critere === ""){
+                render_toast_value("Sélectionnez un critère et une période avant de continuer SVP!", 0);
+            } else {
+                document.querySelector('.spinload').style = "display:inline;margin-top: -8px;";
+                if (critere === "0"){
+
+                    rechercher_qtr(exercice);
+                } else if (critere === "1"){
+                    if (exploitant === "" || exploitant === null){
+                        document.querySelector('.spinload').style = "display:none;";
+                        render_toast_value("Sélectionnez un exploitant et une période avant de continuer SVP!", 0);
+                    } else {
+                        rechercher_qtr_exploitant(exploitant, exercice)
+                    }
+
+                } else if (critere === "2"){
+                    if (foret === "" || foret === null){
+                        document.querySelector('.spinload').style = "display:none;";
+                        render_toast_value("Sélectionnez une forêt et une période avant de continuer SVP!", 0);
+                    } else {
+                        let numero_foret = document.querySelector('#foret').options[document.querySelector('#foret').selectedIndex].text
+                        rechercher_qtr_foret(numero_foret, exercice)
+                    }
+                }
+            }
+
+        });
+
+        function rechercher_qtr(exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_billes = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Quotas Transférable sur la période sélectionnée.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/qtr/all/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let reponse = JSON.parse(response);
+
+                    if (reponse.length > 0){
+
+                        contenu  = '<table class="table" id="tbl_donnees" style="border: 1px solid lightgrey;">' +
+                            '<thead>' +
+                            '<tr class="text-dark  alert-light">' +
+                            '<th class="text-center">Foret</th>' +
+                            '<th>Exploitant</th>' +
+                            '<th>Quota</th>' +
+                            '<th class="text-center">Quota transférable</th>' +
+                            '<th class="text-center alert-warning">Cubage</th>' +
+                            '<th class="text-center alert-warning">Ecart</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody class="body_exploitation">';
+                        let ecart = document.querySelector('#ecart');
+                        if (ecart.checked === true){
+                            for (var i = 0; i < reponse.length; i++){
+                                if (reponse[i].ecart < 0){
+                                    contenu = contenu + '<tr class="font-weight-bold" style="font-size: 9px;">';
+
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;"><a class="fw-bold a_foret" id="' + reponse[i].foret + '" href="#" data-bs-toggle="modal" data-bs-target="#détails_qrt">' + reponse[i].foret + '</a></td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' +  reponse[i].exploitant  + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + (reponse[i].quota).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].qt).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center font-weight-bold" style="font-size: 16px;">' + (reponse[i].cubage).toLocaleString()  + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].ecart).toLocaleString()+ '</td>';
+                                contenu = contenu + '</tr>';
+
+
+
+                                volume_billes = (volume_billes + reponse[i].cubage).toLocaleString();
+                                }
+                            }
+                        } else {
+                            for (var i = 0; i < reponse.length; i++){
+                                if (reponse[i].ecart < 0){
+                                    contenu = contenu + '<tr class="text-danger alert-danger font-weight-bold" style="font-size: 9px;">';
+                                } else {
+                                    contenu = contenu + '<tr style="font-size: 9px;">';
+                                }
+
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;"><a class="fw-bold a_foret" id="' + reponse[i].foret + '" href="#" data-bs-toggle="modal" data-bs-target="#détails_qrt">' + reponse[i].foret + '</a></td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' +  reponse[i].exploitant  + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + (reponse[i].quota).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].qt).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center font-weight-bold" style="font-size: 16px;">' + (reponse[i].cubage).toLocaleString()  + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].ecart).toLocaleString()+ '</td>';
+                                contenu = contenu + '</tr>';
+
+                                volume_billes = (volume_billes + reponse[i].cubage).toLocaleString();
+                            }
+                        }
+
+                        contenu = contenu + '</tbody></table>'
+
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Quotas Transférables',
+                                            text: 'Exporter en excel',
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+                }
+            })
+        }
+
+        function rechercher_qtr_exploitant(exploitant, exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_billes = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Quotas Transférable sur la période sélectionnée.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/qtr_exp/' + exploitant  +  '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let reponse = JSON.parse(response);
+
+                    if (reponse.length > 0){
+
+                        contenu  = '<table class="table" id="tbl_donnees" style="border: 1px solid lightgrey;">' +
+                            '<thead>' +
+                            '<tr class="text-dark  alert-light">' +
+                            '<th class="text-center">Foret</th>' +
+                            '<th>Quota</th>' +
+                            '<th class="text-center">Quota transférable</th>' +
+                            '<th class="text-center alert-warning">Cubage</th>' +
+                            '<th class="text-center alert-warning">Ecart</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody class="body_exploitation">';
+
+                        let ecart = document.querySelector('#ecart');
+                        if (ecart.checked === true){
+                            for (var i = 0; i < reponse.length; i++){
+                                if (reponse[i].ecart < 0){
+                                contenu = contenu + '<tr class="font-weight-bold" style="font-size: 9px;">';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;"><a class="fw-bold a_foret" id="' + reponse[i].foret + '" href="#" data-bs-toggle="modal" data-bs-target="#détails_qrt">' + reponse[i].foret + '</a></td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + (reponse[i].quota).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].qt).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning font-weight-bold" style="font-size: 16px;">' + (reponse[i].cubage).toLocaleString()  + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning" style="font-size: 16px;">' + (reponse[i].ecart).toLocaleString()+ '</td>';
+                                contenu = contenu + '</tr>';
+                                volume_billes = (volume_billes + reponse[i].cubage).toLocaleString();
+                                }
+                            }
+                        } else {
+                            for (var i = 0; i < reponse.length; i++){
+                                if (reponse[i].ecart < 0){
+                                    contenu = contenu + '<tr class="text-danger alert-danger font-weight-bold" style="font-size: 9px;">';
+                                } else {
+                                    contenu = contenu + '<tr style="font-size: 9px;">';
+                                }
+
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;"><a class="fw-bold a_foret" id="' + reponse[i].foret + '" href="#" data-bs-toggle="modal" data-bs-target="#détails_qrt">' + reponse[i].foret + '</a></td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + (reponse[i].quota).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].qt).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning font-weight-bold" style="font-size: 16px;">' + (reponse[i].cubage).toLocaleString()  + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning" style="font-size: 16px;">' + (reponse[i].ecart).toLocaleString()+ '</td>';
+                                contenu = contenu + '</tr>';
+
+
+
+                                volume_billes = (volume_billes + reponse[i].cubage).toLocaleString();
+
+                            }
+                        }
+
+                        contenu = contenu + '</tbody></table>'
+
+
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Quotas Transférables',
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_qtr_foret(foret, exercice){
+            let contenu = "";
+            let denomination = "";
+            let chr = 0;
+            let volume_billes = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Quotas Transférable sur la période sélectionnée.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/qtr/details/'  + foret + '/' + exercice,
+                type : 'POST',
+                success : function (response){
+
+                    let reponse = JSON.parse(response);
+
+                    if (reponse.length > 0){
+
+                        contenu  = '<h5 class="mb-2 p-1 w-100 text-white" style="background:linear-gradient(#4c79bd, #096594);font-size: 16px;font-weight: lighter; width: 100%;"><span class="font-weight-bold lbl_info"></span></h5><span class="mb-4" style="font-size: 20px;">Stats : <span class="text-danger chr_transfere p-1 alert-success text-decoration-underline"></span>  <span class="text-danger cubage_transfere p-1 alert-success text-decoration-underline ms-4"></span></span>';
+                        contenu  = contenu +'<table class="table" id="tbl_donnees" style="border: 1px solid lightgrey;"><thead>' +
+                            '<tr class="text-dark  alert-light">' +
+                            '<th>Usine Destination</th>' +
+                            '<th class="text-center">Date Chargement</th>' +
+                            '<th class="text-center alert-warning">Cubage (m<sup>3</sup>)</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody class="body_exploitation">';
+
+                        for (var i = 0; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td>' + reponse[i].usine + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].date_chargement + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning text-danger">' + (reponse[i].cubage).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+
+                            chr = chr + 1;
+                            volume_billes = (volume_billes + reponse[i].cubage);
+                        }
+
+                        contenu = contenu + '</tbody></table>'
+
+
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        $('.lbl_info').text(reponse[0].exploitant);
+                        $('.chr_transfere').text(chr + ' chargement(s)');
+                        $('.cubage_transfere').html(Math.round(volume_billes) + ' m<sup>3</sup> transférés');
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Quotas Transférables - Forêt : ' + reponse[0].foret,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_quotas_exploitant(exploitant, exercice){
+
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_billes = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Quotas Superficie sur la période sélectionnée et par Exploitant.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/quota/exploitant/'+  exploitant + '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let reponse = JSON.parse(response);
+
+                    if (reponse.length > 0){
+
+                        contenu  = '<table class="table" id="tbl_donnees" style="border: 1px solid lightgrey;">' +
+                            '<thead>' +
+                            '<tr class="text-dark  alert-light">' +
+                            '<th class="text-center">Foret</th>' +
+                            '<th>Superficie</th>' +
+                            '<th>Exploitant</th>' +
+                            '<th class="text-center">Quota</th>' +
+                            '<th class="text-center">consommation</th>' +
+                            '<th class="text-center">Volume billes</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody class="body_exploitation">';
+
+
+                        for (var i = 0; i < reponse.length; i++){
+                            if (reponse[i].volume === 0){
+                                contenu = contenu + '<tr class="text-danger font-weight-bold" style="font-size: 9px;">';
+                            } else {
+                                contenu = contenu + '<tr style="font-size: 9px;">';
+                            }
+
+                            contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + reponse[i].numero_foret + '</td>';
+                            contenu = contenu + '<td style="font-size: 16px;">' + (reponse[i].superficie).toLocaleString() + '</td>';
+                            contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + reponse[i].quota + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold" style="font-size: 16px;">' + reponse[i].pourcentage ;
+                            contenu = contenu + '<div class="row"> <div class="col-md-9 progress custom-progress-success">' ;
+
+                            if (reponse[i].pourcentage >= 0 && reponse[i].pourcentage < 50 ){
+                                contenu = contenu +'<div class="progress-bar bg-primary" role="progressbar" style="width: ' + reponse[i].pourcentage  + '%" aria-valuenow="' + reponse[i].pourcentage  + '" aria-valuemin="0" aria-valuemax="100"></div></div>' +
+                                    '<div class="col-md-2"><i class="mdi mdi-arrow-down text-primary font-weight-bold" style="font-size: 20px;"></i> </div></div>'
+                            } else if (reponse[i].pourcentage > 49 && reponse[i].pourcentage < 80 ) {
+                                contenu = contenu +'<div class="progress-bar bg-warning" role="progressbar" style="width: ' + reponse[i].pourcentage  + '%" aria-valuenow="' + reponse[i].pourcentage  + '" aria-valuemin="0" aria-valuemax="100"></div></div>' +
+                                    '<div class="col-md-2"><i class="mdi mdi-arrow-down text-primary font-weight-bold" style="font-size: 20px;"></i> </div></div>'
+                            } else {
+
+                                if (reponse[i].pourcentage > 99) {
+                                    contenu = contenu +'<div class="progress-bar bg-danger" role="progressbar" style="width: ' + reponse[i].pourcentage  + '%" aria-valuenow="' + reponse[i].pourcentage  + '" aria-valuemin="0" aria-valuemax="100"></div></div>' +
+                                        '<div class="col-md-2"><i class="mdi mdi-arrow-up text-danger font-weight-bold" style="font-size: 32px;"></i> </div></div>'
+                                } else {
+                                    contenu = contenu +'<div class="progress-bar bg-danger" role="progressbar" style="width: ' + reponse[i].pourcentage  + '%" aria-valuenow="' + reponse[i].pourcentage  + '" aria-valuemin="0" aria-valuemax="100"></div></div>' +
+                                        '<div class="col-md-2"><i class="mdi mdi-arrow-down text-primary font-weight-bold" style="font-size: 20px;"></i> </div></div>'
+                                }
+                            }
+
+                            contenu = contenu + '</td>'
+                            contenu = contenu + '<td class="text-center" style="font-size: 16px;">' + (reponse[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+
+
+                            nb_billes = nb_billes + reponse[i].nb_billes;
+                            volume_billes = (volume_billes + reponse[i].volume).toLocaleString();
+
+                        }
+                        contenu = contenu + '</tbody></table>'
+
+
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        /* document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2"> Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_billes.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+ */
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Quotas  - ',
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        $('body').on('click','.a_foret', function (){
+            let numero_foret = this.id;
+            let exercice = document.getElementById('exercice').value;
+            donnes_foret(numero_foret, exercice)
+        })
+
+        function donnes_foret(numero_foret, exercice){
+            let contenu = '<h3 class="text-danger">Chargement en cours...</h3>'
+            document.querySelector('#backDropModalTitle').innerText = "Détails Qouta transférable : " + numero_foret;
+            document.querySelector('.div_data').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/qtr/details/'  + numero_foret + '/' + exercice,
+                type: 'POST',
+                success : function (response){
+                    let details = JSON.parse(response);
+                    if (details.length > 0){
+                        contenu =  '<table class="table tbl_details" style="border:1px lightgrey solid;max-height: 400px;">'
+                        contenu = contenu + '<thead>'
+                        contenu = contenu + '<tr>'
+                        contenu = contenu + '<th>Exploitant</th>'
+                        contenu = contenu + '<th>Usine Destination</th>'
+                        contenu = contenu + '<th>Date Chargement</th>'
+                        contenu = contenu + '<th>Cubage (m<sup>3</sup></th>'
+                        contenu = contenu + '</tr>'
+                        contenu = contenu + '</thead>'
+                        contenu = contenu + '<tbody>'
+
+                        for(var i=0; i < details.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td>' + details[i].exploitant + '</td>';
+                            contenu = contenu + '<td>' + details[i].usine + '</td>';
+                            contenu = contenu + '<td>' + details[i].date_chargement + '</td>';
+                            contenu = contenu + '<td class="text-danger">' + details[i].cubage + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        contenu = contenu + '</tbody>'
+                        contenu = contenu + '</table>'
+
+                        document.querySelector('#backDropModalTitle').innerText = "Détails Qouta transférable : " + numero_foret;
+                        document.querySelector('.div_data').innerHTML = contenu;
+                        let table_details = new DataTable('.tbl_details', {
+                            responsive: true,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Détails Quotas Transférables - ' + numero_foret,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            pageLength: 10,
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+
+                    }
+                }
+            })
+        }
+    </script>
+
+{% endblock %}

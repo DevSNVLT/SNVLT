@@ -1,0 +1,101 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Contracts{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/contract.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Contracts{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="justify-content-start align-content-md-start">{{ form_row(form.numeroContrat) }} {{  form_row(form.typeContrat)  }}</div>
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.raisonSocialeClt) }}</div>
+                        <div class="">{{ form_row(form.personneResource) }}</div>
+                        <div class="">{{ form_row(form.emailPersonneRessource) }}</div>
+                        <div class="">{{ form_row(form.contactPersonneRessource) }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.pays) }}</div>
+                        <div class="">{{ form_row(form.ville) }}</div>
+                        <div class="">{{ form_row(form.adresse) }}</div>
+                        <div class="">{{ form_row(form.destinationColis) }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.dateContrat) }}</div>
+                        <div class="">{{ form_row(form.type_transfo) }}</div>
+                        <div class="">{{ form_row(form.essence) }}</div>
+                        <div class="">{{ form_row(form.volumeDemande) }}</div>
+                        <div class="">{{ form_row(form.conditions) }}</div>
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ path('app_transformation_contrat') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white mt-2" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2 mt-2" style="margin-left: 10px;font-weight: lighter">
+
+                    {% if (titre is same as  "Add Contract" ) %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Contract{% endtrans %}
+                    {% else %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Edit Contract{% endtrans %}
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+        $(document).ready(function() {
+
+
+            $('.typetransfo').select2({
+                placeholder: "-- Sélectionnez le type de transformation --"
+            });
+        });
+
+    </script>
+
+
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

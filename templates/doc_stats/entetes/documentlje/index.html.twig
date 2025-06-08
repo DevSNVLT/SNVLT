@@ -1,0 +1,117 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeindustriel) %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}My LJE{% endtrans %}
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}LJE{% endtrans %}
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeindustriel) %}
+            {% trans %}My LJE{% endtrans %}
+        {% else %}
+            {% trans %}DOCUMENTS LJE{% endtrans %}
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-warning" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_ljes" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #febd7f;color: #390303; font-weight: bold;">
+                        {% if app.user.codeindustriel %}
+                            <th>{% trans %}LJE No{% endtrans %}</th>
+                        {% else %}
+                            <th>{% trans %}LJE No{% endtrans %}</th>
+                            <th>{% trans %}Factory{% endtrans %}</th>
+                        {% endif %}
+
+                        <th>{% trans %}Cantonment{% endtrans %}</th>
+                        <th>{% trans %}Regional Direction{% endtrans %}</th>
+                        <th>{% trans %}Delivery date{% endtrans %}</th>
+                        <th>{% trans %}Volume{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu">';
+                    <tr><td><h2 class="text-danger">{{ 'Loading LJE ' | trans }}</h2></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+        //Chargement de la liste des LJE pour l'opérateur
+        mes_lje();
+
+        function mes_lje(){
+
+            $.ajax({
+                url: '{{ path('app_docs_lje_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let doclje_liste = JSON.parse(response);
+                    let contenu = "";
+                    let table = document.querySelector("#my_ljes");
+
+                    for(var i = 0; i < doclje_liste.length ; i++){
+                        if(doclje_liste[i].etat === false){
+                            contenu = contenu +'<tr class="alert-danger">';
+                        } else if(doclje_liste[i].volume_lje > 0) {
+                            contenu = contenu +'<tr class="text-dark" style="background: #f0f054">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                        {% if app.user.codeindustriel %}
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/doclje/lje/pages/' + doclje_liste[i].id_doc_lje + '" id="' + doclje_liste[i].id_doc_lje + '">' + doclje_liste[i].numero_doclje + '</a></td>'+
+                            '<td><span  class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;">' + doclje_liste[i].cantonnement  + '</span></td>';
+                        {% else %}
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/doclje/lje/pages/' + doclje_liste[i].id_doc_lje + '" id="' + doclje_liste[i].id_doc_lje + '">' + doclje_liste[i].numero_doclje + '</a></td>'+
+                            '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + doclje_liste[i].usine  + '</span></td>'+
+                            '<td><span>' + doclje_liste[i].cantonnement  + '</span></td>';
+                        {% endif %}
+                        contenu = contenu + '<td><span>' + doclje_liste[i].dr  + '</span></td>'+
+                            '<td><span>' + doclje_liste[i].date_delivrance  + '</span></td>';
+
+                        contenu = contenu +'<td>'+ doclje_liste[i].volume_lje + '</td></tr>';
+                    }
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_ljes');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

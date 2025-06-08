@@ -1,0 +1,653 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Wood packages{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/package.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}My Packages{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/loading.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section">
+        <div id="roller" class="p-2"><div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><span style="margin-left: 10px;color: #db0707;font-size: 24px;font-weight: bold;">{{ 'Wait' | trans }}...</span></div>
+        <div class="card">
+            <div class="card-body p-3" id="liste_colis">
+                <div class="p-2 mb-2" style="border: 1px solid lightgrey">
+                    <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                        <div class="col-md-4 " style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Contract' | trans }}</span>
+                                <select class="col-6"  name="contrat_export" id="contrat_export" style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+
+                                </select>
+                            </div>
+                            <div class="row form-group has-error has-feedback mb-2">
+                                <span class="col-5">{{ 'Species' | trans }} </span><span class="text-danger col-1">*</span>
+                                <select class="col-6"  name="essences" id="essences"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                    <option value="0">-- Sélectionnez une essence---</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-5">{{ 'Reference' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text" name="reference" id="reference"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Hygrometric State' | trans }}</span><input class="col-6" type="text" name="etat_hygro" id="etat_hygro" placeholder="{{ 'Hygrometric State' | trans }}" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Package date' | trans }}</span><input class="col-6" type="date" name="date_colis" id="date_colis" placeholder="{{ 'Package date' | trans }}" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                            </div>
+                            <div class="row justify-content-end">
+                                <a href="#" class="btn btn-sm  text-white font-weight-light col-md-6" id="btn_save" style="background: #045c6a; font-size: 16px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;height: 30px;"></i>{{ 'Save Package' | trans }}</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="p-2" id="colis" style="border: 1px solid lightgrey">
+
+                </div>
+            </div>
+        </div>
+
+        {#Ajouter les éléments du colis#}
+       <div class="modal fade" id="ajout_element" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Edit Elements' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert-light  bg-white">
+                           <div class="div_deroulage">
+                               <h4 class="text-primary p-1 alert-success" id="lbl_colis"></h4>
+                               <div class="row">
+                                   <div class="col-md-6">
+                                       <div class="align-content-md-start">
+                                           <input type="number" placeholder="L" id="txt_longueur" style="width:75px;background: lightyellow;">
+                                           <input type="number" placeholder="l"  id="txt_largeur" style="width:75px;background: lightyellow;">
+                                           <input type="number" placeholder="ep"  id="txt_epaisseur" style="width:75px;background: lightyellow;">
+                                           <a href="#" class="btn btn-primary" id="btn_rechercher_dimensions">Rechercher</a>
+                                       </div>
+                                       <select  class="" id="select_fiche_lot" style="margin-top: 5px;background-color: #f2f2c3;border: 0px">
+                                       </select>
+
+                                       <span class="text-danger font-weight-bold" id="lbl_elt_restants" style="font-size: 20px;margin-left: 10px;"></span>
+
+                                   </div>
+                                   <div class="col-md-6">
+                                       <span class="text-dark" style="font-size: 32px;">Nb Feuilles</span> <input class="text-dark font-weight-bold" type="number" disabled id="vol_deroulage" style="height: 50px;font-size: 40px;width: 150px; background-color: #f5f5b5;border: 0px;" >
+                                   </div>
+                               </div>
+
+
+                           </div>
+                            <hr>
+
+                            <div class="div_sciage">
+                                <div class="align-content-lg-start">
+                                     <select  class="" id="select_billon" style="margin-top: 5px;background-color: #f2f2c3;border: 0px">
+                                    </select>
+                                    <span class="text-danger font-weight-bold" id="lbl_elt_remaining" style="font-size: 20px;margin-left: 10px;"></span>
+                                </div>
+
+                                <div class="row mt-2">
+                                    <h5 class="col-md-3 text-dark" style="font-size: 15px;color:orangered;">{{ 'Length' | trans}}</h5>
+                                    <input class="text-dark font-weight-bold" id="txt_lng" readonly type="number" style="width: 200px;font-size: 16px;background-color: #f1f1ef;border: 0px;">
+                                </div>
+
+                                <div class="row mt-2">
+                                    <h5 class="col-md-3 text-dark" style="font-size: 15px;color:orangered;">{{ 'Width' | trans }}</h5>
+                                    <input class="text-dark font-weight-bold"  readonly  id="txt_lrg" type="number" style="width: 200px;font-size: 16px;background-color: #f1f1ef;border: 0px;">
+                                </div>
+
+
+                               <div class="row mt-2">
+                                    <h5 class="col-md-3 text-dark" style="font-size: 15px;color:orangered;">{{ 'Thickness' | trans }}</h5>
+                                    <input class="text-dark font-weight-bold" type="number"  readonly  id="txt_ep" style="width: 200px;font-size: 16px;background-color: #f1f1ef;border: 0px;">
+                               </div>
+
+                              <div class="row mt-2">
+                                    <h5 class="col-md-3 text-dark" style="font-size: 15px;color:orangered">{{ 'Number' | trans}}</h5>
+                                      <input class="text-dark font-weight-bold" type="number"  id="txt_nb" style="width: 200px;font-size: 16px;background-color: #f5f5b5;border: 0px;" >
+                              </div>
+
+                            </div>
+                      </div>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <button type="button" class="btn btn-primary mt-3" id="save_elt" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+
+    <script>
+
+        let id_contrat = document.querySelector('#contrat_export').value;
+        let id_essence = document.querySelector('#essences').value;
+        let colis_ref = "";
+        let nom_essence = "";
+        let transfo = "";
+        let id_colis =0;
+        let id_elt =0;
+        let id_fiche_lot_prod =0;
+        let nombre_elements_restants = 0;
+
+       /* $('#select_billon').select2({
+            placeholder: "--{#{% trans %}Please Select Elements{% endtrans %}#}--",
+            theme: 'classic'
+        });*/
+
+        liste_contrats();
+        liste_essence($("#contrat_export").val());
+        liste_colis($("#contrat_export").val());
+
+        //Sélection sur un contrat
+        $("#contrat_export").on("change", function (){
+            id_contrat = this.value;
+            liste_essence(this.value);
+            liste_colis(this.value);
+        })
+
+        $("#essence").on("change", function (){
+            id_essence = this.value;
+        })
+
+        $("body").on("click", ".elements",  function (){
+            id_colis = this.id;
+            infos_colis(this.id);
+
+        })
+
+        $("#select_billon").on("change",  function (){
+            id_elt = this.value;
+            infos_element(this.value)
+        })
+
+        $("#save_elt").on("click",  function (){
+
+            if ($('#txt_nb').val() > nombre_elements_restants){
+                render_toast_value("SVP! Saisissez un nombre inférieur au nombre d'éléments disponibles", 2)
+            } else {
+                if (transfo === "DEROULAGE"){
+                    add_elements_colis_deroulage()
+                } else {
+                    add_elements_colis()
+                }
+
+            }
+
+        })
+        $("#btn_rechercher_dimensions").on("click",  function (){
+            let lng = $('#txt_longueur').val();
+            let lrg = $('#txt_largeur').val();
+            let ep = $('#txt_epaisseur').val();
+
+            if (lng ==="" || lng === "0" ||
+                lrg ==="" || lrg === "0" ||
+                ep ==="" || ep === "0" )
+            {
+                render_toast_value("Merci de renseigner SVP les dimensions recherchées", 2)
+                $('#txt_longueur').focus()
+            } else {
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/recherche_dimensions/' + lng + '/' + lrg + '/' + ep + '/' + id_colis,
+                    'type': 'POST',
+                    success: function (response){
+                        let reponse = JSON.parse(response);
+
+                        let contenu = "";
+
+                        for (let i = 0; i < reponse.length; i++){
+                            contenu = contenu + '<option value="' + reponse[i].id_fiche + '">' + reponse[i].numero + '</option>'
+                        }
+
+                        document.querySelector("#select_fiche_lot").innerHTML = contenu;
+                        id_fiche_lot_prod = document.querySelector("#select_fiche_lot").value;
+                        document.querySelector("#vol_deroulage").disabled = false;
+                        document.querySelector("#vol_deroulage").focus();
+
+
+                    },
+                    error: function (erreur){
+                        console.log(erreur)
+
+                    }
+                })
+            }
+        })
+
+        $("#select_fiche_lot").on("change",  function (){
+            let lng = $('#txt_longueur').val();
+            let lrg = $('#txt_largeur').val();
+            let ep = $('#txt_epaisseur').val();
+            id_fiche_lot_prod = this.value;
+            get_fiche_lot_volume(this.value, id_colis, lng, lrg, ep)
+        })
+        //Ajout d'un colis
+        $("#btn_save").on("click", function (){
+
+            if (
+                document.querySelector('#contrat_export').value &&
+                document.querySelector('#essences').value &&
+                document.querySelector('#reference').value &&
+                document.querySelector('#etat_hygro').value &&
+                document.querySelector('#date_colis').value
+            ){
+                add_colis();
+            } else {
+                render_toast_value("Merci de renseigner tous les champs avant de continuer !", 0)
+            }
+        })
+        //Fonctions
+
+            // Liste des contrats
+            function liste_contrats(){
+                document.querySelector("#roller").style="display:inline";
+
+                $.ajax({
+                url : '{{ path('my_contracts') }}',
+                'type': 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    var contenu_contrat = '<option value="0">-- Sélectionnez un contrat---</option>';
+
+                    for (let i = 0; i < reponse.length; i++){
+                        contenu_contrat = contenu_contrat + '<option value="' + reponse[i].id_contrat + '">' + reponse[i].numero_contrat + '</option>'
+                    }
+
+                    document.querySelector("#contrat_export").innerHTML = contenu_contrat;
+                    document.querySelector("#contrat_export").selectedIndex = 0;
+                    document.querySelector("#roller").style="display:none";
+
+                },
+                    error: function (erreur){
+                        console.log(erreur)
+                        document.querySelector("#roller").style="display:none";
+                    }
+            })
+            }
+                // Liste des essences
+                function liste_essence(id_contrat){
+                    let contenu_essences = '<option>Sélectionnez l\'essence</option>';
+                    document.querySelector("#roller").style="display:inline";
+                    $.ajax({
+                        'url': '{{path('app_portail')}}snvlt/species/liste/contract/' + id_contrat,
+                        'type': 'POST',
+                        success: function(response) {
+                            let liste_essence = JSON.parse(response)
+
+
+                            for (var i = 0; i< liste_essence.length ; i++){
+                                contenu_essences = contenu_essences + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                            }
+                            document.querySelector('#essences').innerHTML = contenu_essences;
+                            document.querySelector("#roller").style="display:none";
+                        },
+                        error: function (erreur){
+                            console.log(erreur)
+                            document.querySelector("#roller").style="display:none";
+                        }
+                    })
+                }
+
+        // Infos Colis
+        function infos_colis(id_colis){
+
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/infos/id/' + id_colis,
+                'type': 'POST',
+                success: function(response) {
+                    let inf_colis = JSON.parse(response)
+
+                    colis_ref = inf_colis[0].ref_colis;
+                    nom_essence = inf_colis[0].code_essence;
+                    transfo = inf_colis[0].transformation;
+                    affiche_suivant_transfo();
+                    $('#lbl_colis').text("[N° Colis : " + colis_ref + " - " + nom_essence + " - " + transfo + "]")
+                    // Charge les éléménts
+                    elements_disponibles(id_colis);
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+
+        // Liste Elements disponibles
+        function elements_disponibles(id_colis){
+            let contenu = "";
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/billons/disponible/' + id_colis,
+                'type': 'POST',
+                success: function(response) {
+                    let inf_elements = JSON.parse(response)
+                    contenu = contenu + '<option>{{ 'Elements' | trans }}</option>'
+                    if (inf_elements.length === 0){
+                        $('#lbl_elt_remaining').text("{{ 'No element found for this package' | trans}}");
+                    } else {
+                        for (let i = 0; i< inf_elements.length; i++){
+                            contenu = contenu + '<option value="' + inf_elements[i].id+ '" >' +  inf_elements[i].billon +  ' - [' +  inf_elements[i].lng + 'x' +  inf_elements[i].lrg + 'x' +  inf_elements[i].ep + ']' +  '</option>'
+                        }
+                        document.querySelector('#select_billon').innerHTML = contenu;
+                    }
+
+
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+
+        // Infos Element
+        function infos_element(id_element){
+
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/infos_elt/id/' + id_element,
+                'type': 'POST',
+                success: function(response) {
+                    let inf_element = JSON.parse(response)
+                    nombre_elements_restants = inf_element[0].nb;
+                    $('#txt_lng').val(inf_element[0].lng)
+                    $('#txt_lrg').val(inf_element[0].lrg)
+                    $('#txt_ep').val(inf_element[0].ep)
+                    $('#lbl_elt_remaining').text(inf_element[0].nb  + " {{ ' elements remaining' | trans }}")
+                    $('#txt_nb').focus()
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+        function infos_fioche_lot(id_fiche){
+
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/infos_fiche/id/' + id_fiche,
+                'type': 'POST',
+                success: function(response) {
+                    let inf_element = JSON.parse(response)
+                    nombre_elements_restants = inf_element[0].nb;
+                    $('#txt_lng').val(inf_element[0].lng)
+                    $('#txt_lrg').val(inf_element[0].lrg)
+                    $('#txt_ep').val(inf_element[0].ep)
+                    $('#lbl_elt_remaining').text(inf_element[0].nb  + " {{ ' elements remaining' | trans }}")
+                    $('#txt_nb').focus()
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+        // Ajouter Element dans le colis
+        function add_elements_colis(){
+
+            var obj = {};
+            obj.lng =  $("#txt_lng").val();
+            obj.lrg =  $("#txt_lrg").val();
+            obj.ep =  $("#txt_ep").val();
+            obj.nb =  $("#txt_nb").val();
+            obj.code_colis =  id_colis;
+            obj.volume =  id_colis;
+            obj.code_element =  id_elt;
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/elent/add/'  + data,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+                    if (retour === "NO_PACKAGE_NO_ELEMENT") {
+                        render_toast_value("Vérifiez d'avoir sélectionné le colis et ses éléments", 0)
+                    }else if (retour === "ELEMENT_EXISTING"){
+                        render_toast_value("Cet élément existe déjà !", 0)
+                    } else if (retour === "INVALID_DATA"){
+                        render_toast_value("Les données soumises sont invalides", 0)
+                    }  else if (retour === "ELEMENT_SAVED"){
+                        $("#txt_lng").val("");
+                        $("#txt_lrg").val("");
+                        $("#txt_ep").val("");
+                        $("#txt_nb").val("");
+                        document.querySelector("#select_billon").selectIndex = 0;
+                        liste_colis(id_contrat)
+                        $("#txt_nb").focus();
+                    }
+
+
+                }
+
+            })
+
+        }
+        //Ajout des elements de deroulage
+        function add_elements_colis_deroulage(){
+
+            var obj = {};
+            obj.lng =  $("#txt_longueur").val();
+            obj.lrg =  $("#txt_largeur").val();
+            obj.ep =  $("#txt_epaisseur").val();
+            obj.nb =  $("#vol_deroulage").val();
+
+            obj.code_colis =  id_colis;
+            obj.code_element =  id_elt;
+            obj.fiche_lot_prod =  id_fiche_lot_prod;
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/colis/elent/add/deroulage/'  + data,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+
+                    if (retour === "NO_PACKAGE_NO_ELEMENT") {
+                        render_toast_value("Vérifiez d'avoir sélectionné le colis et ses éléments", 0)
+                    }else if (retour === "ELEMENT_EXISTING"){
+                        render_toast_value("Cet élément existe déjà !", 0)
+                    } else if (retour === "INVALID_DATA"){
+                        render_toast_value("Les données soumises sont invalides", 0)
+                    }  else if (retour === "ELEMENT_SAVED"){
+                        $("#txt_longueur").val("");
+                        $("#txt_largeur").val("");
+                        $("#txt_epaisseur").val("");
+                        $("#vol_deroulage").val("");
+                        document.querySelector("#select_billon").selectIndex = 0;
+                        liste_colis(id_contrat)
+                        $("#txt_nb").focus();
+                    }
+
+
+                }
+
+            })
+
+        }
+
+                // Liste des colis
+                function liste_colis(id_contrat){
+                    let contenu_colis= '<table class="table table-responsive" id="tbl_colis"><thead>';
+                    contenu_colis = contenu_colis + '<tr class="text-center" style="background: #e0e0de;color: black">';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Package Ref.{% endtrans %}</th>';
+                    contenu_colis = contenu_colis +  '<th class="text-center">{% trans %}Contract No{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Transformation{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Species{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Package Date{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Number of elements{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Volume{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Add Elements{% endtrans %}</th>';
+                    contenu_colis = contenu_colis + '</tr>';
+                    contenu_colis = contenu_colis + '</thead>';
+                    contenu_colis = contenu_colis + '<tbody>';
+                    document.querySelector("#roller").style="display:inline";
+                    $.ajax({
+                        'url': '{{path('app_portail')}}snvlt/contrats/colis/list/' + id_contrat,
+                        'type': 'POST',
+                        success: function(response) {
+                            let liste_colis = JSON.parse(response)
+                            if (liste_colis.length === 0) {
+                                contenu_colis = '<h3>{{ 'No record' | trans }}</h3>';
+                            }else {
+                                for (var i = 0; i< liste_colis.length ; i++){
+                                    if (liste_colis[i].nb_elts > 0){
+                                        contenu_colis = contenu_colis + '<tr class="alert-warning text-dark" >';
+                                    } else if (liste_colis[i].cloture === true){
+                                        contenu_colis = contenu_colis + '<tr class="alert-success text-dark" >';
+                                    } else {
+                                        contenu_colis = contenu_colis + '<tr>';
+                                    }
+                                    let ref_colis_link = "/transformation/colis/details/" + liste_colis[i].id_colis;
+
+                                    contenu_colis = contenu_colis + '<td class="text-center"><a class="font-weight-bold" href="'+ ref_colis_link+'" id = "' +  liste_colis[i].id_colis + '">' + liste_colis[i].ref_colis + '</a></td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].contrat + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].transformation + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].code_essence + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].date_confection + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].nb_elts + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center">' + liste_colis[i].vol_elt + '</td>'
+                                    contenu_colis = contenu_colis + '<td class="text-center"><a class="elements" href="#" id ="' +  liste_colis[i].id_colis + '" data-bs-toggle="modal" data-bs-target="#ajout_element"><img src="{{ asset('assets/icons/16x16/settings.png') }}" style="height:16px;width:16px;" alt="package"></a></td>'
+                                }
+                            }
+                            contenu_colis = contenu_colis + '<tbody><table>';
+
+                            document.querySelector('#colis').innerHTML = contenu_colis;
+
+                            // Simple Datatable
+                            let table1 = document.querySelector('#tbl_colis');
+                            let dataTable = new simpleDatatables.DataTable(table1);
+
+                            document.querySelector("#roller").style="display:none";
+
+
+                        },
+                        error: function (erreur){
+                            console.log(erreur)
+                            document.querySelector("#roller").style="display:none";
+                        }
+                    })
+                }
+
+                //Fonction Aout d'un colis
+                function add_colis(){
+                    var obj = {};
+                    obj.code_contrat =  $("#contrat_export").val();
+                    obj.code_essence =  $("#essences").val();
+                    obj.reference =  $("#reference").val();
+                    obj.date_confection =  $("#date_colis").val();
+                    obj.etat_hygro =  $("#etat_hygro").val();
+
+                    var data = JSON.stringify(obj);
+                    $.ajax({
+                        'url': '{{path('app_portail')}}snvlt/colis/op/add_colis/'  + data,
+                        'type': 'POST',
+                        success: function(response) {
+                            let retour = JSON.parse(response)
+                            console.log(retour)
+
+                            if (retour === "NO_CONTRACT_NO_SPECIES") {
+                                render_toast_value("Vérifiez d'avoir sélectionné le colis et ses éléments", 0)
+                            }else if (retour === "COLIS_EXISTING"){
+                                render_toast_value("Cet élément existe déjà !", 0)
+                                } else if (retour === "INVALID_DATA"){
+                                render_toast_value("Les données soumises sont invalides", 0)
+                                }  else if (retour === "PACKAGE_SAVED"){
+
+                                    liste_colis( $("#contrat_export").val())
+                                    reinitialise()
+                                    render_toast_value("Colis enregistré", 1)
+
+                                }
+
+
+                            }
+
+                        })
+                }
+                //Fonction Infos FIche Lot Production
+                function get_fiche_lot_volume(id_fiche, id_colis, lng, lrg, ep){
+                    $.ajax({
+                        'url': '{{path('app_portail')}}snvlt/fiche_lot/op/infos/'  + id_fiche + '/' + id_colis + '/' + lng + '/' + lrg + '/' + ep,
+                        'type': 'POST',
+                        success: function(response) {
+                            let retour = JSON.parse(response)
+                            $('#lbl_elt_restants').text("Volume : " + retour[0].volume + " m3" ) ;
+                            }
+                        })
+                }
+
+                function reinitialise(){
+                    /*document.querySelector("#contrat_export").selectedIndex = 0;
+                    document.querySelector("#essences").selectedIndex = 0;*/
+                    $("#reference").val("");
+                    $("#date_colis").val("");
+                    $("#etat_hygro").val("");
+                    $("#reference").focus();
+                }
+
+                function affiche_suivant_transfo(){
+
+                    if (transfo === "DEROULAGE"){
+                        document.querySelector(".div_deroulage").style = "display:inline";
+                        document.querySelector(".div_sciage").style = "display:none";
+                        document.querySelector("#vol_deroulage").value = "";
+                        document.querySelector("#vol_deroulage").disabled = true;
+                    } else {
+                        document.querySelector(".div_deroulage").style = "display:none";
+                        document.querySelector(".div_sciage").style = "display:inline";
+                    }
+                }
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block banniere %}
+    <!-- Page Header Start -->
+    <div class="container-fluid page-exploitant py-5 mb-5 wow fadeIn" data-wow-delay="0.9s">
+        <div class="container text-center py-5">
+            <h1 class="display-4 text-white animated slideInDown mb-4">Listing des Usines</h1> 
+        </div>
+    </div>
+    <!-- Page Header End -->
+{% endblock %}
+
+{% block Contenu %}
+    <link rel="stylesheet" href="{{ asset('assets/table/dist/bootstrap-table.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/table/assets/all.css') }}">
+
+
+
+    <div class="container mx-auto">
+        <h1 class="m-2 text-success">Liste des usines en activité cette année</h1>
+        <div class="container">
+        <table
+               class="table"
+               data-toggle="table"
+               id="tableexploitant"
+               data-pagination="true"
+               data-language="Fr-fr"
+               data-search="true"
+               data-pagination-pre-text= "Précédent"
+               data-pagination-next-text= "Suivant"
+               data-pagination-detail-h-align= "right"
+               data-page-list= "[5, 10, 20, 30, 40, 50, All]"
+               data-page-value= "5">
+
+            <thead>
+            <tr class="bg-light" >
+                <th class="fw-bold" data-field="raisonSocialeExploitant" data-sortable="true">
+                    Raison sociale
+                </th>
+                <th class="fw-bold" data-field="numeroExploitant" data-sortable="true">
+                    Code Exploitant
+                </th>
+                <th class="fw-bold" data-field="marteauExploitant" data-sortable="true">
+                    Numero Usine
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for usine in liste_usines %}
+                <tr>
+                    <td class="fw-light">
+                        {{ usine.raisonSocial }}
+                    </td>
+                    <td class="fw-light">
+                        {{ usine.codeExploitant }}
+                    </td>
+                    <td class="fw-light">
+                        {{ usine.numero }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+    </div>
+    <script src="{{ asset('assets/table/assets/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ asset('assets/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/table/assets/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/table/popper.js') }}"></script>
+    <script src="{{ asset('assets/table/assets/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('assets/table/dist/bootstrap-table.min.js') }}"></script>
+    <script src="{{ asset('assets/table/dist/extensions/toolbar/bootstrap-table-toolbar.min.js') }}"></script>
+    <script src="{{ asset('assets/table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js') }}"></script>
+    <script src="{{ asset('assets/table/dist/locale/bootstrap-table-fr-FR.min.js') }}"></script>
+
+{% endblock %}
+
+

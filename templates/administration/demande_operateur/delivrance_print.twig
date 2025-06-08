@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="{{ app.user.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap-5.3.2/dist/css/bootstrap.min.css') }}">
+    <title>Document</title>
+</head>
+<body>
+<section class="section">
+
+  <img src="{{ asset('assets/images/entete.png') }}" alt="" height="128px">
+
+    <style>
+        @media print {
+            @page {
+                margin: 0;
+            }
+        }
+    </style>
+
+  <div class="" style="height: 800px;width: 650px;">
+    <hr>
+      <div class="alert-primary" style="height: 600px;">
+            <center><h1><span  style="border: 1px solid; padding: 10px" class="p-2">{{ 'Reception sheet' | trans }}</span></h1></center>
+            <div class="card m-3 p-3"  style="border: 0px;">
+                <div class="card-title fw-bold fs-4">
+                    {{ 'Informations'|trans }}
+                </div>
+                <div class="card-body">
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">{{ 'Operator' }} </span> : <span class="fw-bold text-primary">{{ operateur }}</span></div>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">{{ 'Request Code' }} </span> : <span class="fw-bold">{{ demande.code }}</span></div>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">{{ 'Request Document Type' }} </span> : <span class="fw-bold">{{ demande.docStat.abv }}</span></div>
+                    <hr>
+                    <h3>{{ 'Request Documents' |trans }}</h3>
+                    <table class="table table-responsive table-striped">
+                        <thead>
+                            <tr class="bg-light">
+                                <th>{{ 'Document No' | trans }}</th>
+                                <th>{{ 'Number of pages' | trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                                    {% if(demande.docStat.id == 1) %}
+
+                                        {% for dem in demande.documentcps %}
+                                    <tr>
+                                            <td>
+                                            {{ dem.numeroDoccp }}
+                                            </td>
+                                            <td>{{ dem.pagecps.count }}</td>
+                                    </tr>
+                                        {% endfor %}
+
+                                    {% elseif(demande.docStat.id == 2) %}
+                                        {% for dem in demande.documentbrhs %}
+                                    <tr>
+                                            <td>
+                                                {{ dem.numeroDocbrh }}
+                                            </td>
+                                            <td>{{ dem.pagebrhs.count }}</td><br>
+                                    </tr>
+                                        {% endfor %}
+                                    {% elseif(demande.docStat.id == 5) %}
+                                        {% for dem in demande.documentljes %}
+                                    <tr>
+                                            <td>
+                                                {{ dem.numeroDoclje }}
+                                            </td>
+                                            <td>{{ dem.pageljes.count }}</td>
+                                    </tr>
+                                        {% endfor %}
+                                    {% elseif(demande.docStat.id == 6) %}
+                                        {% for dem in demande.documentbtgus %}
+                                    <tr>
+                                            <td>
+                                                {{ dem.numeroDocbtgu }}
+                                            </td>
+                                            <td>{{ dem.pagebtgus.count }}</td>
+                                    </tr>
+                                        {% endfor %}
+                                    {% elseif(demande.docStat.id == 7) %}
+                                        {% for dem in demande.documentfps %}
+                                    <tr>
+                                            <td>
+                                                {{ dem.numeroDocfp }}
+                                            </td>
+                                            <td>{{ dem.pagefps.count }}</td>
+                                    </tr>
+                                        {% endfor %}
+                                   {% endif %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+      </div>
+    </div>
+
+</section>
+
+<footer style="width: 600px;">
+    <hr>
+    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+        <span class="text-dark d-block text-center text-sm-left d-sm-inline-block"><a class=" new-link" style="color: #58585b" href="https://www.eauxetforets.gouv.ci/" target="_blank">{% trans %}MINISTRY_NAME{% endtrans %}</a> </span>
+        <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">  <a href="https://www.system2is.gouv.ci/" style="color: #58585b" target="_blank">{% trans %}Copyright ©{% endtrans %} {% trans %}WEBSITE{% endtrans %} {% trans %}YEAR{% endtrans %}</a></span>
+    </div>
+</footer>
+
+<script src="{{ asset('assets/assets_other/js/ui-modals.js') }}"></script>
+<script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+<script>
+    $(document).ready(function() {
+        window.print();
+        window.close();
+        //document.reload()
+    })
+</script>
+</body>
+</html>

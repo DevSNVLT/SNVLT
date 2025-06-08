@@ -1,0 +1,71 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Ajouter un contrat BCBGFH
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/contract2.png') }}" alt="">  Contrats BCBGFH - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/input.css') }}">
+    <style>
+
+    </style>
+    <section class="section" style="border: 1px green solid;">
+
+                <div class="box">
+                    <div  class="input-data">
+                        <input id="numero_bcbgfh" type="text">
+                        <div class="line"></div>
+                        <label>N° BCBGFH</label>
+                    </div>
+                </div>
+
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Date Contrat</label>
+                    <input id="date_contrat" type="text" class="input-group-sm">
+                </div>
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Date Signature</label>
+                    <input id="date_signature" type="text" class="input-group-sm">
+                </div>
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Durée</label>
+                    <input id="duree" type="text" class="input-group-sm">
+                </div>
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Nombre Tiges</label>
+                    <input id="tiges" type="number" class="input-group-sm">
+                </div>
+                <hr>
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Exploitant</label>
+                    <select id="select_exp"  class="input-group-sm">
+                        <option value="0">Liste Exploitants</option>
+                    </select>
+                </div>
+                <div class="box">
+                    <label class="" for="numero_bcbgfh">Forêt</label>
+                    <select id="select_foret"  class="input-group-sm">
+                        <option value="0">Liste Forêts</option>
+                    </select>
+                </div>
+
+
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+
+{% endblock %}
+

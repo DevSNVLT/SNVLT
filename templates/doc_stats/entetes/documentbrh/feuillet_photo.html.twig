@@ -1,0 +1,37 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Photo Feuillet {{ feuillet.numeroPagebrh}}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Pho{% endtrans %}">
+
+            Photo Feuillet BCBGFH N°  {{ feuillet.numeroPagebrh}}
+
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                 <img src="{{ asset('images/uploads/brh/') }}{{ feuillet.photo }}" alt="">
+            </div>
+        </div>
+
+    </section>
+{% endblock %}
+

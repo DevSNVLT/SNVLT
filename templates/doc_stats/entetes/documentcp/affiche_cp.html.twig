@@ -1,0 +1,347 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}My CP{% endtrans %} - [ {{ document_name.numeroDoccp }} ]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}My CP{% endtrans %} -
+        [
+          <span class="alert-success p-2">{{ document_name.numeroDoccp }}</span>
+        - <span class="alert-info p-2 ms-2">{{ document_name.codeReprise.codeAttribution.codeForet.denomination }}</span>
+        - <span class="alert-warning p-2 ms-2">{{ document_name.codeReprise.codeAttribution.codeForet.codeCantonnement.nomCantonnement }}</span
+         ]
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <section class="section p-3" style="background: linear-gradient(#fcffe3, #fff3da); border: 2px grey solid">
+        <div class="card" style="background: transparent">
+            <div class="card-body" style="background: transparent">
+                <div class="row justify-content-center" style="border: lightgrey 1px solid">
+                    <div class="col-md-2 justify-content-md-start m-2">
+                        <label class="font-weight-bold label-dark" for="numero_page_select">{{ 'Pages' | trans }}</label>
+                        <select class="form-control-sm alert-warning text-dark"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="width: 150px;font-weight: bold; font-size: 20px;border: 2px solid ">
+
+                        </select>
+                    </div>
+                    <div class="col-md-2  m-2">
+                        <label class="font-weight-bold label-dark">{{ 'Month' | trans }} </label>
+                        <input class="form-control-sm" type="text" value="" id="mois" style="width: 100px;font-weight: bold; font-size: 20px;background: #d7eff8;">
+                    </div>
+                    <div class="col-md-2  m-2">
+                        <label class="font-weight-bold label-dark"> {{ 'Year' | trans }}</label>
+                        <input class="form-control-sm" type="text" value="" id="annee" style="width: 100px;font-weight: bold; font-size: 20px;background: #d7eff8;">
+                    </div>
+
+                    <div class="col-md-3 m-2">
+                        <label class="font-weight-bold label-dark"> {{ 'Village' | trans }}</label>
+                        <input class="form-control-sm" type="text" value="" id="village_pagecp" style="width: 75%;font-weight: bold; font-size: 20px;background: #d7eff8;">
+                    </div>
+
+                    <div class="col-md-2 m-2">
+                        <a href="#" class="btn btn-primary" style="font-size: 20px;width: 100%">{{ 'Save this page' |trans }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card " style="border: rgba(128,128,128,0.36) solid 1px;background: #d2cece;">
+            <div style="background: #d2cece;">
+                <a href="#" class="btn  btn-sm m-2" id="add_data" data-bs-toggle="modal" data-bs-target="#saisiecp" style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 32px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
+            </div>
+            <div class="card-body p-2" style="background: #f4f2f2">
+                <div class="row" style="background: #f4f2f2">
+                    <div class="col-md-12">
+                        <div class="overflow-y-scroll  bg-light" style="height: 400px;">
+                            <table class="table table-responsive" id="data_cp">
+                                <thead>
+                                <tr class="alert-success">
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree No' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'species' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Zone' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'X' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Y' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Day' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Length' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Diameter' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Volume' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille A' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille A' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille A' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille B' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille B' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille B' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille C' |trans}}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille C' |trans }}</th>
+                                    <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille C' |trans }}</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body_contenu" class="owl-lazy">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <div class="modal fade" id="saisiecp" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Add Data' | trans}}</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                        <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                             <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;" id="lbl_alert"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3"><input type="number" value="" id="numero_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="essence" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></select></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="zoneh" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></select></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="x_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="y_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Day' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select  id="day_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">12</option>
+                                    <option value="12">13</option>
+                                    <option value="13">14</option>
+                                </select>
+                            </div>
+
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Volume' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="vol_arbre" readonly style="background-color: #30ed30"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille A' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_a"  style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille A' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_a" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille A' |trans }} </label></div><div class="col-7 mt-3"><input type="number" value="" id="vol_a" readonly style="background-color: #30ed30"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille B' |trans}}</label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille B' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille B' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" id="vol_b" readonly style="background-color: #30ed30"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length Bille C' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_c" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille C' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;"></div>
+                             <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille C' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" readonly style="background-color: #30ed30"></div>
+                            <hr>
+                             <div class="col-6 mt-4"><label for="" style="font-weight: bold">{{ 'Bille A abandonnée' |trans }}</label></div><div class="col-2 mt-3"><input type="checkbox" class="form-check-input form-control" value="" id="abd_a" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;; height: 32px;"></div>
+                            <br>
+                             <div class="col-6 mt-4"><label for="" style="font-weight: bold">{{ 'Bille B abandonnée' |trans }}</label></div><div class="col-2 mt-3"><input type="checkbox"  class="form-check-input form-control" value="" id="abd_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;; height: 32px;"></div>
+                             <div class="col-6 mt-4"><label for="" style="font-weight: bold">{{ 'Bille C abandonnée' |trans }}</label></div><div class="col-2 mt-3"><input type="checkbox" class="form-check-input form-control" value="" id="abd_c" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;; height: 32px;"></div>
+                             <div class="col-6 mt-4"><label for="" style="font-weight: bold">{{ 'Fût abandonné' |trans }}</label></div><div class="col-2 mt-3"><input type="checkbox" class="form-check-input form-control" value="" id="abd_fut" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;; height: 32px;"></div>
+                        </div>
+
+                        </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        //Affiche les pages du document CP
+         affiche_pages({{ document_name.id }});
+
+
+        $('#numero_page_select').on('change', function (){
+            document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+            affiche_page_courante(this.value)
+            affiche_lignes_courante(this.value)
+        })
+
+        $('#add_data').on('click', function (){
+            liste_essence();
+            liste_zones();
+        })
+
+        $('#lng_arbre').on('change', function (){
+
+        })
+
+        $('#dm_arbre').on('change', function (){
+
+        })
+
+        function calcul_volume(lng, dm){
+            return ((dm * dm)/4)*3.14159 * (lng/100)
+        }
+        function affiche_pages(id_cp){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/' +id_cp,
+                type: 'POST',
+                data: {'id_cp': id_cp},
+                success: function(response) {
+
+                    let page_cp = JSON.parse(response);
+                    var contenu = '';
+                    let select_page = document.querySelector("#numero_page_select");
+
+                    for(var i = 0; i < page_cp.length ; i++){
+
+                        contenu = contenu + '<option value="' + page_cp[i].id_page + '">' + page_cp[i].numero_page + '</option>';
+                    }
+                    contenu = contenu + '</div>'
+                    select_page.innerHTML = contenu;
+                    //alert(select_page.value);
+                    document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+                    affiche_page_courante(select_page.value);
+                     $('#numero_page_select').val(page_cp[0].id_page)
+                    affiche_lignes_courante(page_cp[0].id_page);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        //Affiche la page_courante
+        function affiche_page_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/' +id_page,
+                type: 'POST',
+                data: {'id_cp': id_page},
+                success: function(response) {
+
+                    let page_cp = JSON.parse(response);
+                    $('#mois').val(page_cp[0].mois);
+                    $('#annee').val(page_cp[0].annee);
+                    $('#village_pagecp').val(page_cp[0].village);
+
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_lignes_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/lignes_cp/data/' +id_page,
+                type: 'POST',
+                data: {'id_cp': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    var contenu = '';
+
+                    if(lignes.length === 0){
+                        document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                    } else{
+                        document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+                        for(var i = 0; i < lignes.length ; i++){
+                            if(lignes[i].fut_abandon === true){
+                                contenu = contenu +'<tr class="alert-danger">';
+                            } else {
+                                contenu = contenu +'<tr class="bg-white">';
+                            }
+
+                            contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 18px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td><span class="badge bg-dark text-white p-1"style="font-size: 16px;">' + lignes[i].essence  + '</span></td>'+
+                                '<td><span>' + lignes[i].x_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].y_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].zh_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].jour  + '</span></td>'+
+                                '<td><span>' + lignes[i].lng_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].dm_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].cubage_arbre  + '</span></td>'+
+                                '<td><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                '<td><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                '<td><span>' + lignes[i].cubage_billea  + '</span></td>'+
+                                '<td><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                '<td><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                '<td><span>' + lignes[i].cubage_billeb  + '</span></td>'+
+                                '<td><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                '<td><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                '<td><span>' + lignes[i].cubage_billec  + '</span></td>'+
+                                '</tr>';
+                        }
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+                    }
+
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                 success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                     var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                     document.querySelector('#essence').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('#zoneh').innerHTML = contenu;
+                }
+            })
+        }
+    </script>
+{% endblock %}

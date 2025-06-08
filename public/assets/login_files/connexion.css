@@ -1,0 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+html { color: #222529; }
+* { font-family: 'Open Sans', sans-serif !important; position: relative; width: 100%; }
+strong { font-weight: 600; }
+input[type="password"]:focus-visible,
+input[type="text"]:focus-visible,
+input[type="submit"]:focus-visible,
+button:focus-visible,
+a:focus-visible { outline: none; }
+.hide { display: none; }
+.show { display: block !important; }
+hr { margin: 30px 0; border: 0; border-top: 1px solid #AEB1BE; border-bottom: 1px solid #AEB1BE; width: 100%; }
+.mb0 { margin-bottom: 0 !important; }
+
+.content-index { display:flex; flex-direction: row; flex-wrap: nowrap; gap: 0; align-items: center; width: 100%; min-height: 100%; }
+.exclu { display: flex; align-items: center; justify-content: center; width: 100%; background-color: #F2F6FF; align-self: stretch; }
+.exclu .content { text-align: center; }
+.exclu .content img { width: 800px; max-width: 90%; height: auto; }
+.form-connect { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 720px; background-color: #FFF; align-self: stretch; }
+.form-connect .content { display: flex; flex-direction: column; gap: 20px; justify-content: center; align-items: center; width: 400px; }
+.form-connect .content img.logo_lws { width: 160px; height: 42px; }
+.form-connect .content img.webmail_lws { width: 100px; height: 87px; }
+.form-connect .content div.form-bg-white { background-color: #fff; }
+.form-connect .content div.form-bg-blue { background-color: #F2F6FF; }
+.form-connect .content div[class^="form-bg-"] { display: flex; flex-direction: column; gap: 0; justify-content: center; align-items: center; width: 100%; padding: 30px 40px; margin-top: 20px; border-radius: 8px; }
+.form-connect .content div[class^="form-bg-"] .title { font-size: 30px; line-height: 40px; font-weight: 700; text-align: center; margin-bottom: 0; }
+.form-connect .content div[class^="form-bg-"] .ss_title { font-size: 16px; line-height: 26px; font-weight: 600; text-align: center; }
+.form-connect .content div[class^="form-bg-"] .under-hr { font-size: 16px; line-height: 26px; font-weight: 600; text-align: center; margin-bottom: 0; }
+.form-connect .content div[class^="form-bg-"] .under-hr a { font-weight: 600; }
+.form-connect .content div[class^="form-bg-"] div.form-field { position: relative; width: 100%; margin-top: 20px; }
+.form-connect .content div[class^="form-bg-"] div.form-field div.error-message { display: none; background-color: #FFE6E6; border: 1px solid #DF423B; border-top: 0; border-radius: 0 0 4px 4px; padding: 8px 20px; }
+.form-connect .content div[class^="form-bg-"] div.form-field div.error-message img.warning { position: relative; top: 1px; width: 15px; height: 13.5px; }
+.form-connect .content div[class^="form-bg-"] div.form-field div.error-message p { font-size: 15px; line-height: 22px; color: #DF423B; margin: 0; }
+.form-connect .content div[class^="form-bg-"] input,
+.form-connect .content div[class^="form-bg-"] select,
+.form-connect .content div[class^="form-bg-"] button { width: 100%; height: 48px; border-radius: 4px; font-size: 16px; line-height: 50px; padding: 0 20px; margin: 0; }
+.form-connect .content div[class^="form-bg-"] input[type="text"],
+.form-connect .content div[class^="form-bg-"] input[type="password"] { width: calc(100% - 42px); border: 1px solid #AEB1BE; background: #fff !important; }
+.form-connect .content div[class^="form-bg-"] select { width: 100%; border: 1px solid #AEB1BE; }
+.form-connect .content div[class^="form-bg-"] input[type="text"]::placeholder,
+.form-connect .content div[class^="form-bg-"] input[type="password"]::placeholder { color: #868998; }
+.form-connect .content div[class^="form-bg-"] input[type="text"]:focus,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:focus { border-color: #4A87FF; box-shadow: none; }
+.form-connect .content div[class^="form-bg-"] input[type="submit"] { border: 1px solid #1E499B; background-color: #1E499B; font-size: 18px; line-height: 48px; color: #fff; font-weight: 600; margin-top: 20px; }
+.form-connect .content div[class^="form-bg-"] input[type="submit"]:focus,
+.form-connect .content div[class^="form-bg-"] input[type="submit"]:hover { background-color: #0C2A6A; color: #fff !important; box-shadow: none; }
+.form-connect .content div[class^="form-bg-"] .placeholder-in-border { visibility: hidden; display: block; position: absolute; top: 17px; left: 15px; font-size: 16px; line-height: 26px; padding: 0 8px; background: linear-gradient(to bottom, #F2F6FF, #F2F6FF 52%, #fff 52%, #fff 100%); transition: top 0.1s ease-in-out, font-size 0.1s ease-in-out; width: max-content; max-width: calc(100% - 42px); }
+.form-connect .content div[class^="form-bg-"] a { font-size: 16px; line-height: 26px; font-weight: 400; color: #4A87FF; text-align: center; text-decoration: underline; margin-top: 20px; }
+.form-connect .content div[class^="form-bg-"] .choice { height: 12px; width:100%; border-bottom: solid 2px #222529; text-align: center; }
+.form-connect .content div[class^="form-bg-"] .choice span { background: #fff; position: relative; top: 0; padding: 0 12px; font-size: 16px; line-height: 26px; }
+.form-connect .content div[class^="form-bg-"] .g-button { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 15px; justify-content: center; align-items: center; border: 2px solid #AEB1BE; background: #fff; }
+.form-connect .content div[class^="form-bg-"] .g-button img { width: 20px; height: 20px; }
+.form-connect .content div[class^="form-bg-"] form.connect { margin: 0; }
+.form-connect .content .under-form { position: relative; width: 480px; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-between; align-items: center; }
+.form-connect .content .select-field select { appearance: none; background: url(../img/connexion/chevron.svg), #FFF; background-repeat: no-repeat; background-size: 12px 7px; background-position: top 21px right 20px; }
+.form-connect .content .select-field select:focus,
+.form-connect .content .select-field select:focus-visible { outline: 0; }
+.form-connect .content .under-form .select-lang { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: left; align-items: center; gap: 8px; font-size: 16px; line-height: 26px; font-weight: 400; cursor: pointer; }
+.form-connect .content .under-form .select-lang span#current-lang { width: max-content; max-width: 100%; }
+.form-connect .content .under-form .select-lang img.flag { width: 25px; height: 25px; }
+.form-connect .content .under-form .select-lang img.chevron { width: 12px; height: 6.5px; transition: transform 0.5s ease-in-out; }
+.form-connect .content .under-form .select-lang.open img.chevron { transform: rotate(180deg); }
+.form-connect .content .under-form .choice-lang { display: none; position: absolute; top: 30px; left: -17px; min-width: 150px; max-width: 250px; background: #fff; border: 2px solid #AEB1BE; z-index: 99; }
+.form-connect .content .under-form .choice-lang > div { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px; padding: 5px 15px; cursor: pointer; width: calc(100% - 30px); }
+.form-connect .content .under-form .choice-lang > div img { width: 25px; height: 25px; }
+.form-connect .content .under-form .choice-lang > div:not(:last-child) { border-bottom: 1px solid #AEB1BE; }
+.form-connect .content .under-form .choice-lang > div:hover { background: rgba(236, 236, 236, 0.5); }
+.form-connect .content .under-form .webmail,
+.form-connect .content .under-form .panel { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: right; align-items: center; gap: 8px; }
+.form-connect .content .under-form .webmail img { width: 25px; height: 21px; }
+.form-connect .content .under-form .panel img { width: 15px; height: 15px; }
+.form-connect .content .under-form .webmail a,
+.form-connect .content .under-form .panel a { width: max-content; max-width: 100%; font-size: 16px; line-height: 26px; font-weight: 400; color: #4A87FF; text-decoration: underline; white-space: nowrap; }
+.form-connect .info-secure { position: absolute; width: calc(100% - 60px); bottom: 30px; left: 30px; display: flex; justify-content: center; }
+.form-connect .info-secure .primary-info { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px 8px; justify-content: center; align-items: center; cursor: pointer; }
+.form-connect .info-secure .primary-info img.warning { width: 20px; height: 18px; }
+.form-connect .info-secure .primary-info p { font-size: 16px; line-height: 26px; font-weight: 400; margin: 0; width: max-content; max-width: 100%; }
+.form-connect .info-secure .primary-info p strong { font-weight: 700; }
+.form-connect .info-secure .primary-info img.info-img { width: 16px; height: 16px; }
+.form-connect .info-secure.open { position: relative; bottom: 0; left: 0; padding: 0 30px; margin-top: 40px; }
+.form-connect .info-secure.open .primary-info img.chevron { transform: rotate(180deg); }
+.form-connect .content div[class^="form-bg-"] .btn-submit { position: relative; }
+.form-connect .content div[class^="form-bg-"] .btn-submit input + img { display: none; }
+.form-connect .content div[class^="form-bg-"] .btn-submit input.send { text-indent: 40px; }
+.form-connect .content div[class^="form-bg-"] .btn-submit input.send + img { display: block; position: absolute; top: 29px; left: 130px; width: 30px; height: 30px; }
+
+/** Close Eye **/
+.form-connect .content div[class^="form-bg-"] div.password-field { position: relative; }
+.form-connect .content div[class^="form-bg-"] div.password-field img.eye { position: absolute; top: 1px; right: 1px; width: 20px; height: auto; cursor: pointer; padding: 16px 15px 14px; }
+
+/** Placeholder Move **/
+.form-connect .content div[class^="form-bg-"] input[type="text"]:focus::placeholder,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:focus::placeholder { color: transparent; }
+.form-connect .content div[class^="form-bg-"] input[type="text"]:focus + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:focus + .placeholder-in-border { visibility: visible; font-size: 16px; color: #4A87FF; top: -14px; }
+.form-connect .content div[class^="form-bg-"] .placeholder-in-border.place-move { visibility: visible; font-size: 16px; color: #4A87FF; top: -14px; }
+.form-connect .content div[class^="form-bg-"] input.f-elem:not(:focus) + .placeholder-in-border.place-move { color: rgb(95,99,104); }
+
+/** Gestion des erreurs **/
+.form-connect .content div[class^="form-bg-"] div.form-field.error input[type="text"],
+.form-connect .content div[class^="form-bg-"] div.form-field.error input[type="password"] { border: 1px solid #DF423B; border-bottom: 0; border-radius: 4px 4px 0 0; }
+.form-connect .content div[class^="form-bg-"] div.form-field.error div.error-message { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: baseline; gap: 8px; max-width: calc(100% - 42px); }
+.form-connect .content div[class^="form-bg-"] div.form-field.error .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] div.form-field.error input[type="text"]:focus + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] div.form-field.error input[type="password"]:focus + .placeholder-in-border { color: #DF423B; }
+
+/** Modal Info Secure **/
+.modal-backdrop { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 1040; background-color: #000; opacity: 0; z-index: 98; }
+.modal-backdrop.fade { opacity: 0.30; }
+#modal-warn { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; max-width: 70%; height: auto; background: #FFF; padding: 50px; border-radius: 10px; z-index: 99; }
+#modal-warn .all-info { position: relative; }
+#modal-warn .all-info img.close-m { position: absolute; right: -30px; top: -30px; width: 15px; height: 15px; cursor: pointer; }
+#modal-warn .all-info * { font-size: 16px; line-height: 26px; }
+#modal-warn .all-info ul { list-style-type: none; margin: 0;  }
+#modal-warn .all-info ul li { position: relative; padding: 0 0 0 25px; }
+#modal-warn .all-info ul li:before { content: ""; position: absolute; width: 15px; height: 11px; left: 0; top: 7px; background: url(../img/connexion/check_vert.svg) no-repeat 50% 50%/contain; }
+#modal-warn .all-info ul li.cross:before { width: 15px; height: 15px; left: 0; top: 5px; background: url(../img/connexion/croix_rouge.svg) no-repeat 50% 50%/contain; }
+#modal-warn .all-info ul li:not(:last-of-type) { margin-bottom: 10px; }
+
+/* Auto Complete Field */
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:hover,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:hover,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:focus,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:focus,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:active,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:active { -webkit-box-shadow: 0 0 0px 1000px white inset !important; background-color: white !important; font-size: 16px !important; }
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:hover,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:hover,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:focus,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:focus,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:active,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:active { -webkit-text-fill-color: #000 !important; -webkit-box-shadow: 0 0 0px 1000px white inset !important; transition: background-color 5000s ease-in-out 0s; background-color: white !important; font-size: 16px !important; }
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill::first-line,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill::first-line { font-size: 16px; line-height: 50px; font-family: 'Open Sans', sans-serif !important; }
+
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:hover + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:hover + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:focus + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:active + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="text"]:-webkit-autofill:active + .placeholder-in-border { visibility: visible; font-size: 16px; color: rgb(95, 99, 104); top: -14px; }
+
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:hover + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:hover + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:focus + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:active + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:-webkit-autofill:active + .placeholder-in-border { visibility: visible; font-size: 16px; color: rgb(95, 99, 104); top: -14px; }
+
+.form-connect .content div[class^="form-bg-"] input[type="text"]:autofill:focus + .placeholder-in-border,
+.form-connect .content div[class^="form-bg-"] input[type="password"]:autofill:focus + .placeholder-in-border { visibility: visible; font-size: 16px; color: #4A87FF; top: -14px; }
+
+/** Responsive Page **/
+@media (min-width: 1921px) {
+    .form-connect { max-width: 40%; }
+}
+@media (max-width: 1399px) {
+    .exclu .content img { width: 80%; height: auto; } 
+}
+
+@media (min-width: 1100px) AND (max-height: 770px) {
+    body { zoom: 0.95; }
+}
+
+@media (min-width: 1100px) AND (max-height: 730px) {
+    body { zoom: 0.85; }
+}
+
+@media (min-width: 1100px) AND (max-height: 650px) {
+    body { zoom: 0.8; }
+    .form-connect { padding: 40px 0; }
+}
+
+@media (min-width: 1100px) AND (max-height: 849px) {
+    .form-connect .info-secure { position: relative; width: 100%; bottom: unset; left: unset; margin-top: 30px; }
+    .form-connect .info-secure .primary-info { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 1099px) AND (max-height: 770px) {
+    body { zoom: 0.9; }
+}
+
+@media (max-width: 1099px) AND (max-height: 700px) {
+    body { zoom: 0.85; }
+}
+
+@media (max-width: 1099px) AND (max-height: 660px) {
+    body { zoom: 0.8; }
+}
+
+@media (max-width: 1099px) AND (max-height: 620px) {
+    body { zoom: 0.9; }
+    .content-index { padding: 40px 0; }
+}
+
+@media (max-width: 1099px) {
+    .content-index.pad-screen { padding: 40px 0; }
+    .exclu { display: none; }
+    .form-connect { max-width: 100%; min-height: 100vh; padding: 0; }
+    .form-connect .content div.form-bg-blue { background-color: #FFF; }
+    .form-connect .content div[class^="form-bg-"] .placeholder-in-border { background: #fff; }
+    .form-connect .content div[class^="form-bg-"] { margin-top: 0; padding: 10px 40px 30px; }
+    .form-connect .info-secure { position: relative; bottom: unset; left: unset; margin-top: 30px; }
+}
+
+@media (max-width: 599px) {
+    .form-connect .content { width: 340px; }
+    .form-connect .info-secure { width: 340px; position: relative; bottom: unset; left: unset; margin-top: 30px; }
+    .form-connect .info-secure .primary-info img.warning,
+    .form-connect .info-secure .primary-info img.info-img { display: none; }
+    .form-connect .info-secure .primary-info p { text-align: center; }
+    .form-connect .info-secure .primary-info p strong { display: block; }
+    .form-connect .content .under-form { width: 340px; flex-direction: column; justify-content: center; gap: 20px; }
+    .form-connect .content .under-form > div { justify-content: center !important; }
+    .form-connect .content div[class^="form-bg-"] { margin-top: 0; padding: 10px 40px 30px; }
+    .form-connect .content div[class^="form-bg-"] .btn-submit input.send { text-indent: 40px; }
+    .form-connect .content div[class^="form-bg-"] .btn-submit input.send + img { left: 105px; }
+}
+
+@media (max-width: 469px) {
+    .form-connect { background: #fff; }
+    .form-connect .content { max-width: 90%; }
+    .form-connect .content div[class^="form-bg-"] { padding: 0 0 20px; background-color: transparent; }
+    .form-connect .content .under-form { flex-direction: column; gap: 20px; }
+    .form-connect .content .under-form .choice-lang { left: 50%; transform: translateX(-50%); }
+}
+
+@media (max-width: 344px) {
+    .form-connect .content div[class^="form-bg-"] .btn-submit input.send { text-indent: 40px; }
+    .form-connect .content div[class^="form-bg-"] .btn-submit input.send + img { left: 30%; }
+}

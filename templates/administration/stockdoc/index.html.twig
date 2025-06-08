@@ -1,0 +1,138 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Manage Stock{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/stock.png') }}" alt="{% trans %}stock{% endtrans %}">  {% trans %}Manage Stock{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('stockdoc.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-sm-flex justify-content-between align-items-center transaparent-tab-border {">
+                    <ul class="nav nav-tabs tab-transparent" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link  text-dark active" style="font-size: 16px;color: #0011ff" id="overview-tab" data-toggle="tab" href="#overview" role="tab" aria-selected="true">{{ 'Overview' | trans }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="movements-tab" data-toggle="tab" href="#movements" role="tab" aria-selected="false">{{ 'Movements' | trans }}</a>
+                        </li>
+                    </ul>
+                    <div class="d-md-block d-none">
+                        <a href="#" class="text-light p-1"><i class="mdi mdi-view-dashboard"></i></a>
+                        <a href="#" class="text-light p-1"><i class="mdi mdi-dots-vertical"></i></a>
+                    </div>
+                </div>
+                <div class="tab-content tab-transparent-content">
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="business-tab">
+                        <table class="table table-responsive" id="situation_table" style="width: 100%;">
+                            <thead>
+                                <tr style="background: #b0b3c3;color: #302e2e">
+                                    <th>{% trans %}Document{% endtrans %}</th>
+                                    <th>{% trans %}Stock remaining{% endtrans %}</th>
+                                </tr>
+                            </thead>
+                            <tbody  id="body_contenu">';
+                                <tr><td><h2 class="text-success">{{ 'Loading Documents Situation ' | trans }}</h2></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="movements" role="tabpanel" aria-labelledby="business-tab">
+                        <table class="table" id="stockdoc">
+                            <thead>
+                            <tr style="background: #b0b3c3;color: #302e2e">
+                                <th>{% trans %}Document{% endtrans %}</th>
+                                <th>{% trans %}Type of movement{% endtrans %}</th>
+                                <th>{% trans %}Date of mouvement{% endtrans %}</th>
+                                <th>{% trans %}Quantity{% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for stock in liste_stockdocs %}
+
+                                {% if (stock.typeMouvement is same as 'APPROVISIONNEMENT') %}
+                                    <tr class="alert-light-success">
+                                {% else %}
+                                    <tr class="alert-light-danger">
+                                {% endif %}
+
+                                <td class="text-dark fw-bold"><a class="link-dark editBtn" href="{{ path('stockdoc.show', {'id_stock': stock.id })}}" id="{{ stock.id }}">{{ stock.codeTypeDocStat.abv }}</a></td>
+                                <td>{{ stock.typeMouvement }}</td>
+                                <td>{{ stock.createdAt | date('d M Y') }}</td>
+                                <td>{{ stock.qte }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+            </div>
+        </div>
+
+    </section>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+        let table1 = document.querySelector('#stockdoc');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+        situation();
+
+
+        function situation(){
+            let contenu_table ="";
+            $.ajax({
+                url: '{{ path('stockdoc_json') }}',
+                type : 'POST',
+                success: function (response){
+                    console.log(response);
+                    let liste = JSON.parse(response);
+                        for (let i =0; i < liste.length; i++){
+                            if(liste[i].stock_alert === true){
+                                contenu_table = contenu_table + '<tr class="alert-danger">';
+                            } else {
+                                contenu_table = contenu_table + '<tr>';
+                            }
+                            contenu_table = contenu_table + '<td><h5 id="'+ liste[i].id_doc+'">' + liste[i].libelle + '</h5></td>' +
+                                                            '<td><h5 class="badge text-dark alert-primary p-2 text-center" style="font-size: 16px;">' + liste[i].stock_restant + '</h5></td></tr>';
+                        }
+                            document.querySelector('#body_contenu').innerHTML = contenu_table;
+                            let situation_table = document.querySelector('#situation_table');
+                            let dataTableSituation = new simpleDatatables.DataTable(situation_table);
+
+                }
+            })
+
+
+
+        }
+
+    </script>
+
+
+{% endblock %}
+

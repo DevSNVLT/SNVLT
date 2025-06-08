@@ -1,0 +1,152 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Notifications{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/notification.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Notifications{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <style>
+        .picto-item {
+            position: relative;  /*les .picto-item deviennent référents*/
+            cursor: help;
+        }
+
+        /* on génère un élément :after lors du survol et du focus :*/
+
+        .picto-item:hover:after,
+        .picto-item:focus:after {
+            content: attr(aria-label);  /* on affiche aria-label */
+            position: absolute;
+            top: -2.4em;
+            left: 50%;
+            transform: translateX(-50%); /* on centre horizontalement  */
+            z-index: 1; /* pour s'afficher au dessus des éléments en position relative */
+            /* white-space: nowrap;  on interdit le retour à la ligne*/
+            padding: 5px 14px;
+            background: #284119;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        /* on génère un second élément en :before pour la flèche */
+
+        [aria-label]:hover:before,
+        [aria-label]:focus:before {
+            content: "▼";
+            position: absolute;
+            top: -1em;
+            left: 50%;
+            transform: translateX(-50%); /* on centre horizontalement  */
+            font-size: 20px;
+            color: #413219;
+        }
+
+        /* pas de contour durant le :focus */
+        [aria-label]:focus {
+            outline: none;
+        }
+
+
+
+        /* déco */
+
+
+        h1 {
+            margin-top: 20px;
+            margin-bottom: 40px;
+            color: #789;
+            text-align: center;
+            text-shadow: 1px 1px #fff;
+        }
+        p, .pictos {
+            text-align: center;
+        }
+
+        .picto-item {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: #413219;
+            text-align: center;
+            text-decoration: none;
+        }
+    </style>
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="notifications">
+                    <thead>
+                        <tr style="background: #f7d0ba;color: #454242">
+                            <th>{% trans %}Notification type{% endtrans %}</th>
+                            <th>{% trans %}Description{% endtrans %}</th>
+                            <th>{% trans %}Issuer{% endtrans %}</th>
+                            <th class="text-center">{% trans %}Received on{% endtrans %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {% for notification in all_notifs %}
+                {% if(notification.lu) %}
+                    <tr class="picto-item" aria-label="{{ notification.description }}">
+                {% else %}
+                    <tr class="font-weight-bold text-dark picto-item" aria-label="{{ notification.description }}">
+                {% endif %}
+                    <td class="">
+                        <a class="link-dark editBtn" href="{{ path( notification.reference, {'id_notification':notification.id } ) }}" id="{{ notification.id }}">
+                            {% if (notification.lu) %}
+                            <i class="mdi mdi-check text-dark " style="font-size: 16px; margin-right: 5px;"></i>
+                                {% else %}
+                                <i class="mdi mdi-eye text-dark font-weight-bold" style="font-size: 16px; margin-right: 5px;"></i>
+                            {% endif %}
+                            {{ notification.sujet }}
+                        </a>
+                    </td>
+                    <td class="">{{ notification.description | slice(0, 120)}}...</td>
+                    <td class="">{{recherche_user.find(notification.fromUser)}}</td>
+                    <td class="">{{ notification.createdAt | date('d/m/Y') }}</td>
+                </tr>
+            {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+
+        // Simple Datatable
+        let table1 = document.querySelector('#notifications');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}
+
+
+

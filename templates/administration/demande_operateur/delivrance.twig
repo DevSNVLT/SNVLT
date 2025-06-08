@@ -1,0 +1,168 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Documents Reception{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/reception.png') }}" alt="{% trans %}documents_requests{% endtrans %}">  {% trans %}Documents Reception{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="mt-2 p-2">
+                        <input class="form-control text-center alert-success" id="text_search" type="text" value="" style="font-size: 48px; width: 350px;padding: 5px;height: 80px;" placeholder="{{ 'code' | trans }}">
+                    </label>
+                    <a href="#" class="p-2 text-white" id="verify_code" style="font-size: 18px"><i class="mdi mdi-database-search text-primary" style="font-size: 48px"></i> </a>
+                </div>
+                <div class="p-4" style="background-color: #f5f4f7" id="div_contenu">
+                        <div class="text-center container">
+                            <img src="{{ asset('assets/images/folder.png') }}" height="256" alt="folder">
+                            <h1>{{ 'Please enter code to display documents' | trans}}</h1>
+                        </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- Modal ACCEPT-->
+        <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle">{{ 'Document delivery' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <label for="motif" class="text-dark font-weight-bold">{{ 'Do you want to deliver these documents ? ' |trans}}</label>
+                        <h6  class="text-danger ">{{ 'This action is irreversible ' |trans}}</h6>
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2" style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  print_sheet" id="" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Deliver'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script src="{{ asset('assets/assets_other/js/ui-modals.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let id_demande_op = 0;
+
+        document.querySelector('#verify_code').focus()
+
+        $('#verify_code').on('click', function (){
+            let text_search = document.querySelector('#text_search').value;
+            search_code(text_search);
+        });
+
+        $('.print_sheet').on('click', function (){
+            window.open("{{path('app_portail')}}snvlt/demop/print_doc/sheet/" + id_demande_op )
+            document.location.href="{{ path('app_demande_reception') }}"
+        });
+
+        /*ROUTINES*/
+        function search_code(code_demande){
+            let contenu = '<h3 class="text-primary">{{ 'Loading...' | trans }}</h3>';
+            document.querySelector('#div_contenu').innerHTML = contenu;
+
+            contenu = '<h3 class="text-dark font-weight-bold" >{{ 'Informations about the request' | trans }}</h3><table class="table table-responsive p-1 mb-2 mt-2" style="border: 1px solid lightgray;">'+
+                                 '<thead>' +
+                                 '<tr>' +
+                                 '<th>{% trans %}Request Code{% endtrans %}</th>' +
+                                 '<th>{% trans %}Request Document{% endtrans %}</th>' +
+                                 '<th>{% trans %}Operator Type{% endtrans %}</th>' +
+                                 '<th>{% trans %}Operator{% endtrans %}</th>' +
+                                 '<th>{% trans %}Cantonment{% endtrans %}</th>' +
+                                 '<th>{% trans %}Requested Quantity{% endtrans %}</th>' +
+                                 '<th>{% trans %}Allowed Quantity{% endtrans %}</th>' +
+                                 '</tr>' +
+                                 '</thead>' +
+                                '<tbody>';
+                        $.ajax({
+                            url : '{{path('app_portail')}}snvlt/demop/search/' + code_demande,
+                            type: 'POST',
+                            success : function (response){
+                                let demandes = JSON.parse(response);
+                                if (demandes.length === 0){
+                                    contenu = '<h2 class="text-danger">{{ 'Sorry, There is no documents request with this code' |trans }}</h2>'
+                                }
+                                if (demandes.length > 0){
+                                for (let i = 0;  i < demandes.length; i++){
+                                    id_demande_op = demandes[i].id_demande;
+                                    contenu = contenu + '<tr class="bg-white text-dark font-weight-bold" style="font-size: 16px;">'+
+                                                        '<td>' + demandes[i].code_demande + '</td>' +
+                                                         '<td>' + demandes[i].document_demande + '</td>' +
+                                                         '<td>' + demandes[i].type_operateur + '</td>' +
+                                                         '<td>' + demandes[i].operateur + '</td>' +
+                                                         '<td>' + demandes[i].cantonnement + '</td>' +
+                                                         '<td>' + demandes[i].qte_demandee + '</td>' +
+                                                         '<td>' + demandes[i].qte_accordee + '</td>' +
+                                                        '</tr>'
+
+                                }
+                                contenu = contenu +'</tbody>' +
+                                    '</table>';
+                                    contenu = contenu +'<h3 class="text-dark font-weight-bold mt-3" >{{ 'Documents requested' | trans }}</h3>' +
+                                                         '<table><thead><th></th></thead><tbody>' ;
+
+                                    //Recherche les documents pour cette demande
+                                    $.ajax({
+                                        url : '{{path('app_portail')}}snvlt/demop/search/docs/' + id_demande_op,
+                                        type: 'POST',
+                                        success : function (responseDoc){
+
+                                            let documents = JSON.parse(responseDoc);
+
+                                            for (let i = 0;  i < documents.length; i++){
+                                                //alert( documents[i].numero_doc )
+                                                contenu = contenu + '<tr class="alert-danger text-dark font-weight-bold" style="font-size: 16px;">'+
+                                                    '<td>' + documents[i].numero_doc + '</td>' +
+                                                    '</tr>'
+
+                                            }
+                                            contenu = contenu +'</tbody>' +
+                                                '</table><br>';
+                                            contenu = contenu +'<a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequest" class="bg-primary text-white mt-4 p-2 mb-4 " style="font-size: 16px;"><i class="mdi mdi-printer text-white" style="font-size: 24px;"></i> {{ 'Print Reception sheet' |trans }}</a><br>' ;
+
+                                            document.querySelector('#div_contenu').innerHTML = contenu;
+
+                                        }
+                                    });
+
+                                } else if (demandes.length === 0) {
+                                    contenu = '<h2 class="text-danger">{{ 'Sorry, There is no documents request with this code' |trans }}</h2>'
+                                }
+
+
+                            }
+                        })
+
+        }
+    </script>
+{% endblock %}
+

@@ -1,0 +1,72 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {% trans %}Cantonments{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <div class="">
+        <img src="{{ asset('assets/images/webapp/cantonnement.png') }}" alt="dr"> {% trans %}Cantonments{% endtrans %} <a
+                class="btn btn-sm fs-5 text-light" style="background-color: #f13306;float: right" href="{{ path('cantonnement.edit') }}"><i class="bi bi-plus-circle-fill me-2"></i></a>
+    </div>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
+    <section class="section">
+        <div class="card">
+            {# <div class="card-header">
+                <span class="fw-bold fs-4 p-2 mb-5" style="color: #3f5a70">Interface de gestion des Cantonnements forestiers</span> <p class="alert-secondary p-2 text-dark text-end rounded-4 text-danger"> cliquez sur le cantonnement dans la liste pour la modifier</p>
+            </div>#}
+            <div class="card-body">
+                <table class="table table-responsive-sm w-100 p-2" id="cantonnements">
+                    <thead>
+                    <tr style="background: #8ff0b4">
+                        <th>{% trans %}Name{% endtrans %}</th>
+                        <th>{% trans %}Responsible{% endtrans %}</th>
+                        <th>{% trans %}DD{% endtrans %}</th>
+                        <th>{% trans %}RD{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for cantonnement in liste_cantonnements %}
+
+                        <tr>
+                            <td class="text-dark fw-bold"><a class="link-dark editBtn" href="{{ path('cantonnement.edit', {'id_cantonnement': cantonnement.id })}}" id="{{ cantonnement.id }}">{{ cantonnement.nomCantonnement }}</a></td>
+                            <td>{{ cantonnement.emailResponsable }}</td>
+                            {% if (cantonnement.codeDdef) %}
+                                <td>{{ cantonnement.codeDdef.nomDdef}}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                            <td>{{ cantonnement.codeDr.denomination}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+    <script>
+        var table = new DataTable('#cantonnements', {
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json',
+            },
+            theme:'bootstrap'
+        });
+    </script>
+
+{% endblock %}

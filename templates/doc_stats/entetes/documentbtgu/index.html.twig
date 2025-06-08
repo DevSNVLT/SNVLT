@@ -1,0 +1,125 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeindustriel) %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}My BTGU{% endtrans %}
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}BTGU{% endtrans %}
+    {% endif %}
+
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeindustriel) %}
+            {% trans %}My BTGU{% endtrans %}
+        {% else %}
+            {% trans %}DOCUMENTS BTGU{% endtrans %}
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        {#
+            <div class="alert-warning" style="height: 40px;"></div>
+        #}
+
+        <div class="card" style="border-top: 3px solid #1f6377;">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_btgus" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #febd7f;color: #390303; font-weight: bold;">
+                        {% if app.user.codeindustriel %}
+                            <th>{% trans %}BTGU No{% endtrans %}</th>
+                        {% else %}
+                            <th>{% trans %}BTGU No{% endtrans %}</th>
+                            <th>{% trans %}Factory{% endtrans %}</th>
+                        {% endif %}
+                        <th>{% trans %}Cantonment{% endtrans %}</th>
+                        <th>{% trans %}Regional Direction{% endtrans %}</th>
+                        <th>{% trans %}Delivery date{% endtrans %}</th>
+                        <th>{% trans %}Volume{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu">';
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+        //Chargement de la liste des BTGU pour l'opérateur
+        mes_btgu();
+
+        function mes_btgu(){
+            document.querySelector('#body_contenu').innerHTML ='<tr><td><h2 class="text-danger">{{ 'Loading BTGU ' | trans }}</h2></td></tr>'
+            $.ajax({
+                url: '{{ path('app_docs_btgu_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let docbtgu_liste = JSON.parse(response);
+                    let contenu = "";
+                    let table = document.querySelector("#my_btgus");
+
+                    if (docbtgu_liste.length === 0){
+                        document.querySelector('#body_contenu').innerHTML ='<tr><td><h2 class="text-danger">{{ 'Aucun BTGU trouvé ' | trans }}</h2></td></tr>'
+                    } else {
+                        for(var i = 0; i < docbtgu_liste.length ; i++){
+                            if(docbtgu_liste[i].etat === false){
+                                contenu = contenu +'<tr class="alert-danger">';
+                            } else if(docbtgu_liste[i].volume_btgu > 0) {
+                                contenu = contenu +'<tr class="text-dark" style="background: #f0f054">';
+                            }else  {
+                                contenu = contenu +'<tr>';
+                            }
+
+                            {% if app.user.codeindustriel %}
+                            contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/docbtgu/btgu/pages/' + docbtgu_liste[i].id_doc_btgu + '" id="' + docbtgu_liste[i].id_doc_btgu + '">' + docbtgu_liste[i].numero_docbtgu + '</a></td>'+
+                                '<td><span  class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;">' + docbtgu_liste[i].cantonnement  + '</span></td>';
+                            {% else %}
+                            contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/docbtgu/btgu/pages/' + docbtgu_liste[i].id_doc_btgu + '" id="' + docbtgu_liste[i].id_doc_btgu + '">' + docbtgu_liste[i].numero_docbtgu + '</a></td>'+
+                                '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + docbtgu_liste[i].usine  + '</span></td>'+
+                                '<td><span>' + docbtgu_liste[i].cantonnement  + '</span></td>';
+                            {% endif %}
+                            contenu = contenu + '<td><span>' + docbtgu_liste[i].dr  + '</span></td>'+
+                                '<td><span>' + docbtgu_liste[i].date_delivrance  + '</span></td>';
+
+                            contenu = contenu +'<td>'+ docbtgu_liste[i].volume_btgu + '</td></tr>';
+                        }
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+                    }
+
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_btgus');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

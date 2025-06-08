@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap-5.3.2/dist/css/bootstrap.min.css') }}">
+    <title>Fiche LAAC N° {{ fiche.id }}</title>
+</head>
+<body id="inv_body">
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th{
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        background-color: #135402;
+        color:white;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #dddddd;
+    }
+
+</style>
+
+<div class="" id="table_inv"  style="margin: 10px 10px 10px 10px;padding: 10px;">
+
+                    <div class="row" style="background-color:#e4f4d1 ">
+                        <img class="col-md-2" src="{{ asset('assets/images/logo_snvlt.png') }}" alt="">
+                        <h2 class="col-md-10 my-auto p-2" style="border-radius: 10px 10px 10px 10px">Système National de légalité et de traçabilité du bois</h2>
+                    </div>
+                    <hr>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">Exploitant</span> : <span class="fw-bold text-primary">{{ fiche.codeAttribution.codeExploitant.sigle }}</span></div>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">Forêt </span> : <span class="fw-bold">{{ fiche.codeAttribution.codeForet.denomination }}</span></div>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">N° Fiche LAAC</span> : <span class="fw-bold">{{ fiche.id }}</span></div>
+                    <div class="bg-light p-2" style="background-color:#f2f2ff "><span style="background-color: #cfd5d4">imprimé le </span> : <label class="fw-bold" id="date_sys"></label></div>
+                    <hr>
+                    <div class="text-center">
+                        <h3  style="font-weight: bold;">Liste définitive des Arbres à Couper (LAAC)</h3>
+                    <br>
+
+                    <table id="table_lac_details">
+                        <thead style="background: lightgrey;">
+                        <tr class="alert-success">
+                            <th style="font-size: 20px;">Essence</th>
+                            <th class="text-center" style="font-size: 20px;">N° Arbre Inv</th>
+                            <th class="text-center" style="font-size: 20px;">Zone</th>
+                            <th class="text-center" style="font-size: 20px;">X</th>
+                            <th class="text-center" style="font-size: 20px;">Y</th>
+                            <th style="font-size: 20px;">Longueur</th>
+                            <th style="font-size: 20px;">Diamètre</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for arbre in fiche.inventaireForestiers %}
+                            {% if (arbre.lac) %}
+                                <tr class="p-1" style="font-size: 18px;">
+                                {% if not (arbre.valide) %}
+                                    <tr class="p-1 alert-danger" style="font-size: 18px;">
+                                {% endif %}
+
+                                <td>{{ arbre.codeEssence.nomVernaculaire }}</td>
+                                <td class="text-center">{{ arbre.numeroArbre }}</td>
+                                <td class="text-center">{{ arbre.zoneh.zone }}</td>
+                                <td class="text-center">{{ arbre.x }}</td>
+                                <td class="text-center">{{ arbre.y }}</td>
+                                <td>{{ arbre.lng }}</td>
+                                <td>{{ arbre.dm }}</td>
+                                </tr>
+                            {% else %}
+
+                            {% endif %}
+
+
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+
+</div>
+<script src=
+        "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+</script>
+<script src=
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+<script src=
+        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+</script>
+<script>
+    const { jsPDF } = window.jspdf;
+
+    let doc = new jsPDF('portrait', 'mm', [1600,2263]);
+    let pdfjs = document.querySelector('#inv_body');
+    var fullDate = new Date();
+
+    var d = new Date();
+
+    var month = d.getMonth()+1;
+    var day = d.getDate();
+
+    var output = (day<10 ? '0' : '') + day  + '/' +
+            (month<10 ? '0' : '') + month + '/' +
+            d.getFullYear() ;
+
+    $("#date_sys").text(output)
+
+    $(document).ready(function () {
+
+        convertHTMLtoPDF();
+
+
+
+        function convertHTMLtoPDF() {
+
+
+
+            doc.html(pdfjs, {
+                callback: function(doc) {
+                    doc.save("{{ fiche.codeAttribution.codeForet.denomination }}-{{ fiche.id }}.pdf");
+                },
+                margin: [35, 35, 50, 35]
+            });
+            closeWin();
+            //getPages()
+        }
+    });
+
+    function getPages(){
+        var pageCount = doc.internal.getNumberOfPages(); //Total Page Number
+        //alert(pageCount)
+        for(i = 1; i < pageCount + 1; i++) {
+            doc.setPage(i);
+            let pageCurrent = doc.internal.getCurrentPageInfo().pageNumber; //Current Page
+            doc.setFontSize(20);
+            doc.text('page: ' + pageCurrent + '/' + pageCount, 10, doc.internal.pageSize.height - 10);
+        }
+
+    }
+    function closeWin() {
+
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Rapports{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Publication de rapports - Ajouter un rapport{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set options = option_service.findAll %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+    <!-- Bootstrap CSS -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.libelle) }}</div>
+
+                        <div class="">{{ form_row(form.resume) }}</div>
+                        <div class="">{{ form_row(form.code_dr) }}</div>
+                        <div class="">{{ form_row(form.codeforet) }}</div>
+                    </div>
+                    <div class="col-md-6">
+
+                        
+
+                        {% set valeur = options['oi_structure'] %}
+
+                        {% if (valeur == "1") %}
+                            <hr>
+
+                            <div class="p-2">
+                                <div class="row">
+                            <span class="alert-info p-1" style="width: 100%;">
+                                <img class="text-danger" src="{{ asset('assets/icons/account-group.svg') }}" height="24" alt="users">
+                                Autres Destinataires
+                            </span>
+                                    <h6 class="fw-bold">Vous désirez inclure d'autres services à la soumission du rapport OI</h6>
+                                    <div class="row" style="margin-left: 50px;">
+                                        <div class="col-md-10">
+                                            <div class="code_cef">{{ form_row(form.code_cef) }}</div>
+                                            <div class="code_direction">{{ form_row(form.code_direction) }}</div>
+                                            <div class="code_service">{{ form_row(form.code_service_minef) }}</div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+
+                            </div>
+                        {% endif %}
+                        <div class="">{{ form_row(form.fichier) }}</div>
+                    </div>
+                </div>
+
+
+
+                <hr>
+                <a href="{{ path('app_publication_rapport') }}" class="bg-danger p-2 me-2 text-white font-weight-light"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2 font-weight-light" style="margin-left: 10px;">
+                    <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Soumettre le rapport{% endtrans %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.js') }}"></script>
+
+{% endblock %}

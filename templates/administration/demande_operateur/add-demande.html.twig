@@ -1,0 +1,426 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}My documents requests{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/demande.png') }}" alt="{% trans %}documents_requests{% endtrans %}">  {% trans %}My documents requests{% endtrans %} - {% trans %}Add{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-md-4">
+                    {#Liste des documents par operateur#}
+                    <label class="text-dark" style="font-weight: bold" for="documents_stats">Type de document</label>
+                    <select class="documents_stats" style="font-weight: bold;" name="documents_stats" id="documents_stats" >
+
+                    </select>
+                    {# Si l'opérateur est exploitant #}
+                    {% if app.user.codeOperateur.id == 2 %}
+                        <div class=" div_foret">
+                            <label class="text-dark mt-3" style="font-weight: bold" for="reprises">Forêt</label>
+                            <select class="reprises" name="reprises" id="reprises"></select>
+                        </div>
+                        <div class=" div_parcelle">
+                            <label class="text-dark mt-3" style="font-weight: bold" for="auto_pv">Parcelle</label>
+                            <select class="auto_pv" name="auto_pv" id="auto_pv"></select>
+                        </div>
+                    {% endif %}
+
+                        <label class="text-dark mt-3" style="font-weight: bold" for="quantite">Quantité</label>
+                        <input class="form-control text-danger alert-warning" type="text" style="font-weight: bold; font-size: 16px;width: 100px;" id="quantite" value="0">
+                    </div>
+                <hr>
+                <div class="d-inline-flex"></div>
+                <a href="{{ path('app_demande_operateur') }}" class="btn btn-sm bg-danger mb-2 p-2 me-2 ms-5 text-white" style="font-weight: lighter; width: 200px;margin-left: 10px;"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit" id="btnValider" class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter; width: 200px;">
+
+                    <i class="mdi mdi-file-question" style="font-size: 18px;margin-right: 10px"></i>{% trans %}I send my request{% endtrans %}
+
+                </button>
+                </div>
+
+            </div>
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+
+    <script>
+        $('.documents_stats').select2({
+            placeholder: "--Sélectionnez le type de document...",
+            clear: true,
+            width: '100%',
+            theme: 'classic',
+            background : 'lightblue'
+        });
+        $('.auto_pv').select2({
+            placeholder: "--Sélectionnez la parcelle...",
+            clear: true,
+            width: '100%',
+            theme: 'classic'
+        });
+        $('.reprises').select2({
+            placeholder: "--Sélectionnez la forêt...",
+            clear: true,
+            width: '100%',
+            theme: 'classic'
+        });
+            let valeur = {{ app.user.codeOperateur.id }};
+            let combo_foret = document.querySelector('.div_foret');
+            let combo_parcelle = document.querySelector('.div_parcelle');
+            let documents_stats = document.querySelector('.documents_stats');
+
+            affiche_docs();
+
+        {% if(app.user.codeexploitant) %}
+        //Masque les combos Reprise et Parcelle
+            combo_foret.style = 'display:none';
+            combo_parcelle.style = 'display:none';
+        {% endif %}
+
+
+
+
+
+                //Affiche les types de documents par opérateur
+                let combo_docs = $('.documents_stats');
+
+                var contenu = " <option value='0'>Sélectionnez le type de document</option>";
+
+                function affiche_docs(){
+
+                    $.ajax({
+                        url:'{{ path('app_login')}}snvlt/docs_op_type/' + valeur,
+                        type : 'POST',
+                        data : {id_operateur: valeur,
+                        },
+                        success: function(response){
+                            console.log(response);
+                            let liste_docs = JSON.parse(response);
+
+
+
+                            for(var i = 0; i < liste_docs.length; i++){
+
+                                contenu = contenu + '<option class="alert-danger" value="'+ liste_docs[i].id_doc + '">' + liste_docs[i].libelle + '</option>';
+
+                            }
+
+                            document.querySelector('#documents_stats').innerHTML = contenu
+                            // combo_docs.innerHTML =contenu;
+                            setTimeout(1000);
+                        }
+                    });
+                }
+
+
+        $('.documents_stats').on('change', function(){
+            var value_doc = this.value
+
+            //Masque les combos Reprise et Parcelle
+
+            combo_parcelle.style = 'display:none';
+            combo_foret.style = 'display:none';
+
+            //Efface le contenu des combos Reprise et Parcelle
+            $('.reprises').val(null);
+            $('.auto_pv').val(null);
+            {% if(app.user.codeexploitant) %}
+                if(value_doc === "1" || value_doc === "2" ){
+                    combo_foret.style = 'display:inline';
+                    affiche_reprises({{ app.user.codeexploitant.id }})
+                } else if(value_doc === "3") {
+                    combo_parcelle.style = 'display:inline';
+                    affiche_auto_pv({{ app.user.codeexploitant.id }})
+                }
+            {% endif %}
+        })
+            function affiche_reprises(id_exploitant){
+
+                var contenu = " <option value='0'>Sélectionnez la forêt</option>";
+                $.ajax({
+                    url:'{{ path('app_login')}}snvlt/reprises_operateurs/' + id_exploitant,
+                    type : 'POST',
+                    data : {id_exploitant: id_exploitant,
+                    },
+                    success: function(response){
+                        console.log(response);
+                        let liste_docs = JSON.parse(response);
+
+
+
+                        for(var i = 0; i < liste_docs.length; i++){
+
+                            contenu = contenu + '<option class="" value="'+ liste_docs[i].id_reprise + '">' + liste_docs[i].libelle + '</option>';
+
+                        }
+
+                        document.querySelector('#reprises').innerHTML = contenu
+                        // combo_docs.innerHTML =contenu;
+                        //setTimeout(1000);
+                    }
+                })
+            }
+
+        function affiche_auto_pv(id_exploitant){
+
+            var contenu = " <option value='0'>Sélectionnez la parcelle</option>";
+            $.ajax({
+                url:'{{ path('app_login')}}snvlt/auto_pv_operateurs/' + id_exploitant,
+                type : 'POST',
+                data : {id_exploitant: id_exploitant,
+                },
+                success: function(response){
+                    console.log(response);
+                    let liste_auto_pvs = JSON.parse(response);
+
+
+
+                    for(var i = 0; i < liste_auto_pvs.length; i++){
+
+                        contenu = contenu + '<option class="" value="'+ liste_auto_pvs[i].id_autorisation_pv + '">' + liste_auto_pvs[i].libelle + '</option>';
+
+                    }
+
+                    document.querySelector('#reprises').innerHTML = contenu
+                    // combo_docs.innerHTML =contenu;
+                    //setTimeout(1000);
+                }
+            })
+        }
+            $("#btnValider").on('click', function (){
+                let combo_doc = document.querySelector('#documents_stats');
+                let combo_reprise = 0;
+                let combo_autorisation_pv = 0;
+                let code_usine = 0;
+                let code_exportateur = 0;
+                let code_commercant = 0;
+                let quantite = document.querySelector('#quantite');
+                //alert(quantite);
+                {% if(app.user.codeOperateur.id == 2) %}
+                // Si l'opérateur est un exploitant forestier
+
+                let doc_stat = documents_stats.value;
+
+                if(doc_stat === "1" || doc_stat === "2"){
+
+                    combo_reprise = document.querySelector('#reprises').value;
+
+                    //Au cas ou le document est un CP ou BRH
+                        if (
+                            combo_doc.value === "0" ||
+                            combo_reprise.value === "0" ||
+                            quantite.value === "0" ||
+                            quantite.value === null){
+
+                            alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                        } else {
+
+                            /*snvlt/demandes_op/save/{id_type_doc}/{qte}/{id_reprise}*/
+                            $.ajax({
+                                url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                                type : 'POST',
+                                data : {
+                                    'id_type_doc': combo_doc.value,
+                                    'id_reprise': combo_reprise.value,
+                                    'id_autorisation_pv' : combo_autorisation_pv,
+                                    'id_usine': code_usine,
+                                    'id_exportateur': code_exportateur,
+                                    'id_commercant': code_commercant,
+                                    'qte': quantite.value
+                                },
+                                success: function(response){
+
+                                    document.location.href = "{{ url(('app_demande_operateur')) }}"
+                                }
+                            })
+
+                        }
+                } else if(doc_stat === "3"){
+                    combo_autorisation_pv = document.querySelector('#auto_pv').value;
+                    //Au cas ou le document est un BCBP
+
+                    if (
+                        combo_doc.value === "0" ||
+                        combo_autorisation_pv.value === "0" ||
+                        quantite.value === "0" ||
+                        quantite.value === null){
+
+                        alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                    } else {
+
+                        $.ajax({
+                            url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                            type : 'POST',
+                            data : {
+                                id_type_doc: combo_doc.value,
+                                id_reprise: combo_reprise.value,
+                                id_autorisation_pv : combo_autorisation_pv,
+                                id_usine: code_usine,
+                                id_exportateur: code_exportateur,
+                                id_commercant: code_commercant,
+                                qte: quantite.value
+                            },
+                            success: function(response){
+
+                                document.location.href = "{{ url(('app_demande_operateur')) }}"
+                            }
+                        })
+
+                    }
+                } else {
+
+                    //Au cas ou le document est un ETAT B
+
+                    if (
+                        combo_doc.value === "0" ||
+                        quantite.value === "0" ||
+                        quantite.value === null){
+
+                        alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                    } else {
+
+                        $.ajax({
+                            url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                            type : 'POST',
+                            data : {
+                                id_type_doc: combo_doc.value,
+                                id_reprise: combo_reprise.value,
+                                id_autorisation_pv : combo_autorisation_pv,
+                                id_usine: code_usine,
+                                id_exportateur: code_exportateur,
+                                id_commercant: code_commercant,
+                                qte: quantite.value
+                            },
+                            success: function(response){
+
+                                document.location.href = "{{ url(('app_demande_operateur')) }}"
+                            }
+                        })
+
+                    }
+                }
+
+
+                {% elseif(app.user.codeOperateur.id == "3") %}
+                // Si l'opérateur est un industriel
+                    code_usine = {{ app.user.codeindustriel.id }};
+                    combo_reprise = 0;
+                            if (
+                                combo_doc.value === "0" ||
+                                quantite.value === "0" ||
+                                quantite.value === null){
+                                alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                            } else {
+
+                                $.ajax({
+                                    url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                                    type : 'POST',
+                                    data : {
+                                        id_type_doc: combo_doc.value,
+                                        id_reprise: combo_reprise.value,
+                                        id_autorisation_pv : combo_autorisation_pv,
+                                        id_usine: code_usine,
+                                        id_exportateur: code_exportateur,
+                                        id_commercant: code_commercant,
+                                        qte: quantite.value
+                                    },
+                                    success: function(response){
+                                        document.location.href ="{{ path('app_demande_operateur') }}"
+                                    }
+                                })
+
+                            }
+
+                {% elseif(app.user.codeOperateur.id == "4") %}
+                // Si l'opérateur est un industriel
+
+                code_exportateur = {{ app.user.codeExportateur.id }};
+
+                if (
+                    combo_doc.value === "0" ||
+                    quantite.value === "0" ||
+                    quantite.value === null){
+                    alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                } else {
+
+                    $.ajax({
+                        url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                        type : 'POST',
+                        data : {
+                            id_type_doc: combo_doc.value,
+                            id_reprise: combo_reprise.value,
+                            id_autorisation_pv : combo_autorisation_pv,
+                            id_usine: code_usine,
+                            id_exportateur: code_exportateur,
+                            id_commercant: code_commercant,
+                            qte: quantite.value
+                        },
+                        success: function(response){
+                            document.location.href ="{{ path('app_demande_operateur') }}"
+                        }
+                    })
+
+                }
+
+                {% elseif(app.user.codeOperateur.id == "8") %}
+                // Si l'opérateur est un commercant
+
+                code_commercant = {{ app.user.codeCommercant.id }};
+
+                if (
+                    combo_doc.value === "0" ||
+                    quantite.value === "0" ||
+                    quantite.value === null){
+                    alert("{% trans %}You must type all values before sending request{% endtrans %}");
+                } else {
+                    /*{id_type_doc}/{id_reprise?0}/{id_autorisation_pv?0}/{id_usine?0}/{id_exportateur?0}/{id_commercant?0}/{qte}*/
+                    $.ajax({
+                        url:'{{ path('app_login')}}snvlt/demandes_op/save/' + combo_doc.value + "/" + combo_reprise +   "/" + combo_autorisation_pv +  "/" + code_usine + "/" + code_exportateur  + "/"+ code_commercant  + "/" + quantite.value,
+                        type : 'POST',
+                        data : {
+                            id_type_doc: combo_doc.value,
+                            id_reprise: combo_reprise.value,
+                            id_autorisation_pv : combo_autorisation_pv,
+                            id_usine: code_usine,
+                            id_exportateur: code_exportateur,
+                            id_commercant: code_commercant,
+                            qte: quantite.value
+                        },
+                        success: function(response){
+                            document.location.href ="{{ path('app_demande_operateur') }}"
+                        }
+                    })
+
+                }
+
+                {% endif %}
+
+            })
+    </script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Nature PS{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/wood.png') }}" alt="{% trans %}wood{% endtrans %}">  {% trans %}Nature Produits Secondaires{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set i = 0 %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.libelle) }}</div>
+                        <div class="">{{ form_row(form.montantAutorisation) }}</div>
+                        <div class="">{{ form_row(form.unite) }}</div>
+
+                    </div>
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.typeDossierPs) }}</div>
+                        <div class="">{{ form_row(form.dureeAutorisation) }}</div>
+                        <hr>
+                        <a href="{{ path('app_nature_ps') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                            {% if (titre is same as "Add Secondary Product Nature") %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Product Nature{% endtrans %}
+                            {% else %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Edit Product Nature{% endtrans %}
+                            {% endif %}
+                        </button>
+
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+{% endblock %}
+

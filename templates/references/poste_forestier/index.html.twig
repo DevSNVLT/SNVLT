@@ -1,0 +1,109 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Administrateur
+{% endblock %}
+
+{% block titre_page %}
+
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/poste_forestier.png') }}" height="64" alt="">  Postes Forestiers
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn text-white p-2 mt-2" style="background: #0b511b;border: 0px; font-size: 16px;" href="{{ path('poste_forestier.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>Ajouter</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <section class="section">
+        <div class="card" style="border-top: solid 3px #024202">
+            <div class="card-body">
+                <table class="table" id="pfs">
+                    <thead>
+                    <tr style="background: #e2ffed">
+                        <th>Poste forestier</th>
+                        <th>Cantonnement</th>
+                        <th>Responsable</th>
+                        <th>email</th>
+                        <th>mobile</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for pf in liste_poste_forestiers %}
+
+                        <tr>
+                            <td><a class="text-dark editBtn font-weight-bold" href="{{ path('poste_forestier.edit', {'id_poste_forestier': pf.id })}}" id="{{ pf.id }}">{{ pf.denomination }}</a></td>
+                            <td class="text-primary font-weight-light"> {{ pf.codeCantonnement.nomCantonnement}}</td>
+                            <td>{{ pf.PersonneRessource }}</td>
+                            <td>{{ pf.emailPersonneRessource }}</td>
+                            <td>{{ pf.mobilePersonneRessource }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script>
+        // Simple Datatable
+
+        let table = new DataTable('#pfs', {
+            responsive: true,
+            pageLength: 10,
+            layout: {
+                topStart: {
+                    buttons: ['excel']
+                }
+            },
+            colReorder: true,
+            language: {
+                processing:     "Traitement en cours...",
+                search:         "Rechercher&nbsp;:",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                infoPostFix:    "",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                paginate: {
+                    first:      "Premier",
+                    previous:   "Pr&eacute;c&eacute;dent",
+                    next:       "Suivant",
+                    last:       "Dernier"
+                },
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+    </script>
+
+
+{% endblock %}
+

@@ -1,0 +1,150 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Independent observers{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/observer.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Observateur Indépendant - SIgnaler une situationj{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white p-2">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.sujet) }}</div>
+                        <div class="">{{ form_row(form.statut) }}</div>
+                        <div class="">{{ form_row(form.message_text) }}</div>
+                        <div class="">{{ form_row(form.codeCantonnement) }}</div>
+                        <div class="p-2" style="border: 1px solid lightgrey;background-color: #f8fef8">
+                            <h5>Coordonnées GPS (X Y ou lat/lon)</h5>
+                            <div class="p-2 d-inline-flex">
+                                <div>{{ form_row(form.x) }}</div>
+                                <div class="ms-2">{{ form_row(form.y) }}</div>
+                            </div>
+                        </div>
+                        <div class="">{{ form_row(form.fichiers) }}</div>
+                    </div>
+                    <div class="col-md-5 offset-1 p-2">
+                        <div class="row">
+                            <span class="alert-success p-1" style="width: 100%;">
+                                <img class="text-danger" src="{{ asset('assets/icons/account-group.svg') }}" height="24" alt="users">
+                                Destinataires
+                            </span>
+                            <h6>Sélectionnez des destinataires pour envoi de notifications</h6>
+                            <div class="col-md-4" style="margin-left: 50px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dr" checked>
+                                    <label class="form-check-label" for="flexSwitchCheckChecked">DR</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cef" checked>
+                                    <label class="form-check-label" for="flexSwitchCheckChecked">Cantonnements</label>
+                                </div>
+                            </div>
+                            <div class="col-md-5" style="margin-left: 50px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="direction" checked>
+                                    <label class="form-check-label" for="flexSwitchCheckChecked">Directions MINEF</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="service" checked>
+                                    <label class="form-check-label" for="flexSwitchCheckChecked">Services MINEF</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="code_dr">{{ form_row(form.code_dr) }}</div>
+                        <div class="code_cef">{{ form_row(form.code_cef) }}</div>
+                        <div class="code_direction">{{ form_row(form.code_direction) }}</div>
+                        <div class="code_service">{{ form_row(form.code_service) }}</div>
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ path('app_observateur_ticket') }}" class="bg-danger p-2 me-2 text-white"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;">
+                    <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Send Ticket{% endtrans %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.js') }}"></script>
+    <script>
+
+        document.querySelector('.code_dr').style = "display:none"
+        document.querySelector('.code_cef').style = "display:none"
+        document.querySelector('.code_direction').style = "display:none"
+        document.querySelector('.code_service').style = "display:none"
+        document.querySelector('#ticket_code_dr').value = ""
+
+
+        //Initialise les checkbox
+        $('#dr').prop('checked', false)
+        $('#cef').prop('checked', false)
+        $('#direction').prop('checked', false)
+        $('#service').prop('checked', false)
+
+
+
+            $('#dr').on('change', function (){
+
+
+
+                if (this.checked){
+                    document.querySelector('.code_dr').style = "display:inline"
+                } else {
+                    document.querySelector('.code_dr').style = "display:none"
+                }
+            })
+
+            $('#cef').on('change', function (){
+                document.querySelector('#ticket_code_cef').value = ""
+                if (this.checked){
+                    document.querySelector('.code_cef').style = "display:inline"
+                } else {
+                    document.querySelector('.code_cef').style = "display:none"
+                }
+            })
+
+            $('#direction').on('change', function (){
+                document.querySelector('#ticket_code_direction').value = ""
+                if (this.checked){
+                    document.querySelector('.code_direction').style = "display:inline"
+                } else {
+                    document.querySelector('.code_direction').style = "display:none"
+                }
+            })
+
+            $('#service').on('change', function (){
+                document.querySelector('#ticket_code_service').value = ""
+                if (this.checked){
+                    document.querySelector('.code_service').style = "display:inline"
+                } else {
+                    document.querySelector('.code_service').style = "display:none"
+                }
+            })
+
+    </script>
+{% endblock %}

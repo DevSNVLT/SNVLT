@@ -1,0 +1,202 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+<script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+<div class="col-md-9">
+    <div class="row  bg-white p-1">
+        <div class="col-md-3">
+            <a href="#" class="badge text-dark d-inline-flex m-2" style="width: 100%;background: #73a776">
+                <i class="mdi mdi-file-document" style="font-size: 32px"></i>
+                <div class="my-auto mx-auto d-inline-flex">
+                    <span class="font-weight-bold text-white" style="font-size: 20px;margin-left: 5px;"> {{ arbres_abattus }}</span>
+                    <span class="text-white" style="font-size: 18px;">arbres</span>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#" class="badge text-dark d-inline-flex m-2" style="width: 100%;background: #fb7c19">
+                <i class="mdi mdi-filter" style="font-size: 32px"></i>
+                <div class="my-auto mx-auto d-inline-flex">
+                    <span class="text-white" style="font-size: 16px;">{{ 'Logs volume' | trans}}</span>
+                    <span class="font-weight-bold text-white" style="font-size: 16px;margin-left: 5px;">{{ vol_brh}} m <sup>3</sup></span>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="#" class="badge text-dark d-inline-flex m-2" style="width: 100%;background: #f9f91e">
+                <i class="mdi mdi-settings" style="font-size: 32px"></i>
+                <div class="my-auto mx-auto d-inline-flex">
+                    <span class="font-weight-bold text-dark" style="font-size: 20px;margin-right: 5px;">{{ nb_utilisateurs }}</span>
+                    <span class="text-dark" style="font-size: 18px;"> agents</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-1 p-1">
+        <div class="card col-md-12 alert-info p-2" style="border: 1px;background: #fcfcf1;">
+            <div class="card-title p-2 text-dark font-weight-light mt-3" style="background-color: #fabd39">
+                Quotas d'exploitation
+            </div>
+            <div class="" id="chart_quotas_dr"></div>
+            <div class="card-title p-2 text-white font-weight-light mt-3" style="background-color: #0479af">
+                Données Exploitation
+            </div>
+
+                    <table class="table-responsive table table-striped tbl_point">
+                        <thead>
+                            <tr class="fw-bold alert-success">
+                                <th>Forêt</th>
+                                <th>Cantonnement</th>
+                                <th>Exploitant</th>
+                                <th>Décision Attribution</th>
+                                <th>Décision Reprise</th>
+                                <th>Nb CP</th>
+                                <th>Nb BRH</th>
+                                <th>Nb Arbres abattus</th>
+                                <th>Volume Abattage</th>
+                                <th>Volume billes acheminés</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for point in point_dr %}
+                        {% if point.decision_reprise == "-" %}
+                            <tr class="text-danger fw-bold">
+                        {% else %}
+                                    <tr>
+                        {% endif %}
+                                <td><h2 class="p-1 badge" style="background: #0a430c;color:white;">{{ point.foret }}</h2></td>
+                                <td><h2 class="p-1 badge" style="background: #c55405;color:white;">{{ point.cantonnement }}</h2></td>
+                                <td>{{ point.exploitant }}</td>
+                                <td>{{ point.decision_attribution }}</td>
+                                <td>{{ point.decision_reprise }}</td>
+                                <td>{{ point.nb_cp }}</td>
+                                <td>{{ point.nb_brh }}</td>
+                                <td>{{ point.nb_brh }}</td>
+                                <td>{{ point.volume_abattage }}</td>
+                                <td>{{ point.volume_brh }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+        </div>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="card mb-2" style="border: 1px;height: 250px;">
+        <div class="card-title p-1 text-dark font-weight-light" style="background-color: #d0f8c1; ">
+            <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" height="24" style="margin-right: 5px;"> {{ 'Last loadings' | trans}}
+        </div>
+        <div class="alert-light mb-2" style="margin-left: 5px; margin-right: 5px;height: 230px;">
+            <table class="table table-responsive" style="border: 1px solid lightgrey">
+                <thead>
+                <tr class="alert-success">
+                    <th>{{ 'No' | trans}}</th>
+                   {# <th>{{ 'species' | trans}}</th>#}
+                    <th>{{ 'Volume' | trans}}</th>
+                    <th>{{ 'Forest' | trans}}</th>
+                    <th>{{ 'Logger' | trans}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for chargement in chrs %}
+                        <tr>
+                            <td>{{ chargement.numeroPagebrh }}</td>
+                            <td>
+                                {% set volume = 0 %}
+                                {% for ligne in chargement.lignepagebrhs %}
+                                    {% set volume = volume + (ligne.cubageLignepagebrh) %}
+                                {% endfor %}
+                                {{ volume }}
+                            </td>
+                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</td>
+                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {#Quotas d'exploitation#}
+    <div class="card mb-2" style="border: 1px;height: 250px;">
+        <div class="card-title p-1 text-dark font-weight-light" style="background-color: #f8c1c1; ">
+           {# <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" height="24" style="margin-right: 5px;">#} Quotas transférables
+        </div>
+        <div class="alert-light mb-2" style="margin-left: 5px; margin-right: 5px;height: 230px;">
+            <table class="table table-responsive" style="border: 1px solid #f1eeee">
+                <thead>
+                <tr class="alert-light">
+                    <th>{{ 'Forest' | trans}}</th>
+                    <th>{{ 'Quota' | trans}}</th>
+                    <th>{{ 'OQ' | trans}}</th>
+                    <th>{{ 'Logger' | trans}}</th>
+                    <th>Operator</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+<script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+<script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+
+<script>
+    //let table1 = new DataTable('.sasies_brh');
+
+    let table = new DataTable('.tbl_point', {
+        responsive: true,
+        layout: {
+            topStart: {
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        title: 'Données d\' Exploitation ',
+                        text: 'Exporter les données',
+
+                    }
+                ]
+            }
+        },
+        pageLength: 10,
+        colReorder: true,
+        language: {
+            processing:     "Traitement en cours...",
+            search:         "Rechercher&nbsp;:",
+            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+            infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+            infoPostFix:    "",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+            emptyTable:     "Aucune donnée disponible dans le tableau",
+            paginate: {
+                first:      "Premier",
+                previous:   "Pr&eacute;c&eacute;dent",
+                next:       "Suivant",
+                last:       "Dernier"
+            },
+            aria: {
+                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        }
+    });
+</script>

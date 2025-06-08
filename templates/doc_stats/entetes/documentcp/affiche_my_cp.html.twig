@@ -1,0 +1,2124 @@
+{% extends 'template_base.html.twig' %}
+
+{% set options = option_service.findAll %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Mes CC - [ {{ document_name.numeroDoccp }} ]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}cp{% endtrans %}">  Mes CC -
+        [
+        <span class="alert-success p-2" style="font-size: 16px;">{{ document_name.numeroDoccp }}</span>
+        - <span class="alert-info p-2 ms-2" style="font-size: 16px;">{{ document_name.codeReprise.codeAttribution.codeForet.denomination }}</span>
+        - <span class="alert-warning p-2 ms-2" style="font-size: 16px;">{{ document_name.codeReprise.codeAttribution.codeForet.codeCantonnement.nomCantonnement }}</span>
+        ]
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+
+    <!Core CSS>
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/style.css') }}">
+    <link rel="stylesheet" href="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.css">
+
+    <style>
+        .checked-it {
+            height: 24px;
+            width: 24px;
+            background-color: #f8b9b9;
+            color: white;
+        }
+        .checked-it input:checked{
+            height: 24px;
+            width: 24px;
+            background-color: #ff0000;
+            color: white;
+        }
+    </style>
+
+    {% set options = option_service.findAll %}
+
+    {% set valeur = options['prospection'] %}
+
+    {% set numero_arbre_option = options['saisie_numero_cp'] %}
+
+    <section class="section p-3" style="background:radial-gradient(#e9eae6, #daf1e9); border: 1px #d1d2d1 solid">
+        <div class="" style="background: transparent">
+            <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                <div class="col-md-2 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-md-6">{{ 'Page No' | trans }}</span>
+                        <select class="col-md-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-md-6">{{ 'Month' | trans }} </span>
+                        <select class="col-md-6"  id="mois"  style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+                            <option value="0">-- {{ 'Select a month' | trans}} --</option>
+                            <option value="1">{{ 'January' | trans}}</option>
+                            <option value="2">{{ 'February' | trans}}</option>
+                            <option value="3">{{ 'March' | trans}}</option>
+                            <option value="4">{{ 'April' | trans}}</option>
+                            <option value="5">{{ 'May' | trans}}</option>
+                            <option value="6">{{ 'June' | trans}}</option>
+                            <option value="7">{{ 'July' | trans}}</option>
+                            <option value="8">{{ 'August' | trans}}</option>
+                            <option value="9">{{ 'September' | trans}}</option>
+                            <option value="10">{{ 'October' | trans}}</option>
+                            <option value="11">{{ 'November' | trans}}</option>
+                            <option value="12">{{ 'December' | trans}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-md-6">{{ 'Year' | trans }}</span>
+                        <input class="col-md-6" type="number" id="annee" style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+
+                    </div>
+                </div>
+                <div class="col-md-3 " style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-md-6">{{ 'Village' | trans }}</span>
+                        <input class="col-md-6" type="text"  id="village" style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white; text-transform: uppercase;">
+
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-2" style="width: 100%;">
+                        <a href="#" class="btn btn-sm  float-right text-white font-weight-light col-md-6" id="btn_save" style="background: #507f87; font-size: 16px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>Enregistrer entête</a>
+                </div>
+
+            </div>
+        </div>
+        <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+            <div style="background:radial-gradient(#f7fbeb, #e6f6f9)">
+                <a href="#" class="btn  btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiecp"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
+                <div class="d-inline-flex">
+                    <span class="p-2 font-weight-bold m-1">Légende</span>
+                    <span class="p-2 alert-danger m-1" style="border: 1px solid black;">fût ou bille abandonné(e)</span>
+                    <span class="p-2 alert-success m-1" style="border: 1px solid black;">bille déjà chargée</span>
+                    <span class="p-2 bg-white m-1" style="border: 1px solid black;">bille non chargée</span>
+                </div>
+            </div>
+            <div class="card-body p-2" style="background: #f4f2f2">
+
+
+                <div class="tab-content tab-transparent-content">
+                    <div class="tab-pane fade show active" id="datacp" role="tabpanel" aria-labelledby="business-tab">
+                        <div class="row" style="background: #f4f2f2">
+                            <div class="col-md-12">
+                                <div class="overflow-y-scroll" style="height: 400px;">
+                                    <table class="table table-responsive" id="data_cp" style="height: 400px;">
+                                        <thead>
+                                        <tr class="alert-info sticky-top">
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree No' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'species' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Zone' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'X' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Y' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Day' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Length' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Diameter' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Tree Volume' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille A' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille A' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille A' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille B' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille B' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille B' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Lng Bille C' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Diameter Bille C' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Volume Bille C' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;">{{ 'Actions' |trans }}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="body_contenu" class="bg-white">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+    </section>
+
+    {#Ajout Lignepagecp#}
+    <div class="modal fade" id="saisiecp" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter Données CC</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;display: none;" id="lbl_alert"></div>
+                    <div class="row overflow-y-scroll" >
+                        <div class="bg-success text-center  p-3 w-100 div_inv">
+                            <select class="alert-success text-dark font-weight-bold" name="from_inv" id="from_inv">
+
+                            </select>
+
+                        </div>
+                        <input type="hidden" id="id_arbre_inv" value="0">
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+
+                            <div class="col-4 mt-4"><label for=""  style="font-weight: bold">{{ 'Tree No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="numero_arbre" style="background-color: #ed7921;font-size: large;color: #ffffff;font-weight: bold;width:250px;"></div>
+
+                            {% if (valeur == '1') %}
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select disabled id="zoneh" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="x_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="y_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select disabled id="essence" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+
+                            {% else %}
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="zoneh" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="x_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="y_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="w-100"><label class="p-1 alert-danger lbl_xy" for="" style="font-weight: bold;color: red"></label></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="essence" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+                            {% endif %}
+
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Day' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select  id="day_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="11">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                    <option value="24">24</option>
+                                    <option value="25">25</option>
+                                    <option value="26">26</option>
+                                    <option value="27">27</option>
+                                    <option value="28">28</option>
+                                    <option value="29">29</option>
+                                    <option value="30">30</option>
+                                    <option value="30">31</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12 p-1 mb-2 row div_arbre">
+                                <div class="col-4 mt-4 div_lng_arbre"><label for="" style="font-weight: bold">Longueur Fût (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4 div_dm_arbre"><label for="" style="font-weight: bold">Diamètre Fût (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4 div_vo_arbre"><label for="" style="font-weight: bold">Volume Fût </label></div><div class="col-7 mt-3 d-inline-flex"><input type="number" value="" id="vol_arbre" readonly style="background-color: #30ed30;width:250px;"><a class="btn btn-danger" style="margin-left: 10px;" href="#" data-bs-target="#modal_ab_fut" data-bs-toggle="modal" id="ab_fut">AB</a></div>
+                                <input type="hidden" id="hidden_arbre">
+                            </div>
+
+                            <div class="col-md-12 p-1 mb-2 row div_a">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille A' |trans}} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_a"  style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille A' |trans }} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_a" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille A' |trans }} </label></div><div class="col-7 mt-3 align-content-md-start d-inline-flex"><input type="number" value="" id="vol_a" readonly style="background-color: #30ed30;width:250px;"><a class="btn alert-danger" style="margin-left: 10px;" href="#"   id="ab_a">AB</a></div>
+                                <input type="hidden" id="hidden_a">
+                            </div>
+
+                            <div class="col-md-12 p-1 mb-2 row div_b">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille B' |trans}} cm</label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille B' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" value="" id="dm_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille B' |trans }}</label></div><div class="col-7 mt-3 d-inline-flex"><input type="number" value="" id="vol_b" readonly style="background-color: #30ed30;width:250px;"><a class="btn alert-danger" style="margin-left: 10px;" href="#" id="ab_b" >AB</a></div>
+                                <input type="hidden" id="hidden_b">
+                            </div>
+
+                            <div class="col-md-12 p-1 mb-2 row div_c">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length Bille C' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" value="" id="lng_c" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille C' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" id="dm_c" value="" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille C' |trans }}</label></div><div class="col-7 mt-3 d-inline-flex"><input type="number" id="vol_c" value="" readonly style="background-color: #30ed30;width:250px;"><a class="btn alert-danger" style="margin-left: 10px;" href="#" id="ab_c" >AB</a></div>
+                                <input type="hidden" id="hidden_c">
+                            </div>
+
+                            <hr>
+
+                           </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#Modif Lignepagecp#}
+<div class="modal fade" id="modif_lignes" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Modifier Données CC</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;display: none;" id="lbl_alert"></div>
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                            <div class="row mt-2 mb-2 div_fut">
+                                <div class="col-4 mt-4"><label for=""  style="font-weight: bold">{{ 'Tree No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="e_numero_arbre" style="background-color: #ed7921;font-size: large;color: #ffffff;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="e_essence" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><select id="e_zoneh" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></select></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_x_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_y_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Day' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                    <select  id="e_day_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="11">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                        <option value="24">24</option>
+                                        <option value="25">25</option>
+                                        <option value="26">26</option>
+                                        <option value="27">27</option>
+                                        <option value="28">28</option>
+                                        <option value="29">29</option>
+                                        <option value="30">30</option>
+                                        <option value="30">31</option>
+                                    </select>
+                                </div>
+
+                                    <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Length' |trans}} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_lng_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                    <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Diameter' |trans}} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_dm_arbre" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                    <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Tree Volume' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="e_vol_arbre" readonly style="background-color: #30ed30;width:250px;"></div>
+                                    </div>
+
+
+                            <div class="row mt-2 mb-2 p-2 div_a">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille A' |trans}} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_lng_a"  style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille A' |trans }} (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="e_dm_a" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille A' |trans }} </label></div><div class="col-7 mt-3"><input type="number" value="" id="e_vol_a" readonly style="background-color: #30ed30;width:250px;"></div>
+                            </div>
+
+                            <div class="row mt-2 mb-2 div_b">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Lng Bille B' |trans}} cm</label></div><div class="col-7 mt-3"><input type="number" value="" id="e_lng_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille B' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" value="" id="e_dm_b" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille B' |trans }}</label></div><div class="col-7 mt-3"><input type="number" value="" id="e_vol_b" readonly style="background-color: #30ed30;width:250px;"></div>
+                             </div>
+
+                            <div class="row mt-2 mb-2 div_c">
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length Bille C' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" value="" id="e_lng_c" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter Bille C' |trans }} (cm)</label></div><div class="col-7 mt-3"><input type="number" id="e_dm_c" value="" style="background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume Bille C' |trans }}</label></div><div class="col-7 mt-3"><input type="number" id="e_vol_c" value="" readonly style="background-color: #30ed30;width:250px;"></div>
+                             </div>
+                            <hr>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="e_save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal Abandon Fut-->
+    <div class="modal fade" id="modal_ab_fut" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        style="display: none;"
+
+                ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Cette action est irreversible</label>
+                            <h6  class="text-danger ">Voulez-vous vraiment abandonner ce fût ?</h6>
+                            <p class="text-white p-2 rounded-5" style="background-color: #015101">Si vous cliquer sur "ABANDONNER", vous devriez alors valider le formulaire pour rendre votre décision effective</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light sortir_ab" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>ANNULER
+                        </a>
+                        <a type="button" class="btn btn-success abandonner_fut font-weight-light"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> ABANDONNER
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Abandon Bille A-->
+    <div class="modal fade" id="modal_ab_a" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/log.png') }}" alt="log" style="margin-right: 10px; height: 32px;"> Abandon de billes</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Cette action est irreversible</label>
+                            <h6  class="text-danger ">Voulez-vous vraiment abandonner la bille A ?</h6>
+                            <p class="text-white p-2 rounded-5" style="background-color: #015101">Si vous cliquer sur "ABANDONNER", vous devriez alors valider le formulaire pour rendre votre décision effective</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light sortir" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>ANNULER
+                        </a>
+                        <a type="button" class="btn btn-success abandonner_a font-weight-light"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> ABANDONNER
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Abandon Bille V-->
+    <div class="modal fade" id="modal_ab_b" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/log.png') }}" alt="log" style="margin-right: 10px; height: 32px;"> Abandon de billes</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Cette action est irreversible</label>
+                            <h6  class="text-danger ">Voulez-vous vraiment abandonner la bille B ?</h6>
+                            <p class="text-white p-2 rounded-5" style="background-color: #015101">Si vous cliquer sur "ABANDONNER", vous devriez alors valider le formulaire pour rendre votre décision effective</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light sortir" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>ANNULER
+                        </a>
+                        <a type="button" class="btn btn-success abandonner_b font-weight-light"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> ABANDONNER
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Abandon Bille A-->
+    <div class="modal fade" id="modal_ab_c" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/log.png') }}" alt="log" style="margin-right: 10px; height: 32px;"> Abandon de billes</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Cette action est irreversible</label>
+                            <h6  class="text-danger ">Voulez-vous vraiment abandonner la bille C ?</h6>
+                            <p class="text-white p-2 rounded-5" style="background-color: #015101">Si vous cliquer sur "ABANDONNER", vous devriez alors valider le formulaire pour rendre votre décision effective</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light sortir" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>ANNULER
+                        </a>
+                        <a type="button" class="btn btn-success abandonner_c font-weight-light"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> ABANDONNER
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Déplacer-->
+    <div class="modal fade" id="modal_deplacer" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/log.png') }}" alt="daily_sheet" style="margin-right: 10px; height: 32px;">Déplacer le fût vers ce feuillet...</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <h5 class="text-danger font-weight-bold">Sélectionnez un feuillet SVP!</h5>
+                    <select class="form-control alert-warning feuillets" style="font-size: 18px;" name="feuillets" id="feuillets">
+
+                    </select>
+                    <div class="text-center mt-3">
+
+                        <a type="button" class="btn btn-primary font-weight-light " id="deplacer_fut" style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Déplacer le fût
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal Supprimer Bille-->
+    <div class="modal" id="modal_supprimer" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/billons.png.png') }}" alt="bille" style="margin-right: 10px; height: 32px;"> Retrait Arbre</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">ATTENTION VOUS ALLEZ SUPPRIMER UN ARBRE</label>
+                            <h6  class="text-danger alert-danger p-1 mb-1">Vous êtes responsable de cette action</h6>
+                            <h6  class="text-danger ">Cette action est irréversible ? </h6>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-success revenir font-weight-light  accept_loading" data-bs-dismiss="modal" style="font-size: 16px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i>Annuler
+                        </a>
+                        <a type="button" class="btn btn-danger text-white font-weight-light delete_arbre"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i> Supprimer
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Doublon constaté-->
+    <div class="modal fade" id="doublonNumero" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog" style="background: #e9f2f5;border:  4px solid #fc7000">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Recherche de doublons</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-danger" style="font-size: 32px;">ATTENTION !!! DOUBLON CONSTATE</label>
+                            <h4  class="text-dark ">Vous allez enregistrer un numéro d'arbre en doublon dans SNVLT!</h4>
+                            <h6  class="text-dark ">Voulez-vous tout de même procéder ainsi ?</h6>
+                        </div>
+
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-success text-white font-weight-light annulerDoublon" href="#" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>Ne pas enregistrer
+                        </a>
+                        <a type="button" class="btn btn-danger enr_doublon font-weight-light" href="#"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Enregistrer
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+        // Index de la page courante
+        let index_page = 0;
+        let cp_id_ligne = 0;
+        let id_arbre = 0;
+
+        let exo = {{ exercice }};
+        //Affiche les pages du document BRH
+        $(document).ready(function () {
+            affiche_pages({{ document_name.id }});
+        })
+
+
+        $('#numero_page_select').on('change', function (){
+            //document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+            index_page = this.value;
+            initialiser_page();
+            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+            affiche_page_courante(index_page)
+
+            affiche_lignes_courante(index_page)
+
+        })
+
+        /* Recherche si les coordonnées sont déjà utilisées */
+        $('#x_arbre').on('change', function (){
+            alerte_xy($('#x_arbre').val(), $('#y_arbre').val())
+        });
+        $('#y_arbre').on('change', function (){
+            alerte_xy($('#x_arbre').val(), $('#y_arbre').val())
+        });
+
+
+       /* Calcul de volume bille A */
+       /* document.querySelector('#lng_a').addEventListener("keypress", function (event){
+            /!*if(event.key === "Enter"){*!/
+                event.preventDefault();
+                document.querySelector('#numero_bille').click();
+            /!*}*!/
+        });*/
+            $('#lng_a').on('change', function (){
+                if (this.value < 30 ){
+                    render_toast_value("Merci de renseigner la longueur en cm", 2)
+                    this.value = "";
+                    $('#lng_a').focus()
+                } else {
+                    $("#vol_a").val(calcul_volume(this.value, $('#dm_a').val()))
+
+                    if ( $("#vol_a").val() > 0){
+                        document.querySelector("#ab_a").style = "display:inline;margin-left:10px;"
+                    } else {
+                        document.querySelector("#ab_a").style = "display:none"
+                    }
+                }
+
+
+            })
+
+            $('#dm_a').on('change', function (){
+                if (this.value < 2.5 || this.value > 300){
+                    render_toast_value("Merci de renseigner le diamètre en cm", 2)
+                    this.value = "";
+                    //$('#dm_a').focus()
+                } else {
+                    $("#vol_a").val(calcul_volume($('#lng_a').val(), this.value))
+
+                    if ( $("#vol_a").val() > 0){
+                        document.querySelector("#ab_a").style = "display:inline;margin-left:10px;"
+                    } else {
+                        document.querySelector("#ab_a").style = "display:none"
+                    }
+                }
+            })
+
+
+
+
+        /* Calcul de volume bille B */
+            $('#lng_b').on('change', function (){
+                if (this.value < 30 ){
+                    render_toast_value("Merci de renseigner le longueur en cm", 2)
+                    this.value = "";
+                    this.focus()
+                }
+                $("#vol_b").val(calcul_volume(this.value, $('#dm_b').val()))
+
+                                if ( $("#vol_b").val() > 0){
+                                    document.querySelector("#ab_b").style = "display:inline;margin-left:10px;"
+                                } else {
+                                    document.querySelector("#ab_b").style = "display:none"
+                                }
+            })
+
+            $('#dm_b').on('change', function (){
+                if (this.value < 2.5 || this.value > 300){
+                    render_toast_value("Merci de renseigner le diamètre en cm", 2)
+                    this.value = "";
+                    this.focus()
+                }
+                $("#vol_b").val(calcul_volume($('#lng_b').val(), this.value))
+
+                                if ( $("#vol_b").val() > 0){
+                                    document.querySelector("#ab_b").style = "display:inline;margin-left:10px;"
+                                } else {
+                                    document.querySelector("#ab_b").style = "display:none"
+                                }
+            })
+
+        /* Calcul de volume bille C */
+            $('#lng_c').on('change', function (){
+                if (this.value < 30 ){
+                    render_toast_value("Merci de renseigner le longueur en cm", 2)
+                    this.value = "";
+                    this.focus()
+                }
+                $("#vol_c").val(calcul_volume(this.value, $('#dm_c').val()))
+
+                            if ( $("#vol_c").val() > 0){
+                                document.querySelector("#ab_c").style = "display:inline;margin-left:10px;"
+                            } else {
+                                document.querySelector("#ab_c").style = "display:none"
+                            }
+            })
+
+            $('#dm_c').on('change', function (){
+                if (this.value < 2.5 || this.value > 300){
+                    render_toast_value("Merci de renseigner le diamètre en cm", 2)
+                    this.value = "";
+                    this.focus()
+                }
+                $("#vol_c").val(calcul_volume($('#lng_c').val(), this.value))
+
+                                if ( $("#vol_c").val() > 0){
+                                    document.querySelector("#ab_c").style = "display:inline;margin-left:10px;"
+                                } else {
+                                    document.querySelector("#ab_c").style = "display:none"
+                                }
+            })
+
+        /* Calcul volume arbre */
+        $('#lng_arbre').on('change', function (){
+            if (this.value < 30 ){
+               render_toast_value("Merci de renseigner le longueur en cm", 2)
+                this.value = "";
+                this.focus()
+            }
+            $("#vol_arbre").val(calcul_volume(this.value, $('#dm_arbre').val()))
+
+                        if ( $("#vol_arbre").val() > 0){
+                            document.querySelector("#ab_fut").style = "display:inline;margin-left:10px;"
+                        } else {
+                            document.querySelector("#ab_fut").style = "display:none"
+                        }
+        })
+
+        $('#dm_arbre').on('change', function (){
+            if (this.value < 2.5 || this.value > 300){
+                render_toast_value("Merci de renseigner le diamètre en cm", 2)
+                this.value = "";
+                this.focus()
+            }
+            $("#vol_arbre").val(calcul_volume($('#lng_arbre').val(), this.value))
+                if ( $("#vol_arbre").val() > 0){
+                    document.querySelector("#ab_fut").style = "display:inline;margin-left:10px;"
+                } else {
+                    document.querySelector("#ab_fut").style = "display:none"
+                }
+        })
+
+        function calcul_volume(lng, dm){
+            return Math.round((((dm * dm)/4)*3.14159 * (lng/1000000)) * 1000)/1000
+        }
+
+        $('#btn_save').on('click', function (){
+
+            if (
+                $('#mois').val() === "" ||
+                $('#annee').val() === "" ||
+                $('#mois').val() === "0"
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Chargement CC',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                maj_page_cp();
+            }
+
+        })
+        document.querySelector("#from_inv").style = "display:none;";
+
+        $('#from_inv').on('change', function (){
+            if(this.value === "0"){
+                document.querySelector("#essence").disabled = false;
+                document.querySelector("#zoneh").disabled = false;
+            } else{
+                document.querySelector("#essence").disabled = true;
+                document.querySelector("#zoneh").disabled = true;
+                affiche_arbre(this.value)
+            }
+
+        })
+
+        function liste_feuillets(){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/{{ document_name.id }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let page_cp = JSON.parse(response);
+                    var contenu = '';
+
+                    for(var i = 0; i < page_cp.length ; i++){
+                        var index_diff = index_page - page_cp[i].id_page
+                        if (index_diff === 0){
+
+                        } else {
+                            contenu = contenu + '<option value="' + page_cp[i].id_page + '">' + page_cp[i].numero_page + '</option>';
+                        }
+                    }
+
+                    contenu = contenu + '</div>'
+                    document.querySelector('.feuillets').innerHTML = contenu;
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        function deplacer_fut(){
+            let select_feuillet = $('#feuillets').val();
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/deplacer/pages_cp/' + id_arbre + '/' + select_feuillet,
+                type: 'POST',
+                success: function(response) {
+                    let reponse = JSON.parse(response);
+
+                    if (reponse[0].code === "PAGE_NON_RENSEIGNEE"){
+                        render_toast_value('VOUS AVEZ CHOISI UN FEUILLET NON ENREGISTRE', 0)
+                    } else if (reponse[0].code === "ERROR"){
+                        render_toast_value('ERREUR CONSTATEE LORS DU DEPLACEMENT', 0)
+                    }else {
+                        $('#modal_deplacer .btn-close').click();
+                        affiche_lignes_courante(index_page)
+                    }
+
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_pages(id_cp){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/' +id_cp,
+                type: 'POST',
+                data: {'id_cp': id_cp},
+                success: function(response) {
+
+                    let page_cp = JSON.parse(response);
+                    var contenu = '';
+                    let select_page = document.querySelector("#numero_page_select");
+
+
+
+                    for(var i = 0; i < page_cp.length ; i++){
+
+                        contenu = contenu + '<option value="' + page_cp[i].id_page + '">' + page_cp[i].numero_page + '</option>';
+                    }
+                    contenu = contenu + '</div>'
+                    select_page.innerHTML = contenu;
+
+                    affiche_page_courante(select_page.value);
+                    $('#numero_page_select').val(page_cp[0].id_page)
+                    index_page =  $('#numero_page_select').val();
+
+                    affiche_lignes_courante(index_page)
+                    //affiche_lignes_courante(page_cp[0].id_page);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+
+        }
+        //Affiche la page_courante
+        function affiche_page_courante(id_page){
+            $('#chargement_snvlt').modal('show');
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/' +id_page,
+                type: 'POST',
+                data: {'id_cp': id_page},
+                success: function(response) {
+
+                    let page_cp = JSON.parse(response);
+                    $('#mois').val(page_cp[0].mois);
+                    $('#annee').val(page_cp[0].annee);
+                    $('#village').val(page_cp[0].village);
+
+                    if (page_cp[0].annee === "" || page_cp[0].annee === null){
+                        $('#annee').val({{ exercice }});
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_lignes_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/op/lignes_cp/data/' +id_page,
+                type: 'POST',
+                data: {'id_cp': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    var contenu = '';
+
+                    if(lignes.length === 0){
+                        document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                    } else{
+                        document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+                        for(var i = 0; i < lignes.length ; i++){
+                            if(lignes[i].charge === true){
+                                contenu = contenu +'<tr class="alert-success">';
+
+                            } else if(lignes[i].fut_abandon === true){
+                                contenu = contenu +'<tr class="alert-danger">';
+                            } else {
+                                contenu = contenu +'<tr class="bg-white">';
+                            }
+                            if(lignes[i].charge === true || lignes[i].fut_abandon === true) {
+                                contenu = contenu + '<td style="font-size: 18px;">' + lignes[i].numero_ligne + '</td>';
+                            } else {
+                                contenu = contenu + '<td><a class="text-dark font-weight-bold modif_cp" style="font-size: 18px;" href="#" data-bs-target="#modif_lignes" data-bs-toggle="modal" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '<i class="mdi mdi-pen text-danger" style="font-size: 20px; margin-left: 10px;"></i> </a></td>'
+                            }
+                            contenu = contenu + '<td><span class="badge bg-dark text-white p-1"style="font-size: 16px;">' + lignes[i].essence  + '</span></td>'+
+                                                '<td><span>' + lignes[i].zh_arbre  + '</span></td>'+
+                                                '<td><span>' + lignes[i].x_arbre  + '</span></td>'+
+                                                '<td><span>' + lignes[i].y_arbre  + '</span></td>'+
+                                                '<td><span>' + lignes[i].jour  + '</span></td>'+
+                                                '<td><span>' + lignes[i].lng_arbre  + '</span></td>'+
+                                                '<td><span>' + lignes[i].dm_arbre  + '</span></td>'+
+                                                '<td><span>' + lignes[i].cubage_arbre  + '</span></td>';
+
+                                                    if(lignes[i].a_abandon === true) {
+                                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                                        '<td class="alert-danger"><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                                        '<td class="alert-danger"><span>' + lignes[i].cubage_billea  + '</span></td>';
+                                                    } else {
+                                                        contenu = contenu + '<td><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].cubage_billea  + '</span></td>';
+                                                    }
+
+                                                    if(lignes[i].b_abandon === true) {
+                                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                                            '<td class="alert-danger"><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                                            '<td class="alert-danger"><span>' + lignes[i].cubage_billeb  + '</span></td>';
+                                                    } else {
+                                                        contenu = contenu + '<td><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].cubage_billeb  + '</span></td>';
+                                                    }
+
+                                                    if(lignes[i].c_abandon === true) {
+                                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                                            '<td class="alert-danger"><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                                            '<td class="alert-danger"><span>' + lignes[i].cubage_billec  + '</span></td>';
+                                                    } else {
+                                                        contenu = contenu + '<td><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                                            '<td><span>' + lignes[i].cubage_billec  + '</span></td>';
+                                                    }
+                                                        if(lignes[i].charge !== true ){
+                                                            contenu = contenu + '<td><a class="btn btn-sm btn-primary text-center deplacer m-1" data-bs-toggle="modal" data-bs-target="#modal_deplacer" id="' + lignes[i].id_ligne + '">DEPLACER</a><a class="btn btn-sm btn-danger text-center supp_ligne  m-1"  data-bs-toggle="modal" data-bs-target="#modal_supprimer"  id="' + lignes[i].id_ligne + '">SUPPRIMER</a></td>'
+                                                        }
+
+                                                    contenu = contenu + '</tr>';
+                        }
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    }
+                    $('#chargement_snvlt .btn-close').click();
+                },
+                error: function(error) {
+                    console.log(error);
+                    $('#chargement_snvlt .btn-close').click();
+                }
+            })
+
+        }
+
+        $('body').on('click', '.deplacer', function(){
+            id_arbre = this.id;
+            liste_feuillets()
+        });
+        $('#deplacer_fut').on('click', function(){
+            deplacer_fut()
+        });
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('#essence').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('#zoneh').innerHTML = contenu;
+                }
+            })
+        }
+
+        function e_liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('#e_essence').innerHTML = contenu;
+                }
+            })
+        }
+
+        function e_liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('#e_zoneh').innerHTML = contenu;
+                }
+            })
+        }
+
+        $("#save_data").on('click', function (){
+            var total_lng_billes = Number($('#lng_a').val()) + Number($('#lng_b').val()) + Number($('#lng_c').val());
+
+            if (
+                $('#numero_lignepagecp').val() === "" ||$('#numero_lignepagecp').val() === 0 ||
+                $('#day_arbre').val() === "" ||
+                $('#essence').val() === "" ||
+                $('#x_arbre').val() === "" ||
+                $('#y_arbre').val() === "" ||
+                $('#lng_arbre').val() === "" ||
+                $('#dm_arbre').val() === "" ||
+                $('#lng_a').val() === "" ||
+                $('#dm_a').val() === "" ||
+                $('#zoneh').val() === ""
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f88484',
+                    timer : 10000,
+                    icon: "error",
+                    title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+            }else if ( total_lng_billes > $('#lng_arbre').val() ||
+                Number($('#dm_arbre').val()) > 300 || Number($('#dm_arbre').val()) < 0 ||
+                ($('#x_arbre').val()).length > 7 || ($('#x_arbre').val()).length  < 6 ||
+                ($('#y_arbre').val()).length > 7 || ($('#y_arbre').val()).length  < 6
+            ) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f88484',
+                    timer : 10000,
+                    icon: "error",
+                    title: '{% trans %}The values seem to be invalid{% endtrans %}',
+                    showConfirmButton: false
+                });
+            }else if ($('.lbl_xy').text() === "" ){
+                {% set valeur = options['doubon_saisie'] %}
+                //alert({{ valeur }})
+                {% if valeur == "1" %}
+
+                let numero_arbre = document.getElementById('numero_arbre').value;
+                //alert(numero_arbre);
+                recherche_doublons(numero_arbre, {{ document_name.codeReprise.codeAttribution.codeForet.id }})
+                {% else %}
+                add_ligne_cp();
+                {% endif %}
+            } else {
+                render_toast_value("Les coordonnées X et Y existent déjà", 0)
+            }
+        });
+
+        $(".enr_doublon").on('click', function () {
+            add_ligne_cp_db();
+        });
+        function recherche_doublons(numero_arbre, id_foret){
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/verif/'+ numero_arbre + '/' + id_foret,
+                'type': 'POST',
+                success: function(response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].reponse === "TRUE"){
+                        render_toast_value("Doublon constaté", 0);
+                        $("#doublonNumero").modal('show');
+                    } else {
+                        add_ligne_cp();
+                    }
+                }
+            })
+        }
+        //Mise à jour du fût
+        $("#e_save_data").on('click', function (){
+            var total_lng_billes = Number($('#e_lng_a').val()) + Number($('#e_lng_b').val()) + Number($('#e_lng_c').val());
+            if (
+                $('#e_numero_arbre').val() === "" ||
+                $('#e_day_arbre').val() === "" ||
+                $('#e_essence').val() === "" ||
+                $('#e_x_arbre').val() === "" ||
+                $('#e_y_arbre').val() === "" ||
+                $('#e_lng_arbre').val() === "" ||
+                $('#e_dm_arbre').val() === "" ||
+                $('#e_lng_a').val() === "" ||
+                $('#e_dm_a').val() === "" ||
+                $('#e_zoneh').val() === ""
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f88484',
+                    timer : 10000,
+                    icon: "error",
+                    title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+            }else if ( total_lng_billes > $('#e_lng_arbre').val() ||
+                $('#e_dm_arbre').val() > 300 || $('#e_dm_arbre').val() < 0 ||
+                ($('#e_x_arbre').val()).length > 7 || ($('#e_x_arbre').val()).length  < 6 ||
+                ($('#e_y_arbre').val()).length > 7 || ($('#e_y_arbre').val()).length  < 6
+            ) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f88484',
+                    timer : 10000,
+                    icon: "error",
+                    title: '{% trans %}The values seem to be invalid{% endtrans %}',
+                    showConfirmButton: false
+                });
+            } else {
+                edit_ligne_cp(id_arbre);
+            }
+
+        });
+
+
+        function maj_page_cp(){
+            var obj = {};
+            obj.mois =  $("#mois").val();
+            obj.annee =  $("#annee").val();
+            obj.village =  $("#village").val();
+            obj.code_doccp=  {{ document_name.id }};
+
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/edit/'+ index_page + '/'  + data,
+                'type': 'POST',
+
+                success: function(response) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Page header saved !{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                }
+            })
+        }
+
+        function add_ligne_cp(){
+            var obj = {};
+            obj.numero_arbrecp=  $("#numero_arbre").val();
+            obj.zh_arbrecp =  $("#zoneh").val();
+            obj.nom_essencecp =  $("#essence").val();
+            obj.x_arbrecp =  $("#x_arbre").val();
+            obj.y_arbrecp =  $("#y_arbre").val();
+            obj.jour_abattage =  $("#day_arbre").val();
+
+            obj.longeur_arbrecp =  $("#lng_arbre").val();
+            obj.diametre_arbrecp =  $("#dm_arbre").val();
+            obj.volume_arbrecp =  $("#vol_arbre").val();
+
+            obj.longeura_billecp =  $("#lng_a").val();
+            obj.diametrea_billecp =  $("#dm_a").val();
+            obj.volumea_billecp =  $("#vol_a").val();
+
+            obj.longeurb_billecp =  $("#lng_b").val();
+            obj.diametreb_billecp =  $("#dm_b").val();
+            obj.volumeb_billecp =  $("#vol_b").val();
+
+            obj.longeurc_billecp =  $("#lng_c").val();
+            obj.diametrec_billecp =  $("#dm_c").val();
+            obj.volumec_billecp =  $("#vol_c").val();
+
+            obj.abandon_fut = $('#hidden_arbre').val();
+            obj.abandon_a = $('#hidden_a').val();
+            obj.abandon_b = $('#hidden_b').val();
+            obj.abandon_c = $('#hidden_c').val();
+
+            obj.code_pagecp =  index_page;
+            obj.id_inv = $("#id_arbre_inv").val();
+
+            var data = JSON.stringify(obj);
+
+            if (obj.zh_arbrecp === "" || obj.zh_arbrecp === "0" || obj.zh_arbrecp === null) { render_toast_value("Merci de sélectionner la zone hémisphérique", 2); } else
+            if (obj.nom_essencecp === "" || obj.nom_essencecp === "0" || obj.nom_essencecp === null) { render_toast_value("Merci de sélectionner l'essence", 2); } else
+            if (obj.jour_abattage === "" || obj.jour_abattage === "0" || obj.jour_abattage === null) { render_toast_value("Merci de sélectionner le jour d'abattage", 2); } else
+            if (index_page === "0" || index_page === null) { render_toast_value("Aucun feuillet CP sélectionné", 0);} else {
+                $.ajax({
+                    'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/add_lignes/'  + data + "/{{ document_name.codeReprise.codeAttribution.codeForet.id }}",
+                    'type': 'POST',
+                    success: function(response) {
+                        let retour = JSON.parse(response)
+                        console.log(retour)
+
+                        if (retour[0].code_cp === "SAME_NUMBER") {
+                            document.querySelector('#lbl_alert').style = "display:inline";
+                            document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
+                            render_toast_value("Ce numéro d'arbre existe déjà!", 0)
+
+                            document.querySelector('#numero_lignepagecp').focus();
+
+                        }else if (retour[0].code_cp === "LIGNE_CC_NO_SPECIES_OR_ZONE") {
+                            render_toast_value("Vérifiez que l'essence et/ou la zone hémisphérique sont sélectionnées", 0)
+                            document.querySelector('#numero_lignepagecp').focus();
+
+                        } else if (retour[0].code_cp === "LIGNE_CC_ADDED_SUCCESSFULLY"){
+                            render_toast_value("Entête Feuillet enregistrée", 1)
+
+                            exo = retour[0].exo;
+
+                            let id_arbre_inventaire = $('#id_arbre_inv').val();
+                            if (id_arbre_inventaire !== ""){
+
+                                //Mise à jour de l'arbre inventorie
+                                maj_inventaire(id_arbre_inventaire)
+                            }
+
+                            initialiser();
+                            affiche_lignes_courante(index_page);
+                            affiche_arbres_inv({{ document_name.codeReprise.codeAttribution.id }})
+                            $('#saisiecp').val('');
+                        }
+
+
+                    }
+                })
+            }
+
+        }
+
+        function add_ligne_cp_db(){
+            var obj = {};
+            obj.numero_arbrecp=  $("#numero_arbre").val();
+            obj.zh_arbrecp =  $("#zoneh").val();
+            obj.nom_essencecp =  $("#essence").val();
+            obj.x_arbrecp =  $("#x_arbre").val();
+            obj.y_arbrecp =  $("#y_arbre").val();
+            obj.jour_abattage =  $("#day_arbre").val();
+
+            obj.longeur_arbrecp =  $("#lng_arbre").val();
+            obj.diametre_arbrecp =  $("#dm_arbre").val();
+            obj.volume_arbrecp =  $("#vol_arbre").val();
+
+            obj.longeura_billecp =  $("#lng_a").val();
+            obj.diametrea_billecp =  $("#dm_a").val();
+            obj.volumea_billecp =  $("#vol_a").val();
+
+            obj.longeurb_billecp =  $("#lng_b").val();
+            obj.diametreb_billecp =  $("#dm_b").val();
+            obj.volumeb_billecp =  $("#vol_b").val();
+
+            obj.longeurc_billecp =  $("#lng_c").val();
+            obj.diametrec_billecp =  $("#dm_c").val();
+            obj.volumec_billecp =  $("#vol_c").val();
+
+            obj.abandon_fut = $('#hidden_arbre').val();
+            obj.abandon_a = $('#hidden_a').val();
+            obj.abandon_b = $('#hidden_b').val();
+            obj.abandon_c = $('#hidden_c').val();
+
+            obj.code_pagecp =  index_page;
+            obj.id_inv = $("#id_arbre_inv").val();
+
+            var data = JSON.stringify(obj);
+
+            if (obj.zh_arbrecp === "" || obj.zh_arbrecp === "0" || obj.zh_arbrecp === null) { render_toast_value("Merci de sélectionner la zone hémisphérique", 2); } else
+            if (obj.nom_essencecp === "" || obj.nom_essencecp === "0" || obj.nom_essencecp === null) { render_toast_value("Merci de sélectionner l'essence", 2); } else
+            if (obj.jour_abattage === "" || obj.jour_abattage === "0" || obj.jour_abattage === null) { render_toast_value("Merci de sélectionner le jour d'abattage", 2); } else
+            if (index_page === "0" || index_page === null) { render_toast_value("Aucun feuillet CP sélectionné", 0);} else {
+                $.ajax({
+                    'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/add_lignes/db/'  + data + "/{{ document_name.codeReprise.codeAttribution.codeForet.id }}",
+                    'type': 'POST',
+                    success: function(response) {
+                        let retour = JSON.parse(response)
+                        console.log(retour)
+
+                        if (retour[0].code_cp === "LIGNE_CC_NO_SPECIES_OR_ZONE") {
+                            render_toast_value("Vérifiez que l'essence et/ou la zone hémisphérique sont sélectionnées", 0)
+                            document.querySelector('#numero_lignepagecp').focus();
+
+                        } else if (retour[0].code_cp === "LIGNE_CC_ADDED_SUCCESSFULLY"){
+                            render_toast_value("Entête Feuillet enregistrée", 1)
+
+                            exo = retour[0].exo;
+
+                            let id_arbre_inventaire = $('#id_arbre_inv').val();
+                            if (id_arbre_inventaire !== ""){
+
+                                //Mise à jour de l'arbre inventorie
+                                maj_inventaire(id_arbre_inventaire)
+                            }
+
+                            initialiser();
+                            affiche_lignes_courante(index_page);
+                            affiche_arbres_inv({{ document_name.codeReprise.codeAttribution.id }})
+                            $('#saisiecp').val('');
+                        }
+
+
+                    }
+                })
+            }
+
+        }
+
+        function add_ligne_cp_abandonnee(){
+            var obj = {};
+            obj.numero_arbrecp=  $("#numero_arbre").val();
+            obj.zh_arbrecp =  $("#zoneh").val();
+            obj.nom_essencecp =  $("#essence").val();
+            obj.x_arbrecp =  $("#x_arbre").val();
+            obj.y_arbrecp =  $("#y_arbre").val();
+            obj.jour_abattage =  $("#day_arbre").val();
+
+            obj.longeur_arbrecp =  $("#lng_arbre").val();
+            obj.diametre_arbrecp =  $("#dm_arbre").val();
+            obj.volume_arbrecp =  $("#vol_arbre").val();
+
+
+            obj.abandon_fut = $('#hidden_arbre').val();
+
+
+            obj.code_pagecp =  index_page;
+            obj.id_inv = $("#id_arbre_inv").val();
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/add_lignes/abd/'  + data + "/{{ document_name.codeReprise.codeAttribution.codeForet.id }}",
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+
+                    if (retour[0].code_cp === "SAME_NUMBER") {
+                        document.querySelector('#lbl_alert').style = "display:inline";
+                        document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
+
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#f88484',
+                            color: '#ffffff',
+                            timer : 10000,
+                            icon: "error",
+                            title: '{% trans %}This number has been already used !{% endtrans %}',
+                            showConfirmButton: false
+                        });
+                        document.querySelector('#numero_lignepagecp').focus();
+
+                    } else if (retour[0].code_cp === "LIGNE_CC_ADDED_SUCCESSFULLY"){
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#dffbdd',
+                            timer : 3000,
+                            icon: "success",
+                            title: 'Le fût a été abandonné',
+                            showConfirmButton: false
+                        });
+
+                        exo = retour[0].exo;
+
+                        let id_arbre_inventaire = $('#id_arbre_inv').val();
+                        if (id_arbre_inventaire !== ""){
+
+                            //Mise à jour de l'arbre inventorie
+                            maj_inventaire(id_arbre_inventaire)
+                        }
+
+                        initialiser();
+                        affiche_lignes_courante(index_page);
+                        affiche_arbres_inv({{ document_name.codeReprise.codeAttribution.id }})
+                        $('#saisiecp').val('');
+                        render_toast_value("Le fût a été abandonné", 1)
+
+                        $('#modal_ab_fut .btn-close').click();
+                        $('#saisiecp .btn-close').click();
+                    }
+
+                }
+            })
+        }
+        function edit_ligne_cp(id_ligne){
+            var obj = {};
+            obj.numero_arbrecp=  $("#e_numero_arbre").val();
+            obj.zh_arbrecp =  $("#e_zoneh").val();
+            obj.nom_essencecp =  $("#e_essence").val();
+            obj.x_arbrecp =  $("#e_x_arbre").val();
+            obj.y_arbrecp =  $("#e_y_arbre").val();
+            obj.jour_abattage =  $("#e_day_arbre").val();
+
+            obj.longeur_arbrecp =  $("#e_lng_arbre").val();
+            obj.diametre_arbrecp =  $("#e_dm_arbre").val();
+            obj.volume_arbrecp =  $("#e_vol_arbre").val();
+
+            obj.longeura_billecp =  $("#e_lng_a").val();
+            obj.diametrea_billecp =  $("#e_dm_a").val();
+            obj.volumea_billecp =  $("#e_vol_a").val();
+
+            obj.longeurb_billecp =  $("#e_lng_b").val();
+            obj.diametreb_billecp =  $("#e_dm_b").val();
+            obj.volumeb_billecp =  $("#e_vol_b").val();
+
+            obj.longeurc_billecp =  $("#e_lng_c").val();
+            obj.diametrec_billecp =  $("#e_dm_c").val();
+            obj.volumec_billecp =  $("#e_vol_c").val();
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/doccp/op/pages_cp/data/edit_lignes/' + data + '/' + id_ligne,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    console.log(retour)
+
+                 if (retour[0].code_cp === "LIGNE_CC_EDITED_SUCCESSFULLY"){
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            background: '#dffbdd',
+                            timer : 3000,
+                            icon: "success",
+                            title: 'Données CC enregistrées',
+                            showConfirmButton: false
+                        });
+                        exo = retour[0].exo;
+                        initialiser();
+                        affiche_lignes_courante(index_page);
+
+                    }
+
+
+                }
+            })
+        }
+
+
+        $('.sortir_ab').on('click', function (){
+            $('#saisiecp').modal('toggle');
+            $('#saisiecp').modal('show');
+        });
+        $('#validate_page').on('click', function (e){
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Chargement CC',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                validate_pagecp();
+            }
+        });
+
+
+        function initialiser(){
+
+            //document.querySelector('#numero_arbre').value = exo;
+
+            document.querySelector('#day_arbre').value ="";
+            document.querySelector('#x_arbre').value ="";
+            document.querySelector('#y_arbre').value ="";
+            document.querySelector('#essence').selectedIndex = 0;
+            document.querySelector('#zoneh').selectedIndex = 0;
+
+
+            document.querySelector('#lng_arbre').value ="";
+            document.querySelector('#dm_arbre').value ="";
+            document.querySelector('#vol_arbre').value ="";
+
+
+            document.querySelector('#lng_a').value ="";
+            document.querySelector('#dm_a').value ="";
+            document.querySelector('#vol_a').value ="";
+
+
+            document.querySelector('#lng_b').value ="";
+            document.querySelector('#dm_b').value ="";
+            document.querySelector('#vol_b').value ="";
+
+
+            document.querySelector('#lng_c').value ="";
+            document.querySelector('#dm_c').value ="";
+            document.querySelector('#vol_c').value ="";
+
+            document.querySelector('.div_a').style = "background-color:white";
+            document.querySelector('.div_b').style = "background-color:white";
+            document.querySelector('.div_c').style = "background-color:white";
+
+            document.querySelector('#lbl_alert').style = "display:none";
+
+            document.querySelector('#essence').focus();
+
+                dernier_numero();
+        }
+
+        function initialiser_page(){
+
+            document.querySelector('#mois').value ="";
+            document.querySelector('#annee').value ="{{ exercice }}";
+            document.querySelector('#village').value ="";
+            initialiser();
+        }
+
+
+        function expand(obj)
+        {
+            obj.size = 5;
+        }
+
+        function unexpand(obj)
+        {
+            obj.size = 1;
+        }
+        $('#add_data').on('click', function (){
+
+            document.querySelector('#ab_fut').style ="display:none";
+            document.querySelector('#ab_a').style ="display:none";
+            document.querySelector('#ab_b').style ="display:none";
+            document.querySelector('#ab_c').style ="display:none";
+
+            {% if (numero_arbre_option == "1") %}
+                dernier_numero();
+                document.querySelector('#numero_arbre').readOnly = false;
+            {% else %}
+                dernier_numero();
+                document.querySelector('#numero_arbre').readOnly = false;
+            {% endif %}
+
+            liste_essence();
+            liste_zones();
+            affiche_arbres_inv({{ document_name.codeReprise.codeAttribution.id }})
+        })
+
+        //Liste des usines par ville
+        function charge_usines(id_ville){
+            let contenu_parc_usine = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/usines_cantonnement/l/' + id_ville,
+                type: 'POST',
+                success: function(response){
+                    let liste_usines = JSON.parse(response)
+                    if (liste_usines.length > 0){
+                        contenu_parc_usine = '<option value="0">--{{ 'Select a factory'|trans }}--</option>';
+                        for (let i = 0; i < liste_usines.length ; i++){
+                            contenu_parc_usine = contenu_parc_usine + '<option value="' + liste_usines[i].id_usine + '">' + liste_usines[i].rs + '</option>'
+                        }
+                    }
+                    document.querySelector('#parc_usine').innerHTML = contenu_parc_usine;
+                }
+            })
+        }
+        //Recherche dernier numero arbre
+        function dernier_numero(){
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/foret/dn/' + index_page,
+                type: 'POST',
+                success: function(response){
+                    let numero = JSON.parse(response)
+                    $('#numero_arbre').val(numero[0].numero + 1)
+                }
+            })
+        }
+
+        $('body').on('click', '.modif_cp', function(){
+            id_arbre = this.id
+            e_liste_essence();
+            e_liste_zones();
+            affiche_ligne_cp(this.id);
+        })
+
+        function affiche_ligne_cp(id_ligne){
+            cp_id_ligne = id_ligne
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/affiche_ligne/cp/' + id_ligne,
+                type : 'POST',
+                success : function (response){
+                    let infos = JSON.parse(response);
+                    $('#e_numero_arbre').val(infos[0].numero_ligne)
+                    $('#e_essence').val(infos[0].essence)
+                    $('#e_x_arbre').val(infos[0].x_arbre)
+                    $('#e_y_arbre').val(infos[0].y_arbre)
+                    $('#e_zoneh').val(infos[0].zh_arbre)
+                    $('#e_day_arbre').val(infos[0].jour)
+
+                    $('#e_lng_arbre').val(infos[0].lng_arbre)
+                    $('#e_dm_arbre').val(infos[0].dm_arbre)
+                    $('#e_vol_arbre').val(infos[0].cubage_arbre)
+
+                    $('#e_lng_a').val(infos[0].lng_billea)
+                    $('#e_dm_a').val(infos[0].dm_billea)
+                    $('#e_vol_a').val(infos[0].cubage_billea)
+
+                    $('#e_lng_b').val(infos[0].lng_billeb)
+                    $('#e_dm_b').val(infos[0].dm_billeb)
+                    $('#e_vol_b').val(infos[0].cubage_billeb)
+
+                    $('#e_lng_c').val(infos[0].lng_billec)
+                    $('#e_dm_c').val(infos[0].dm_billec)
+                    $('#e_vol_c').val(infos[0].cubage_billec)
+
+                    //
+                    if (infos[0].a_abandon){
+                       document.querySelector('#e_lng_a').readOnly = true;
+                       document.querySelector('#e_lng_a').style = "background-color: #f87d7d";
+                        document.querySelector('#e_dm_a').readOnly = true;
+                        document.querySelector('#e_dm_a').style = "background-color: #f87d7d";
+                        document.querySelector('#e_vol_a').readOnly = true;
+                        document.querySelector('#e_vol_a').style = "background-color: #f87d7d";
+                    }
+
+
+                    if (infos[0].b_abandon){
+                        document.querySelector('#e_lng_b').readOnly = true;
+                        document.querySelector('#e_lng_b').style = "background-color: #f87d7d";
+                        document.querySelector('#e_dm_b').readOnly = true;
+                        document.querySelector('#e_dm_b').style = "background-color: #f87d7d";
+                        document.querySelector('#e_vol_b').readOnly = true;
+                        document.querySelector('#e_vol_b').style = "background-color: #f87d7d";
+                    }
+
+                    if (infos[0].c_abandon){
+                        document.querySelector('#e_lng_c').readOnly = true;
+                        document.querySelector('#e_lng_c').style = "background-color: #f87d7d";
+                        document.querySelector('#e_dm_c').readOnly = true;
+                        document.querySelector('#e_dm_c').style = "background-color: #f87d7d";
+                        document.querySelector('#e_vol_c').readOnly = true;
+                        document.querySelector('#e_vol_c').style = "background-color: #f87d7d";
+                    }
+
+                    if (infos[0].c_abandon){
+                        document.querySelector('#e_lng_arbre').readOnly = true;
+                        document.querySelector('#e_lng_arbre').style = "background-color: #f87d7d";
+                        document.querySelector('#e_dm_arbre').readOnly = true;
+                        document.querySelector('#e_dm_arbre').style = "background-color: #f87d7d";
+                        document.querySelector('#e_vol_arbre').readOnly = true;
+                        document.querySelector('#e_vol_arbre').style = "background-color: #f87d7d";
+                    }
+                    //Vérifie si la bille A doit être modifiée
+                    if (infos[0].a_utilise){
+
+                        document.querySelector('.div_a').style = "background-color: #f2bcbc"
+                        document.querySelector('#e_lng_a').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_a').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_a').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_a').disabled = true;
+                        document.querySelector('#e_dm_a').disabled = true;
+                        document.querySelector('#e_vol_a').disabled = true;
+
+                        document.querySelector('#abandon_a').disabled = true;
+                    }else {
+                        document.querySelector('.div_a').style = "background-color: white"
+                        document.querySelector('#e_lng_a').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_a').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_a').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_a').enabled = true;
+                        document.querySelector('#e_dm_a').enabled = true;
+                        document.querySelector('#e_vol_a').enabled = true;
+
+                        document.querySelector('#abandon_a').enabled = true;
+
+                    }
+
+                    //Vérifie si la bille B doit être modifiée
+                    if (infos[0].lng_billeb && infos[0].b_utilise){
+                        document.querySelector('.div_b').style = "background-color: #f2bcbc"
+                        document.querySelector('#e_lng_b').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_b').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_b').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_b').disabled = true;
+                        document.querySelector('#e_dm_b').disabled = true;
+                        document.querySelector('#e_vol_b').disabled = true;
+
+                        document.querySelector('#abandon_b').disabled = true;
+                    }else {
+                        document.querySelector('.div_b').style = "background-color: white"
+                        document.querySelector('#e_lng_b').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_b').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_b').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_b').enabled = true;
+                        document.querySelector('#e_dm_b').enabled = true;
+                        document.querySelector('#e_vol_b').enabled = true;
+
+                        document.querySelector('#abandon_b').enabled = true;
+                    }
+
+                    //Vérifie si la bille A doit être modifiée
+                    if (infos[0].lng_billec && infos[0].c_utilise){
+                        document.querySelector('.div_c').style = "background-color: #f2bcbc"
+                        document.querySelector('#e_lng_c').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_c').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_c').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_c').disabled = true;
+                        document.querySelector('#e_dm_c').disabled = true;
+                        document.querySelector('#e_vol_c').disabled = true;
+
+                        document.querySelector('#abandon_c').disabled = true;
+                    }else {
+                        document.querySelector('.div_c').style = "background-color: white"
+                        document.querySelector('#e_lng_c').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_c').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_c').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_lng_c').enabled = true;
+                        document.querySelector('#e_dm_c').enabled = true;
+                        document.querySelector('#e_vol_c').enabled = true;
+
+                        document.querySelector('#abandon_c').enabled = true ;
+                    }
+
+                    if (infos[0].a_utilise && infos[0].lng_billeb && infos[0].b_utilise && infos[0].lng_billec && infos[0].c_utilise){
+                        document.querySelector('.div_fut').style = "background-color: #f2bcbc"
+
+                        document.querySelector('#e_essence').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_zoneh').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_day_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_x_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_y_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_lng_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                      
+                        document.querySelector('#e_essence').disabled = true;
+                        document.querySelector('#e_zoneh').disabled = true;
+                        document.querySelector('#e_day_arbre').disabled = true;
+                        document.querySelector('#e_x_arbre').disabled = true;
+                        document.querySelector('#e_y_arbre').disabled = true;
+                        document.querySelector('#e_lng_arbre').disabled = true;
+                        document.querySelector('#e_dm_arbre').disabled = true;
+                        document.querySelector('#e_vol_arbre').disabled = true;
+
+                        document.querySelector('#abandon_fut').disabled = true ;
+                    } else {
+
+                        document.querySelector('.div_fut').style = "background-color: white"
+                        document.querySelector('#e_essence').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_zoneh').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_day_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_x_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_y_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_lng_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_dm_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                        document.querySelector('#e_vol_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                        document.querySelector('#e_essence').disabled = false;
+                        document.querySelector('#e_zoneh').disabled = false;
+                        document.querySelector('#e_day_arbre').disabled = false;
+                        document.querySelector('#e_x_arbre').disabled = false;
+                        document.querySelector('#e_y_arbre').disabled = false;
+                        document.querySelector('#e_lng_arbre').disabled = false;
+                        document.querySelector('#e_dm_arbre').disabled = false;
+                        document.querySelector('#e_vol_arbre').disabled = false;
+
+                        document.querySelector('#abandon_fut').disabled = false ;
+                    }
+                },
+                error : function (ereur){
+
+                }
+            })
+        }
+
+        $('#abandon_fut').on('change', function (){
+            let valeur = this
+            if (valeur.checked){
+                document.querySelector('.div_fut').style = "background-color: #f2bcbc"
+
+                document.querySelector('#e_essence').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_zoneh').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_day_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_x_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_y_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_lng_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_dm_arbre').style = "background-color: #red;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                document.querySelector('#e_essence').disabled = true;
+                document.querySelector('#e_zoneh').disabled = true;
+                document.querySelector('#e_day_arbre').disabled = true;
+                document.querySelector('#e_x_arbre').disabled = true;
+                document.querySelector('#e_y_arbre').disabled = true;
+                document.querySelector('#e_lng_arbre').disabled = true;
+                document.querySelector('#e_dm_arbre').disabled = true;
+                document.querySelector('#e_vol_arbre').disabled = true;
+            } else {
+                document.querySelector('.div_fut').style = "background-color: white"
+                document.querySelector('#e_essence').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_zoneh').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_day_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_x_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_y_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_lng_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_dm_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+                document.querySelector('#e_vol_arbre').style = "background-color: #fafffa;font-size: large;color: black;font-weight: bold;width:250px;";
+
+                document.querySelector('#e_essence').disabled = false;
+                document.querySelector('#e_zoneh').disabled = false;
+                document.querySelector('#e_day_arbre').disabled = false;
+                document.querySelector('#e_x_arbre').disabled = false;
+                document.querySelector('#e_y_arbre').disabled = false;
+                document.querySelector('#e_lng_arbre').disabled = false;
+                document.querySelector('#e_dm_arbre').disabled = false;
+                document.querySelector('#e_vol_arbre').disabled = false;
+            }
+        })
+
+        function affiche_arbres_inv(code_attribution){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/admin/inventaire_list/lac/' + code_attribution,
+                type: 'POST',
+                success: function(response){
+                    let liste_inventaire = JSON.parse(response)
+
+                    if (liste_inventaire.length > 0){
+                        contenu = contenu + '<option value="0">Sélectionnez l\'arbre depuis la LAAC</option>';
+                        document.querySelector("#from_inv").style = "display:inline;width:100%;background:#b6fcb2;font-size:18px;"
+
+                        for (let i = 0; i < liste_inventaire.length; i++){
+                            contenu = contenu + '<option value="' + liste_inventaire[i].id_inv + '">' + liste_inventaire[i].numero + '</option>'
+                        }
+
+                        document.querySelector("#from_inv").innerHTML = contenu;
+                    } else {
+                        document.querySelector("#from_inv").style = "display:none;";
+                        document.querySelector(".div_inv").innerHTML = '<span class="badge bg-white p-1 rounded-5 text-danger" style="font-size: 20px;">Aucun inventaire repertorié</span>';
+                    }
+                }
+            })
+        }
+
+        function affiche_arbre(id_arbre_inv){
+            let contenu = "";
+            initialiser();
+            document.querySelector('#id_arbre_inv').value = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/inventaire/searchligne/' + id_arbre_inv,
+                type: 'POST',
+                success: function(response){
+                    let arbre = JSON.parse(response)
+
+                    document.querySelector('#id_arbre_inv').value = arbre[0].id_ligne;
+                    document.querySelector('#essence').value = arbre[0].essence;
+                    document.querySelector('#zoneh').value = arbre[0].zh;
+                    document.querySelector('#x_arbre').value = arbre[0].x;
+                    document.querySelector('#y_arbre').value = arbre[0].y;
+                    document.querySelector('#lng_arbre').value = arbre[0].lng;
+                    document.querySelector('#dm_arbre').value = arbre[0].dm;
+                    $("#vol_arbre").val(calcul_volume($('#lng_arbre').val(), $('#dm_arbre').val()))
+                    if ($("#vol_arbre").val() > 0){
+                        document.querySelector("#ab_fut").style = "display:inline;margin-left:10px;"
+                    } else {
+                        document.querySelector("#ab_fut").style = "display:none;"
+                    }
+
+                }
+            })
+        }
+
+        function maj_inventaire(id_arbre_inventaire){
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/inventaire/maj/inventaire/' + id_arbre_inventaire,
+                type: 'POST',
+                success: function(response){
+                    let arbre = JSON.parse(response)
+                    console.log(arbre);
+                }
+            })
+        }
+        function alerte_xy(x, y){
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/docbrh/op/lignes_brh/verifyingXY/' + x + '/' + y,
+                type: 'POST',
+                success: function(response){
+                    let infos = JSON.parse(response)
+                    if (infos[0].valeur === "FOUND"){
+                        $('.lbl_xy').text("Coordonnées dupliquées : source : " + infos[0].description)
+                    } else {
+                        $('.lbl_xy').text("")
+                    }
+                }
+            })
+        }
+
+        //Scripts pour l'abandon du fût et des billes
+            $('body').on('click', '.abandonner_fut', function (){
+                abandonne_fut()
+                $('#modal_ab_fut .btn-close').click();
+                $('#saisiecp').modal('toggle');
+                $('#saisiecp').modal('show');
+            })
+
+        //Scripts pour l'abandon du fût et des billes
+            $('body').on('click', '#ab_a', function (){
+                if ($('#ab_a').text() === "AB"){
+                    abandonne_a()
+                } else {
+                    retablir_a()
+                }
+            })
+
+        //Scripts pour l'abandon du fût et des billes
+            $('body').on('click', '#ab_b', function (){
+
+                if ($('#ab_b').text() === "AB"){
+                    abandonne_b()
+                } else {
+                    retablir_b()
+                }
+                //$('#modal_ab_b .sortir').click();
+            })
+
+        //Scripts pour l'abandon du fût et des billes
+            $('body').on('click', '#ab_c', function (){
+
+                if ($('#ab_c').text() === "AB"){
+                    abandonne_c()
+                } else {
+                    retablir_c()
+                }
+                //$('#modal_ab_c .sortir').click();
+            })
+
+
+
+        // Abandonne le fût
+        function abandonne_fut(){
+            add_ligne_cp_abandonnee();
+        }
+
+
+        function abandonne_a(){
+            /*bille A*/
+            document.querySelector('#lng_a').readOnly = true;
+            document.querySelector('#dm_a').readOnly = true;
+            document.querySelector('#vol_a').readOnly = true;
+
+            document.querySelector('.div_a').style = "background-color:#fc7e7e";
+            document.querySelector('#ab_a').style = "background-color:green;color:white";
+            $('#ab_a').text("RETABLIR");
+            document.querySelector('#hidden_a').value = "true";
+        }
+
+        function retablir_a(){
+            /*bille A*/
+            document.querySelector('#lng_a').readOnly = false;
+            document.querySelector('#dm_a').readOnly = false;
+            document.querySelector('#vol_a').readOnly = false;
+
+            document.querySelector('.div_a').style = "background-color:white";
+            document.querySelector('#ab_a').style = "background-color:lightred;color:red";
+            $('#ab_a').text("AB");
+            document.querySelector('#hidden_a').value = "false";
+        }
+
+        function abandonne_b(){
+            /*bille B*/
+            document.querySelector('#lng_b').readOnly = true;
+            document.querySelector('#dm_b').readOnly = true;
+            document.querySelector('#vol_b').readOnly = true;
+            document.querySelector('.div_b').style = "background-color:#fc7e7e";
+            document.querySelector('#ab_b').style = "background-color:green;color:white";
+            $('#ab_b').text("RETABLIR");
+            document.querySelector('#hidden_b').value = "true";
+        }
+
+        function retablir_b(){
+            document.querySelector('#lng_b').readOnly = false;
+            document.querySelector('#dm_b').readOnly = false;
+            document.querySelector('#vol_b').readOnly = false;
+            document.querySelector('.div_b').style = "background-color:white";
+            document.querySelector('#ab_b').style = "background-color:lightred;color:red";
+            $('#ab_b').text("AB");
+            document.querySelector('#hidden_b').value = "false";
+        }
+
+        function abandonne_c(){
+            /*bille C*/
+            document.querySelector('#lng_c').readOnly = true;
+            document.querySelector('#dm_c').readOnly = true;
+            document.querySelector('#vol_c').readOnly = true;
+            document.querySelector('.div_c').style = "background-color:#fc7e7e";
+            document.querySelector('#ab_c').style = "background-color:lightred;color:red";
+            $('#ab_c').text("AB");
+            document.querySelector('#hidden_c').value = "true";
+        }
+
+        function retablir_c(){
+            document.querySelector('#lng_c').readOnly = false;
+            document.querySelector('#dm_c').readOnly = false;
+            document.querySelector('#vol_c').readOnly = false;
+            document.querySelector('.div_c').style = "background-color:white";
+            document.querySelector('#ab_c').style = "background-color:lightred;color:red";
+            $('#ab_c').text("AB");
+            document.querySelector('#hidden_c').value = "false";
+        }
+
+    </script>
+{% endblock %}

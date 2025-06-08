@@ -1,0 +1,117 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Statistical Document Type{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/type_doc_stats.png') }}" alt="{% trans %}Statistical_Document_Type{% endtrans %}">  {% trans %}Statistical Document Type{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('type_document_statistique.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <table class="table table-responsive" id="docs_stats_type">
+                    <thead>
+                    <tr style="background: #266509;color: #fcf8f8">
+                        <th>{% trans %}Doc{% endtrans %}</th>
+                        <th>{% trans %}Name{% endtrans %}</th>
+                        <th>{% trans %}Type Document{% endtrans %}</th>
+                        <th>{% trans %}Number of pages to generate{% endtrans %}</th>
+                        <th>{% trans %}Price{% endtrans %}</th>
+                        <th>{% trans %}Stock alert{% endtrans %}</th>
+                        <th>{% trans %}Status{% endtrans %}</th>
+                        <th class="text-center">{% trans %}Remaining Stock{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for doc in liste_type_document_statistiques %}
+                        {% if (doc.statut == 'INACTIF') %}
+                            <tr class="alert-danger">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                        <td class="text-dark fw-bold">
+                            <a
+                                    class="link editBtn"
+                                    style="font-weight: bold; font-size: 18px;color: #810969" href="{{ path('type_document_statistique.edit', {'id_type_document_statistique': doc.id })}}"
+                                    id="{{ doc.id }}"
+                                    title="{{ doc.description }}"
+                            >
+                                {{ doc.abv }}
+                            </a>
+                        </td>
+                        <td style="font-weight: bold;font-size: 11px;"><span>{{ doc.denomination | slice(0,50)}}{% set valeur =  doc.denomination | slice(0,50) %} {% if not ( doc.denomination == valeur) %} ... {% endif %}</span></td>
+                        <td style="font-weight: lighter">
+                            {% if (doc.codeTypeOperateur) %}
+                                {{ doc.codeTypeOperateur.libelleOperateur }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        {% if(doc.nbPages) %}
+                            <td>{{ doc.nbPages }}</td>
+                        {% else %}
+                            <td>0</td>
+                        {% endif %}
+
+                        {% if(doc.tarif) %}
+                            <td>{{ doc.tarif }}</td>
+                        {% else %}
+                            <td>0</td>
+                        {% endif %}
+                        <td>{{ doc.stockAlert}}</td>
+                        <td>{{ doc.statut}}</td>
+                        <td class="text-danger fw-bold fs-5 text-center" style="font-weight: bold; font-size: 16px;">
+                            {% if(stock_solde.findSoldeByDocument(doc.id) and stock_solde.findSoldeByDocument(doc.id)> 99) %}
+                                <span class="text-dark badge badge-sm alert-success">{{ stock_solde.findSoldeByDocument(doc.id) }}</span>
+                            {% elseif (stock_solde.findSoldeByDocument(doc.id) and stock_solde.findSoldeByDocument(doc.id)> 50 and stock_solde.findSoldeByDocument(doc.id)<100)%}
+                                <span class="text-dark badge badge-sm alert-warning">{{ stock_solde.findSoldeByDocument(doc.id) }}</span>
+                            {% else %}
+                                <span class="text-dark badge badge-sm alert-danger">0</span>
+                            {% endif %}
+                        </td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table></div>
+        </div>
+
+    </section>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+
+        // Simple Datatable
+        let table1 = document.querySelector('#docs_stats_type');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+    </script>
+
+{% endblock %}
+

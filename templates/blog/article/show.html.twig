@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}Actualités SNVLT - {{ article.title }}!{% endblock %}
+
+{% block Contenu %}
+    <div class="breadcrumb-section breadcrumb-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text">
+                        <p>informations sur</p>
+                        <h1 style="font-family: Cursif">Infos</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- single produit section -->
+    <div class="mt-150 mb-150">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="single-article-section">
+                        <div class="single-article-text">
+                            <div class=""><img class="img-fluid" src="/uploads/media/{{article.featuredImage.filename}}" alt="{{ article.featuredImage.altText }}" loading="lazy"  ></div>
+                            <p class="blog-meta">
+                                <span class="author"><i class="fas fa-user"></i> Admin</span>
+                                <span class="date"><i class="fas fa-calendar"></i> {{ article.createdAt|date('d m Y') }}</span>
+                            </p>
+
+                        <hr>
+
+                            <h2>{{ article.title }}</h2>
+                            <p>{{ article.content | raw }}</p>
+                    </div>
+
+                        <div class="comments-list-wrap">
+                            <h3 class="comment-count-title">3 commentaires</h3>
+                            <div class="comment-list">
+                                {% for comment in article.comments %}
+                                    {% include 'blog/comment/index_old.html.twig' with [comment] %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="comment-template">
+                            <h4>Laisser votre commentaire</h4>
+                                {{ form(commentForm, {'attr':{'class' : 'comment-form'}}) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="sidebar-section">
+                        <div class="recent-posts">
+                            <h4>articles récents</h4>
+                            <ul>
+                                {% for recent_article in liste_articles %}
+                                    <li><a href="{{ path('article_blog_show',{'slug': recent_article.slug} ) }}">{{ recent_article.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {#<div class="archive-posts">
+                            <h4>Archive Posts</h4>
+                            <ul>
+                                <li><a href="single-news.html">JAN 2019 (5)</a></li>
+                                <li><a href="single-news.html">FEB 2019 (3)</a></li>
+                                <li><a href="single-news.html">MAY 2019 (4)</a></li>
+                                <li><a href="single-news.html">SEP 2019 (4)</a></li>
+                                <li><a href="single-news.html">DEC 2019 (3)</a></li>
+                            </ul>
+                        </div>#}
+                        <div class="tag-section">
+                            <h4>Catégories</h4>
+                            <ul>
+                                {% for category in categories_articles %}
+                                    <li><a href="{{ path('categorie_show',{'slug': category.slug} ) }}" style="background-color: {{ category.color }}; color: #FFFFFF">{{ category.name }}</a></li>
+                                {% endfor %}
+
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end single produit section -->
+
+    <script src="{{ asset('assets/app/js/app.js') }}"></script>
+{% endblock %}

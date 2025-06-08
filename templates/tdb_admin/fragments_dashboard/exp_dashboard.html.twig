@@ -1,0 +1,74 @@
+<div class="col-md-9 bg-white">
+    <div class="card m-2">
+        <div class="card-title bg-danger text-white p-2">
+            Essences les plus exploitées (<span style="text-transform: lowercase;">m<sup>3</sup></span>)
+        </div>
+        <div class="alert-secondary mb-2" id="donnees_essences" style="min-height: 350px;"></div>
+    </div>
+    <div class="card m-2">
+        <div class="card-title p-2" style="background: lightblue; color: black">
+            Chargements en cours...
+        </div>
+        <div class="card" style="border: 1px;">
+            <div class="">
+                <table class="table">
+                    <thead>
+                    <tr class="alert-success">
+                        <th>{{ 'Date' | trans}}</th>
+                        <th>{{ 'No' | trans}}</th>
+                        <th>{{ 'Species' | trans}}</th>
+                        <th>{{ 'Volume' | trans}}</th>
+                        <th>{{ 'Sender' | trans}}</th>
+                        <th>{{ 'Destination' | trans}}</th>
+                    </tr>
+                    </thead>
+                    <tbody class="contenu">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card col-md-3" style="border: 1px;background-color: transparent">
+    <div class="bg-white">
+        <div class="card" style="border: 1px;">
+            <div class="card-title p-2 text-white font-weight-light mt-2" style="background-color: #025e27">
+                chiffres clés
+            </div>
+            <div class="">
+                <img class="img-fluid m-2" src="{{ asset('assets/images/autorisation.png') }}" alt="autorisation">  <span class="font-weight-bold mt-3" style="color: #6c6d6f"> {{ nb_reprises }} reprise(s)</span><br>
+                <img class="img-fluid m-2" src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="autorisation" style="height: 24px;" >  <span class="font-weight-bold mt-3"> {{ nb_doc_brh_op}} BRH</span><br>
+                <img class="img-fluid m-2" src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="autorisation" style="height: 24px;" >  <span class="font-weight-bold mt-3"> {{ nb_doc_cp_op }} CP</span><br>
+            </div>
+
+        </div>
+        <div class="card" style="border: 1px;">
+            <div class="card-title text-white font-weight-light p-2" style="background-color: #02195e">Quotas d'exploitation</div>
+            <div class="" style="height: 250px;overflow-y: scroll;">
+                <table class="table">
+                    <thead>
+                    <tr class="alert-success">
+                        <th>Forêt</th>
+                        <th>Quota</th>
+                        <th>Volume exploité</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for quota in quotas %}
+                        <tr>
+                            <td class="font-weight-bold"><span class="badge p-1 bg-dark text-white">{{ quota.foret }}</span></td>
+                            <td class="font-weight-bold text-danger">{{ quota.quota_val }}</td>
+                            <td class="font-weight-bold">{{ quota.cubage }} m<sup>3</sup></td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>

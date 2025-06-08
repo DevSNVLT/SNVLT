@@ -1,0 +1,943 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Production daily sheet{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <link rel="stylesheet" href="{{ asset('assets/Js/date-picher/css/date-picker.min.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <h2 class="text-dark font-weight-bold">
+        <img src="{{ asset('assets/images/webapp/wood.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Production daily sheet{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="" role="group" aria-label="Basic example">
+
+
+
+                <select class="bg-dark text-white mt-2 mb-2" id="id_transfo" style="margin-right: 10px;font-size: 20px;border: 0px;">
+                    <option value="0">--Sélectionnez le type de transformation--</option>
+                    {% for transfo in app.user.codeindustriel.typeTransformation %}
+                        <option  style="font-size: 18px;" value="{{ transfo.id }}">{{ transfo.libelle }}</option>
+                    {% endfor %}
+                </select>
+
+                <input class="bg-warning text-dark font-weight-bold mt-2 mb-2 text-center" id="date-input"  type="date" style="margin-left: 5px;width: 200px;font-size: 20px;border: solid green 1px;" placeholder="{% trans %}Date Tronçonnage{% endtrans %}">
+                {#<input type="text" class="fw-bold" id="date-input" style="font-size: 14px;font-weight: bold;background-color: #f2f2c3;">
+                <button class="btn" type="button" id="date-toggle" style="background-color: #f2f2c3;">...</button>
+                <div id="date-demo"></div>#}
+
+        </div>
+    </div>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style_snvlt.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/loading.css') }}" />
+
+    <section class="section">
+        <div class="row">
+            {#<div id="roller" class="p-2"><div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><span style="margin-left: 10px;color: #db0707;font-size: 24px;font-weight: bold;">{{ 'Wait' | trans }}...</span></div>#}
+            <div class="col-md-12 bg-white" style="border: grey solid 1px;">
+                <div class="" style="background: #045125;color: #fcf8f8;"> <i class="mdi mdi-clipboard-check text-white" style="margin-left: 5px;font-size: 32px;"></i>{{ 'Details' | trans }}</div>
+
+                <div class="alert-secondary p-2 mt-2 mb-2 info_deroulage align-content-md-start">
+                    <select class=" mt-3 mb-2" name="select_essence" id="select_essence" style="margin-top:5px;font-size: 18px;background-color: #c3f2cb;border: 0px;">
+                        <option value="0">--Sélectionnez une essence forestière SVP--</option>
+                        {% for essence in essences %}
+                            <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class=" mt-3 mb-2" name="select_lot" id="select_lot" style="margin-top:5px;margin-left:10px;font-size: 18px;background-color: #fbcf95;border: 0px;">
+
+                    </select>
+                    <select class="" name="select_billon" id="select_billon" style="width: 200px;margin-top: 5px;font-size: 18px;background-color: #f2f2c3;border: 0px;">
+
+                    </select>
+                    <label id="lbl_vol_fiche" class="mt-3 mb-2"></label>
+
+                    <a href="#" class="cloturer_fiche_prod btn btn-danger btn-sm" style="display: none;" data-bs-target="#cloturer_fiche" data-bs-toggle="modal" >Cloturer cette fiche en production</a>
+                </div>
+                <hr>
+                <div class="alert-danger p-2  mt-2 mb-2 info_billon"></div>
+                <br>
+                <div class="alert-light  bg-white" id="div_saisie">
+
+                    <label class="font-weight-bold m-2">
+                        <span style="font-size: 18px;margin-left: 10px;color:orangered;">{{ 'Length' | trans}}</span> <input class="input-group mt-2 mb-2 text-danger" id="txt_lng" type="number" style="margin-left: 5px;width: 100px;font-size: 18px;background-color: #f2f2c3;border: 0px;">
+                    </label>
+
+                    <label class="font-weight-bold m-2">
+                        <span style="font-size: 18px;margin-left: 10px;color:orangered;">{{ 'Width' | trans }}</span> <input class="input-group mt-2 mb-2 text-danger"  id="txt_lrg" type="number" style="margin-left: 5px;width: 100px;font-size: 18px;background-color: #f2f2c3;border: 0px;">
+                    </label>
+
+                    <label class="font-weight-bold m-2">
+                        <span style="font-size: 18px;margin-left: 10px;color:orangered;">{{ 'Thickness' | trans }}</span>  <input class="input-group mt-2 mb-2 text-danger" type="number"  id="txt_ep" style="margin-left: 5px;width: 100px;font-size: 18px;background-color: #f2f2c3;border: 0px;">
+                    </label>
+
+                    <label class="font-weight-bold m-2">
+                        <span id="lbl_elements" style="font-size: 18px;margin-left: 10px;color:orangered;">Nombre Eléments</span> <input class="input-group mt-2 mb-2 text-danger" type="number"  id="txt_nb" style="margin-left: 5px;width: 100px;font-size: 18px;background-color: #f2f2c3;border: 0px;" >
+                    </label>
+
+
+
+                    <a href="#" id="btn_enr" title="{{ "Save" | trans }}"><i class="mdi mdi-content-save mt-2" style="font-size: 64px"></i></a>
+                    <span for="" id="lbl_essence" class="text-danger font-weight-bold" style="font-size: 18px;"></span>
+                </div>
+                <table class="table table-responsive alert-light mb-2" id="liste_billons" style="height: 290px;border: 1px solid grey">
+                    <thead>
+                    <tr style="background: #dbdbd7;color: #030347;font-size: 18px;">
+                        <th>{% trans %}Longueur{% endtrans %}</th>
+                        <th>{% trans %}Width{% endtrans %}</th>
+                        <th>{% trans %}Thickness{% endtrans %}</th>
+                        <th>{% trans %}Nombre Elements{% endtrans %}</th>
+                        <th>{% trans %}Volume{% endtrans %}</th>
+                        <th>{% trans %}Contract{% endtrans %}</th>
+                        <th>{% trans %}Action{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="contenu_elements">
+
+                    </tbody>
+                </table>
+                <div class="bg-white p-2" id="foot"></div>
+            </div>
+        </div>
+
+
+        <!-- Modal ACCEPT-->
+        <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="daily_sheet" style="margin-right: 10px; height: 32px;"> {{ 'Production daily sheet' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation ' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to authorize this loading on your factory park? ' |trans}}</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 18px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  accept_loading" id="" style="font-size: 18px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cloturer le billon-->
+        <div class="modal fade" id="cloturer_billon" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/wood.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Production daily sheet' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation ' |trans}}</label>
+                                <h6  class="text-danger ">Voulez-vous clôturer le billon ?</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 18px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success cloturer_billon font-weight-light  terminate" id="terminate" style="font-size: 18px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Terminate'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {#Modifier les éléments du billon#}
+        <div class="modal fade" id="modif_element" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog  modal-xl">
+                <form class="modal-content modal-xl">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Edit Elements' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div  class="row bg-white m-2" style="overflow-y: scroll">
+                            <div class="col-4 "><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3"><input type="number" value="" id="m_lng" style="font-size: 18px;background-color: #fcf378; border: 1px solid lightgrey;" onload="this.focus()"></div>
+                            <div class="col-4 "><label for="" style="font-weight: bold">{{ 'Width' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="m_lrg" style="font-size: 18px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 "><label for="" style="font-weight: bold">{{ 'Thickness' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="m_ep" style="font-size: 18px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 "><label for="" style="font-weight: bold">Nombre<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" value="" id="m_nb" style="font-size: 18px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <button type="button" class="btn btn-primary mt-3" id="save_data_elts" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        {#Select Transfo#}
+        <div class="modal fade" id="select_transfo" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">Modifier le type de transformation</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <thead>
+                                <th style="width: 20%;">Billon</th>
+                                <th style="width: 20%;">Essence</th>
+                                <th style="width: 5%;">Lng</th>
+                                <th style="width: 5%;">Dm</th>
+                                <th style="width: 40%;">Transformation</th>
+                            </thead>
+                            <tbody id="body_transformation">
+
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Cloturer la fiche de tronconnage-->
+        <div class="modal fade" id="cloturer_fiche" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/wood.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Production daily sheet' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                                style="display: none;"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="font-weight-bold  text-center alert-danger text-danger">Attention !!! </label>
+                                <label for="motif" class="text-dark font-weight-bold">Vous allez Fermer cette fiche a la production</label>
+                                <p class="text-danger">Vous ne pourrez plus ajouter de nouveaux billons à la transformation</p>
+                                <h6  class="font-weight-bold mt-5 text-primary">Voulez-vous clôturer cete fiche ?</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuser" data-bs-dismiss="modal" id="#"  style="font-size: 18px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter_fiche font-weight-light  terminate_fiche" id="terminate_fiche" style="font-size: 18px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Terminate'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script src="{{ asset('assets/Js/date-picher/js/date-picker.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+    <script>
+
+
+
+        // Déclaration
+        let lng = document.querySelector('#txt_lng').value;
+        let lrg = document.querySelector('#txt_lrg').value;
+        let ep = document.querySelector('#txt_ep').value;
+        let nb = 0;
+        let code_billon = document.querySelector('#select_billon').value;
+        let date_enr = document.querySelector('#date-input').value;
+        let date_du_jour =new Date()
+        let date_input = document.querySelector('#date-input');
+        let lng_restant = 0;
+        let code_transfo = document.querySelector("#id_transfo").value
+        let volume_deroulage_essence = 0;
+        let volume_deroulage_fiche = 0;
+        let volume_billon= 0;
+        let volume_billon_consomme = 0;
+        let id_fiche_tr = 0;
+
+        let id_element = 0;
+            //Initialisation
+            /*if (code_transfo === "1"){
+                liste_billons();
+
+            }*/
+
+            // Controller
+            date_input.value = date_du_jour
+
+        // Vérifie le type de transformation
+        code_transfo = document.querySelector("#id_transfo").value;
+
+        if (code_transfo === "2"){
+            afficher_saisie();
+            afficher_deroulage();
+        } else  if (code_transfo === "1" || code_transfo === "3" ){
+            masquer_deroulage();
+            afficher_sciage();
+        } else {
+            desactiver_champs()
+        }
+
+
+        $("#id_transfo").on('change' , function (){
+            code_transfo = this.value;
+            reinitialise()
+            if (code_transfo === "2"){
+                afficher_deroulage()
+            }  else  if (code_transfo === "1" || code_transfo === "3" ){
+                afficher_sciage();
+            } else {
+                desactiver_champs()
+            }
+
+        })
+
+        $('#select_billon').on('change', function () {
+            afficheInfosBillons(this.value)
+
+        });
+
+        function afficheInfosBillons(value){
+
+            info_billons(value)
+            affiche_elements(value);
+            activer_saisie()
+        }
+            $('#btn_enr').on('click', function (){
+
+                lng = document.querySelector('#txt_lng').value;
+                lrg = document.querySelector('#txt_lrg').value;
+                ep = document.querySelector('#txt_ep').value;
+                nb = document.querySelector('#txt_nb').value;
+                let essence = $('#select_essence').val();
+
+                code_billon = document.querySelector('#select_billon').value;
+                let id_fiche = document.querySelector('#select_lot').value;
+
+                var madate =  date_input.value;
+
+                if (date_input.value){
+                    /*document.querySelector("#roller").style="display:inline";*/
+                    if (code_transfo === "1" || code_transfo === "3" ){
+                        let diff_vol = 0;
+                        let vol_calcule = ((lng/100) * (lrg/100) * (ep/100) * nb)
+                        diff_vol = volume_billon - (volume_billon_consomme + parseFloat(vol_calcule));
+                        if (diff_vol > 0){
+                            add_elements(lng, lrg, ep, nb, code_billon, date_input.value, essence, code_transfo)
+                        }else{
+                            render_toast_value("le cubage Element n'est pas correct car supérieur au volume essence restant", 0)
+                        }
+
+                    } else if (code_transfo === "2" ) {
+                        let diff_vol = 0;
+                        let vol_calcule = ((lng/100) * (lrg/100) * (ep/1000) * nb)
+
+                        diff_vol = volume_deroulage_fiche - (volume_deroulage_essence + parseFloat(vol_calcule));
+
+                        if (diff_vol > 0){
+                            add_elements_deroulage(lng, lrg, ep, nb, id_fiche, date_input.value, essence, code_transfo)
+                        }else{
+                            render_toast_value("le cubage Element n'est pas correct car supérieur au volume essence restant", 0)
+                        }
+
+                    }
+                } else {
+
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: '{% trans %}Billon{% endtrans %}',
+                        html: "<h4 class='text-danger'>{% trans %}Sorry fill Date input{% endtrans %}</h4>",
+                        padding: '1em'
+                    });
+                    date_input.focus();
+                }
+
+            });
+
+
+        $('body').on('click','.editbtn', function (){
+            id_element = this.id;
+            affiche_element(this.id)
+        })
+
+           /* Btn Cloturer le billon*/
+            document.querySelector('#terminate').addEventListener('click', function (){
+                if (code_billon){
+                    cloturer_billon(code_billon);
+                }
+            })
+
+
+            //Evènements
+
+        // Fonctions
+        function liste_billons(){
+                let contenu_billon = "";
+                let id_fiche_lot = $('#select_lot').val();
+                $.ajax({
+                    url : '{{path('app_portail')}}snvlt/mes_billons/' + code_transfo + '/' + id_fiche_lot,
+                    type: 'POST',
+                    success: function(response){
+                        let liste_billons = JSON.parse(response);
+                        if (liste_billons.length > 0){
+                            for (let i = 0; i < liste_billons.length; i++){
+                                contenu_billon = contenu_billon + '<option value="' + liste_billons[i].id_billon + '">' + liste_billons[i].numero_billon + '</option>'
+                            }
+                            document.querySelector("#select_billon").innerHTML = contenu_billon;
+                            code_billon = document.querySelector("#select_billon").value;
+                            affiche_elements(document.querySelector("#select_billon").value);
+
+                            info_billons(document.querySelector("#select_billon").value)
+
+                            activer_saisie()
+                        } else {
+                            document.querySelector("#select_billon").innerHTML = contenu_billon;
+                           /* document.querySelector("#roller").style="display:none";*/
+
+                            document.querySelector("#m_lng").value = "";
+                            document.querySelector("#m_lrg").value = "";
+                            document.querySelector("#m_ep").value = "";
+                            document.querySelector("#m_nb").value = "";
+
+
+                        }
+
+
+                    },
+                    error: function (erreur){
+                        console.log(erreur);
+                    }
+                })
+        }
+        function info_billons(id_billon){
+            let contenu_billon = "";
+            document.querySelector(".info_billon").innerHTML = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/billon/info/' + id_billon,
+                type: 'POST',
+                success: function(response){
+                    let info_billon = JSON.parse(response);
+
+                    document.querySelector("#txt_lng").value = info_billon[0].lng_billon;
+                    let contenu_info = '<span class="text-dark font-weight-bold" style="font-size: 20px;margin-right: 10px;">Infos Billon : </span>';
+                        contenu_info =  contenu_info + '<span class="alert-warning badge p-1" style="font-size: 18px;border: 1px solid yellowgreen">{{'initial volume' | trans}} : ' + info_billon[0].vol_billon + ' m<sup>3</sup></span>';
+                        contenu_info = contenu_info + '<span class="alert-success badge p-1" style="font-size: 18px;border: 1px solid yellowgreen; margin-left: 5px;">{{'remaining volume' | trans}} : ' + info_billon[0].vol_restant + ' m<sup>3</sup></span>';
+                        contenu_info = contenu_info + '<a href="#" class="btn btn-danger p-1 text-white" data-bs-toggle="modal" data-bs-target="#cloturer_billon" style="font-size: 18px;border: 1px solid white; margin-left: 50px; border-radius: 5px;"><i class="mdi mdi-close" style="font-size: 18px;margin-right: 5px;"></i>Terminer la production</a>';
+                    document.querySelector(".info_billon").innerHTML = contenu_info;
+                    document.querySelector("#lbl_essence").text = info_billon[0].essence
+                    volume_billon = info_billon[0].vol_billon ;
+                    volume_billon_consomme = info_billon[0].vol_elts;
+                    document.querySelector("#foot").innerHTML =  '<span class="bg-primary badge p-2 font-weight-bold text-white" style="font-size: 20px;border: 1px solid yellowgreen; margin-left: 5px;">{{'Elements volume' | trans}} : ' + info_billon[0].vol_elts + ' m<sup>3</sup></span><span class="alert-danger badge p-2 font-weight-bold text-black" style="font-size: 20px;border: 1px solid yellowgreen; margin-left: 5px;">{{'Material yield' | trans}} : ' + info_billon[0].rendement + ' %</span>';
+                    /*document.querySelector("#roller").style="display:none";*/
+                    document.querySelector("#txt_lrg").focus();
+                },
+                error: function (erreur){
+                    console.log(erreur);
+                }
+            })
+        }
+
+
+
+
+            //Fonctions
+
+            //Ajout des éléments DEBITES
+            function add_elements(lng, lrg, ep, nb, code_billon, date_enr, essence, type_transfo){
+
+                    $.ajax({
+                        url : '{{path('app_portail')}}snvlt/elts/add_data/' + lng + "/" + lrg + "/" + ep + "/" + nb + "/" + code_billon  + "/" + date_enr + "/" + essence + "/" + type_transfo,
+                        'type': 'POST',
+                        success: function (response){
+                            let reponse = JSON.parse(response);
+                            affiche_elements(code_billon);
+                            info_billons(code_billon)
+                        },
+                        error: function (erreur){
+                            console.log(erreur)
+                        }
+                    })
+
+            }
+
+        //Ajout des éléments DEROULAGE
+        function add_elements_deroulage(lng, lrg, ep, nb, fiche_lot, date_enr, essence, type_transfo){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/elements/add_data/deroulage/' + lng + "/" + lrg + "/" + ep + "/" + nb + "/" + fiche_lot  + "/" + date_enr + "/" + essence + "/" + type_transfo,
+                'type': 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    affiche_elements_deroulage(fiche_lot);
+                    //info_billons(code_billon)
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+
+        //Function cloturer le billon
+        function cloturer_billon(id_billon){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/billon/clb/billon/' +  id_billon ,
+                'type': 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    document.location.reload();
+                    {#affiche_elements(code_billon);#}
+                    {#info_billons(code_billon)#}
+                    {#Swal.fire({#}
+                    {#    toast: true,#}
+                    {#    position: "top-end",#}
+                    {#    background: '#dffbdd',#}
+                    {#    timer : 3000,#}
+                    {#    icon: "success",#}
+                    {#    title: '{% trans %}Billon validated!{% endtrans %}',#}
+                    {#    showConfirmButton: false#}
+                    {#});#}
+                    },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+
+        }
+
+
+            //Liste des éléments par billon
+            function affiche_elements(id_billon){
+                let contenu = "";
+                $.ajax({
+                    url : '{{path('app_portail')}}snvlt/billon/liste_elts/' + id_billon,
+                    type: 'POST',
+                    success: function(response){
+                        let liste_elts = JSON.parse(response);
+                        for (let i = 0; i < liste_elts.length; i++){
+                            contenu = contenu + '<tr style="font-size: 18px;" class="bg-white"><td>' + liste_elts[i].lng_elts + '</td>';
+                            contenu = contenu + '<td>' + liste_elts[i].lrg_elts + '</td>';
+                            contenu = contenu + '<td>' + liste_elts[i].ep_elts + '</td>';
+                            contenu = contenu + '<td>' + liste_elts[i].nb_elts + '</td>';
+                            contenu = contenu + '<td>' + liste_elts[i].vol_elts + '</td>';
+                            contenu = contenu + '<td><a href="#" class="editbtn" data-bs-toggle="modal" data-bs-target="#modif_element" id="' + liste_elts[i].id_elts + '"><i class="mdi mdi-pen  text-primary"  style="margin-right: 5px;font-size: 24px;" ></i></a><a href="#" class="deletebtn" id="' + liste_elts[i].id_elts + '"><i class="mdi mdi-delete-forever delete text-danger"  style="font-size: 24px;" ></i></a></td><tr>';
+                        }
+                        document.querySelector("#contenu_elements").innerHTML = contenu;
+
+                    },
+                    error: function (erreur){
+                        console.log(erreur);
+                    }
+                })
+            }
+
+        function affiche_elements_deroulage(id_fiche){
+            let contenu = "";
+            volume_deroulage_essence = 0
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/billon/liste_elts/deroulage/' + id_fiche,
+                type: 'POST',
+                success: function(response){
+                    let liste_elts = JSON.parse(response);
+                    for (let i = 0; i < liste_elts.length; i++){
+                        contenu = contenu + '<tr style="font-size: 18px;" class="bg-white"><td>' + liste_elts[i].lng_elts + '</td>';
+                        contenu = contenu + '<td>' + liste_elts[i].lrg_elts + '</td>';
+                        contenu = contenu + '<td>' + liste_elts[i].ep_elts + '</td>';
+                        contenu = contenu + '<td>' + liste_elts[i].nb_elts + '</td>';
+                        contenu = contenu + '<td>' + liste_elts[i].vol_elts + '</td>';
+                        contenu = contenu + '<td><a href="#" class="editbtn" data-bs-toggle="modal" data-bs-target="#modif_element" id="' + liste_elts[i].id_elts + '"><i class="mdi mdi-pen  text-primary"  style="margin-right: 5px;font-size: 24px;" ></i></a><a href="#" class="deletebtn" id="' + liste_elts[i].id_elts + '"><i class="mdi mdi-delete-forever delete text-danger"  style="font-size: 24px;" ></i></a></td><tr>';
+                        volume_deroulage_essence = volume_deroulage_essence + liste_elts[i].vol_elts
+                    }
+
+                    //Calcul du rendement matière
+                    let rm = Math.round((volume_deroulage_essence / volume_deroulage_fiche * 100)*100)/100;
+                    document.querySelector("#contenu_elements").innerHTML = contenu;
+                    document.querySelector("#foot").innerHTML =  '<span class="bg-primary badge p-2 font-weight-bold text-white" style="font-size: 20px;border: 1px solid yellowgreen; margin-left: 5px;">{{'Elements volume' | trans}} : ' + (Math.round(volume_deroulage_essence * 1000))/1000 + ' m<sup>3</sup></span><span class="alert-danger badge p-2 font-weight-bold text-black" style="font-size: 20px;border: 1px solid yellowgreen; margin-left: 5px;">{{'Material yield' | trans}} : ' + rm + ' %</span>';
+                },
+                error: function (erreur){
+                    console.log(erreur);
+                }
+            })
+        }
+        function affiche_element(id_elt){
+            let contenu = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/elt/search/' + id_elt,
+                type: 'POST',
+                success: function(response){
+                    let elt = JSON.parse(response);
+                        document.querySelector("#m_lng").value = elt[0].lng_elt;
+                        document.querySelector("#m_lrg").value = elt[0].lrg_elt;
+                        document.querySelector("#m_ep").value = elt[0].ep_elt;
+                        document.querySelector("#m_nb").value = elt[0].nb_elt;
+                },
+                error: function (erreur){
+                    console.log(erreur);
+                }
+            })
+        }
+
+        $('#save_data_elts').on('click', function (){
+            var obj = {};
+            obj.lng =  $("#m_lng").val();
+            obj.lrg =  $("#m_lrg").val();
+            obj.ep =  $("#m_ep").val();
+            obj.nb =  $("#m_nb").val();
+            obj.id_elt=  id_element;
+            var donnees = JSON.stringify(obj);
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/elt/search/edit/data/' + donnees,
+                type: 'POST',
+                success: function(response){
+                    let elt = JSON.parse(response);
+                    if (elt[0].code ==="SUCCESS"){
+                        render_toast_value("Elément mis à jour", 1)
+                        //document.location.reload();
+                        affiche_elements(code_billon);
+                        $("#modif_element .btn-close").click();
+                    } else if (elt[0].code ==="NOT_FOUND"){
+                        render_toast_value("Elément non trouvé", 2)
+                    } else if (elt[0].code ==="DATA_ERROR"){
+                        render_toast_value("Erreur lors de la mise à jour", 0)
+                    }
+                },
+                error: function (erreur){
+                    console.log(erreur);
+                }
+            })
+        });
+
+        function masquer_deroulage(){
+            document.querySelector(".info_deroulage").style = "display:none";
+            document.querySelector(".info_billon").style = "display:inline";
+           // document.querySelector(".lbl_billons").style = "display:inline";
+        }
+        function afficher_deroulage(){
+            afficher_saisie();
+            document.querySelector(".info_deroulage").style = "display:inline;margin-top:10px;margin-bottom:10px;background-color: #c3f2cb;border: 0px;"
+            document.querySelector(".info_billon").style = "display:none";
+            document.querySelector("#select_billon").style = "display:none";
+            document.querySelector("#txt_lng").value = 0;
+            document.querySelector("#txt_nb").value = 0;
+            document.querySelector("#txt_ep").value = 0;
+            document.querySelector("#txt_lrg").value = 0;
+
+        }
+        function afficher_sciage(){
+            afficher_saisie();
+            document.querySelector(".info_deroulage").style = "display:inline;margin-top:10px;margin-bottom:10px;background-color: #c3f2cb;border: 0px;"
+            document.querySelector(".info_billon").style = "display:none";
+            document.querySelector("#select_billon").style = "display:none";
+            document.querySelector("#txt_lng").value = 0;
+            document.querySelector("#txt_nb").value = 0;
+            document.querySelector("#txt_ep").value = 0;
+            document.querySelector("#txt_lrg").value = 0;
+
+        }
+        function desactiver_champs(){
+            masquer_deroulage();
+            masquer_saisie();
+        }
+
+        function masquer_saisie(){
+                document.querySelector("#div_saisie").style = "display:none";
+        }
+
+        function afficher_saisie(){
+            document.querySelector("#div_saisie").style = "display:inline";
+            document.querySelector("#txt_lng").value = "";
+            document.querySelector("#txt_nb").value = "";
+            document.querySelector("#txt_ep").value = "";
+            document.querySelector("#txt_lrg").value = "";
+        }
+
+        function activer_saisie(){
+            document.querySelector("#div_saisie").disabled = false;
+            document.querySelector("#txt_lng").disabled = false;
+            document.querySelector("#txt_nb").disabled = false;
+            document.querySelector("#txt_ep").disabled = false;
+            document.querySelector("#txt_lrg").disabled = false;
+            document.querySelector("#txt_lng").value = null;
+            document.querySelector("#txt_lng").focus();
+
+        }
+        function desactiver_saisie(){
+            document.querySelector("#div_saisie").disabled = true;
+            document.querySelector("#txt_lng").disabled = true;
+            document.querySelector("#txt_nb").disabled = true;
+            document.querySelector("#txt_ep").disabled = true;
+            document.querySelector("#txt_lrg").disabled = true;
+        }
+        $("#select_essence").on('change', function(){
+            let id_essence = this.value;
+            let id_transfo = $('#id_transfo').val();
+            document.querySelector("#lbl_vol_fiche").innerHTML = "";
+            document.querySelector(".cloturer_fiche_prod").style = "display:none";
+            if(this.value !== "0"){
+                selectEssence(id_essence, id_transfo)
+            }
+        })
+        function selectEssence(id_essence, id_transfo){
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/fiches_lot/' + id_essence + '/' + id_transfo,
+                type : 'POST',
+                success  :function (response){
+                    let valeur = JSON.parse(response);
+                    let contenu = "";
+                    desactiver_saisie();
+                    if (valeur.length > 0){
+                        contenu = contenu + '<option value="">Sélectionnez la fiche de tronçonnage</option>';
+                        for(var i=0;i<valeur.length;i++){
+                            contenu = contenu + '<option value="' + valeur[i].id_fiche + '">' + valeur[i].numero_fiche + '</option>'
+                        }
+                        document.querySelector("#select_lot").innerHTML = contenu;
+
+                    } else {
+                        document.querySelector("#select_lot").innerHTML = null;
+                        document.querySelector("#select_billon").innerHTML = null;
+                        afficheInfosBillons(0)
+                        document.querySelector("#lbl_vol_fiche").innerHTML = '<span class="text-danger font-weight-bold" style="font-size: 24px;">Aucune fiche de tronçonnage pour cette essence forestière</span>';
+                    }
+
+                }
+            })
+
+        }
+
+        $("#select_lot").on('change', function(){
+            let id_essence =  $("#select_essence").val();
+            let id_transfo =  $("#id_transfo").val();
+            let id_fiche =  this.value;
+
+            document.querySelector("#select_billon").value = null;
+            if (id_transfo === "1" || id_transfo === "3"){
+                document.querySelector("#select_billon").style = "display:inline";
+
+                document.querySelector(".info_billon").style = "display:inline";
+                liste_billons();
+
+
+            } else {
+                $('#lbl_elements').text("Nombre Feuilles")
+                document.querySelector("#select_billon").style = "display:none";
+
+                document.querySelector(".info_billon").style = "display:none";
+                infos_fiche_lot(id_fiche, id_essence, id_transfo)
+
+            }
+            id_fiche_tr = this.value
+
+            document.querySelector(".cloturer_fiche_prod").style = "display:inline";
+        })
+
+
+        $('body').on('click', '.terminate_fiche', function (){
+            cloturer_prod_fiche_tr(id_fiche_tr);
+        });
+
+        function cloturer_prod_fiche_tr(){
+            if (id_fiche_tr > 0){
+                $.ajax({
+                    url: '{{ path('app_portail') }}snvlt/fiche_lot/billon/clotureProd/'   + id_fiche_tr,
+                    type: 'POST',
+                    success: function (response) {
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+                            let id_essence = this.value;
+                            let id_transfo = $('#id_transfo').val();
+
+                            $('#cloturer_fiche .btn-close').click()
+                            render_toast_value("Fiche de production clôturée", 3)
+                            document.location.reload();
+                        }
+                    }
+                });
+            }
+        }
+        function infos_fiche_lot(id_fiche, id_essence, id_transfo){
+            volume_deroulage_fiche = 0;
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/fiches_lot/infos/' + id_fiche +'/' + id_essence + '/' + id_transfo,
+                type : 'POST',
+                success  :function (response){
+                    let valeur = JSON.parse(response);
+                    let contenu = "";
+                    if (valeur.length > 0){
+
+                            contenu =  '<span class="text-dark font-weight-bold  p-1 mt-3 mb-2" style="font-size: 18px;"> Volume total Jour: <span class="badge p-1 bg-dark text-white" style="font-size: 18px;">' + valeur[0].volume_fiche + ' m<sup>3</sup></span></span><span class="text-danger  font-weight-bold p-1 mt-3 mb-2" style="font-size: 18px;"> Volume ' + valeur[0].essence + ' : <span class="badge p-1 bg-danger text-white" style="font-size: 18px;">' + valeur[0].volume_essence + ' m<sup>3</sup></span></span>'
+                        volume_deroulage_fiche = valeur[0].volume_essence;
+                        document.querySelector("#lbl_vol_fiche").innerHTML = contenu;
+                        affiche_elements_deroulage(id_fiche);
+                        activer_saisie();
+
+                    } else{
+                        desactiver_saisie();
+                    }
+
+                }
+            })
+        }
+
+        $('body').on('click', '.modif_transfo', function (){
+            affiche_billons($('#select_lot').val())
+        })
+
+
+        function affiche_billons(id_fiche){
+                let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/fiches_lot/affiche_billons/' + id_fiche,
+                type : 'POST',
+                success  :function (response){
+                    let valeur = JSON.parse(response);
+                    let contenu = "";
+                    if (valeur.length > 0){
+                        for(var i=0;i<valeur.length;i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td>' + valeur[i].numero_billon + '</td>';
+                            contenu = contenu + '<td>' + valeur[i].essence + '</td>';
+                            contenu = contenu + '<td>' + valeur[i].lng + '</td>';
+                            contenu = contenu + '<td>' + valeur[i].dm + '</td>';
+                            contenu = contenu + '<td>' +
+                                '<select value="'+ valeur[i].type_transfo + '">' +
+                                '<option value="0">Type Transfo</option>' +
+                                    {% for transfo in app.user.codeindustriel.typeTransformation %}
+                                '<option value="{{ transfo.id }}">{{ transfo.libelle }}</option>' +
+                                    {% endfor %}
+                                '</select></td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_transformation').innerHTML = contenu;
+                    }
+
+                }
+            })
+        }
+        $('body').on('click', '.deletebtn', function (){
+            let id_element = this.id;
+                Swal.fire({
+                    title: "Etes-vous sûr de vouloir supprimer l'élément ?",
+                    showCancelButton: true,
+                    toast: true,
+                    icon: "error",
+                    confirmButtonText: "Oui, suprimer",
+                    confirmButtonColor: "#f20428",
+                    cancelButtonColor: "#1a7d01",
+                    background: '#f8e9e9',
+                    cancelButtonText: "Non, Quitter!",
+                    showClass: {
+                        popup: `
+                          animate__animated
+                          animate__fadeInUp
+                          animate__faster
+                        `
+                                        },
+                                        hideClass: {
+                                            popup: `
+                                              animate__animated
+                                              animate__fadeOutDown
+                                              animate__faster
+                                            `
+                                        }
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url : '{{ path('app_portail') }}snvlt/elements/del/' + id_element,
+                            type : 'POST',
+                            success : function (response){
+                                let reponse = JSON.parse(response);
+                                    if (reponse[0].code === "SUCCESS"){
+                                        Swal.fire("L'élément a été supprimé.", "", "success");
+                                        if (code_transfo === "2"){
+
+                                            infos_fiche_lot($("#select_lot").val(), $("#select_essence").val(), code_transfo)
+                                        } else {
+                                            info_billons(document.querySelector("#select_billon").value)
+                                        }
+                                    } else if (reponse[0].code === "NO_RESPONSABLE"){
+                                        Swal.fire("Désolé vous n'êtes pas responsable dans votre unité de transformation.", "", "error");
+                                    }else if (reponse[0].code === "NO_FOUND"){
+                                        Swal.fire("Désolé, Aucun élément sélectionné", "", "error");
+                                    }
+                            }
+                        })
+                    }
+                });
+        });
+        function reinitialise(){
+            document.querySelector('#select_essence').value = 0;
+            document.querySelector('#select_lot').value = null;
+        }
+
+
+    </script>
+{% endblock %}

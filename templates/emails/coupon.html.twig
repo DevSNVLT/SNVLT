@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% trans %}SNVLT{% endtrans%} - {% trans %}Connexion{% endtrans %}</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap-5.3.2/dist/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}/">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+</head>
+<body class="alert-light">
+    <div class="mx-auto text-center p-3" style="background: #eff5e8; border-radius: 10px 10px 10px 10px">
+        <img class="avatar-content" src="https://boislegal.ci/assets/images/logo_snvlt.png" height="92"/>
+        <div class="card p-6 p-lg-10 space-y-4">
+            <h3 class="h3">
+                {{ 'Hi' | trans}} {{ coupon.codeContrat.personneResource }}
+            </h3>
+            <p>
+                You have recieved from your supplier in Côte d'Ivoire, informations about products you ordered and others.
+            </p>
+
+        </div>
+        <br>
+            <hr>
+            PLease follow this link to have more informations <a href="www.boislegal.ci/coupon">here</a>
+            <hr>
+            <span class="badge bg-warning p-2" style="font-size: 20px;">Code : {{ coupon.codeCoupon }}</span>
+        <br>
+        <a class="btn btn-primary p-3 text-center" href="{{ url('app_portail')}}">www.boislegal.ci</a>
+        <div class="mx-auto">Bois Légal CI
+            <div class="text-muted text-center my-6">
+                Ministère des Eaux et Forêts <br>
+                Abidjan Plateau, Immeuble Postel 2001, 11<sup>è</sup> étage<br>
+                Côte d'Ivoire, +225 27 202 447 60 <br>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- container-scroller -->
+<!-- plugins:js -->
+<script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+<!-- endinject -->
+</body>
+</html>

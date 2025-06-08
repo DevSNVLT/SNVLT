@@ -1,0 +1,440 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Détails Billes
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/search_doc.png') }}" height="64" alt="requetes">  Détails Billes Transportées
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <div class="bg-white" style="min-height: 500px; border: 1px lightblue solid;">
+        <div class="p-1 alert-primary text-center">
+            <label class="ms-2" for="foret" style="font-size: 19px;">Critère</label>
+            <select class="ms-2" name="critere" id="critere" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                <option value="0">Toutes les billes</option>
+                <option value="1">Par Forêt</option>
+            </select>
+
+            <div class="foret" style="display: none;">
+                <label class="ms-2" for="foret" style="font-size: 19px;">Forêt</label>
+                <select class="ms-2" name="foret" id="foret" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for foret in forets %}
+                        <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <label for="foret ms-4 mt-2" style="font-size: 19px;margin-left: 50px;">Période</label>
+            <input type="date" class="ms-2 text-center" id="first_date" style="height: 30px;width: 150px;background: white;font-size: 18px;border:1px lightgrey solid;margin-left: 5px;" placeholder="Date Début">
+            <input type="date" class="ms-2 text-center" id="last_date" style="height: 30px;width: 150px;background: white;font-size: 18px;border:1px lightgrey solid;margin-left: 5px;" placeholder="Date Fin">
+            <a class="btn btn-primary btn-sm" style="height: 30px;font-size: 16px;margin-left:15px;" id="btn_rechercher">Rechercher</a>
+        </div>
+
+        <hr>
+        <div class="text-center">
+            <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+        </div>
+        <div class="contenu_div p-2">
+
+        </div>
+    </div>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script>
+
+        document.querySelector('.spinload').style = "display:none";
+
+
+        $('#critere').on('change', function () {
+            let value = this.value
+            document.querySelector('.foret').style= "display:none;"
+            document.querySelector('#foret').value= null
+            document.querySelector('.contenu_div').innerHTML = "";
+            if(value === "0" ){
+                document.querySelector('.foret').style= "display:none;"
+                document.querySelector('.exploitant').style= "display:none;"
+            } else if (value === "1" ){
+                document.querySelector('.foret').style= "display:inline;"
+            }
+        });
+            $('#btn_rechercher').on('click', function (){
+
+                let critere = document.getElementById('critere').value;
+                let date_debut = document.getElementById('first_date').value;
+                let date_fin = document.getElementById('last_date').value;
+                let foret = document.getElementById('foret').value;
+
+                if (date_debut === "" || date_fin === "" || critere === ""){
+                    render_toast_value("Sélectionnez un critère et une période avant de continuer SVP!", 0)
+                }else if (date_debut > date_fin ){
+                    render_toast_value("Attention!!!! la date de début ne peut être supérieure à la date de fin!", 2)
+                }else if (foret === "" || foret === null){
+                    render_toast_value("Sélectionnez une forêt et une période avant de continuer SVP!", 0)
+                } else {
+                    document.querySelector('.spinload').style = "display:inline;margin-top: -8px;";
+                    if (critere === "0"){
+                        rechercher_details_billes(date_debut, date_fin)
+                    } else {
+                        rechercher_details_billes_foret(date_debut, date_fin, foret)
+                    }
+
+                }
+
+            });
+
+        function rechercher_details_billes(date_debut, date_fin){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let nb_chr = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Détails grumes sur la période sélectionnée. Merci de sélectionner une période d\'au plus 60 jours maximum pour assurer une fluidité lors de l\'extraction.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/billes/details/' + date_debut + '/' + date_fin ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table table-responsive border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="text-center">N° Bille</th>';
+                        contenu = contenu + '<th class="">Essence</th>';
+                        contenu = contenu + '<th class="text-center">Zone H.</th>';
+                        contenu = contenu + '<th class="text-center">X</th>';
+                        contenu = contenu + '<th class="text-center">Y</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Longueur</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Diamètre</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '<th class="text-center">N° Chargement</th>';
+                        contenu = contenu + '<th class="text-center">Index Feuillet</th>';
+                        contenu = contenu + '<th class="text-center">Date Chargement</th>';
+                        contenu = contenu + '<th class="">Immatriculation</th>';
+                        contenu = contenu + '<th class="">Chauffeur</th>';
+                        contenu = contenu + '<th class="">Parc Usine</th>';
+                        contenu = contenu + '<th class="">Destination</th>';
+                        contenu = contenu + '<th class="text-center">N° Document</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Forêt</th>';
+                        contenu = contenu + '<th class=" alert-light">Exploitant</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Exercice</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class=" text-center font-weight-bold text-primary">' + liste_chr[i].numero_bille + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].essence + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].zh + '</td>';
+                            contenu = contenu + '<td class="text-center">' + (liste_chr[i].x).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center">' + (liste_chr[i].y).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].lng).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].dm).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].numero_chr + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].index_page + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].date_chr + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].immatriculation + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].chauffeur + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].parc_usine + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].destination + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].numero_doc + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].foret + '</td>';
+                            contenu = contenu + '<td class="alert-light">' + liste_chr[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].annee + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + 1 ;
+                            volume_total = volume_total + liste_chr[i].volume;
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = "Détails Billes du " + date_debut + " au " + date_fin;
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2"> Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;"><span class="text-dark"> Volume total : </span><span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        dataTableSnvlt("#tbl_donnees", denomination, 20)
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_details_billes_foret(date_debut, date_fin, foret){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let nb_chr = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Détails grumes sur la forêt et la période sélectionnée. Merci de sélectionner une période d\'au plus 60 jours maximum pour assurer une fluidité lors de l\'extraction.</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/billes/details/foret/' + date_debut + '/' + date_fin + '/' + foret ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table table-responsive border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="text-center">N° Bille</th>';
+                        contenu = contenu + '<th class="">Essence</th>';
+                        contenu = contenu + '<th class="text-center">Zone H.</th>';
+                        contenu = contenu + '<th class="text-center">X</th>';
+                        contenu = contenu + '<th class="text-center">Y</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Longueur</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Diamètre</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '<th class="text-center">N° Chargement</th>';
+                        contenu = contenu + '<th class="text-center">Index Feuillet</th>';
+                        contenu = contenu + '<th class="text-center">Date Chargement</th>';
+                        contenu = contenu + '<th class="">Immatriculation</th>';
+                        contenu = contenu + '<th class="">Chauffeur</th>';
+                        contenu = contenu + '<th class="">Parc Usine</th>';
+                        contenu = contenu + '<th class="">Destination</th>';
+                        contenu = contenu + '<th class="text-center">N° Document</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Forêt</th>';
+                        contenu = contenu + '<th class=" alert-light">Exploitant</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Exercice</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class=" text-center font-weight-bold text-primary">' + liste_chr[i].numero_bille + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].essence + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].zh + '</td>';
+                            contenu = contenu + '<td class="text-center">' + (liste_chr[i].x).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center">' + (liste_chr[i].y).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].lng).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].dm).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].numero_chr + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].index_page + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_chr[i].date_chr + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].immatriculation + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].chauffeur + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].parc_usine + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].destination + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].numero_doc + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].foret + '</td>';
+                            contenu = contenu + '<td class="alert-light">' + liste_chr[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].annee + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + 1 ;
+                            volume_total = volume_total + liste_chr[i].volume;
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = 'Détails Grumes  sur la forêt ' + liste_chr[0].foret + " - du " + date_debut + " au " + date_fin;
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2"> Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        dataTableSnvlt("#tbl_donnees", denomination, 20)
+
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_exploitant(exploitant, exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let denomination_foret = document.querySelector('#exploitant');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de la forêt '+ denomination_foret.options[denomination_foret.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/chr/exploitant/' + exploitant + '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="text-center">N° Chargement</th>';
+                        contenu = contenu + '<th class="text-center">Date</th>';
+                        contenu = contenu + '<th class="">Immatriculation</th>';
+                        contenu = contenu + '<th class="">Chauffeur</th>';
+                        contenu = contenu + '<th class="">Parc Usine</th>';
+                        contenu = contenu + '<th class="">Destination</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '<th class="text-center">N° Document</th>';
+                        contenu = contenu + '<th class="text-center">Index Feuillet</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Forêt</th>';
+                        contenu = contenu + '<th class=" alert-light">Exploitant</th>';
+                        contenu = contenu + '<th class="text-center alert-light">Exercice</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class=" text-center font-weight-bold text-primary">' + liste_chr[i].numero + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold text-center">' + liste_chr[i].date_chr + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].immatriculation + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].chauffeur + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].parc_usine + '</td>';
+                            contenu = contenu + '<td class="">' + liste_chr[i].destination + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].numero_doc + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].index_page + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].foret + '</td>';
+                            contenu = contenu + '<td class="alert-light">' + liste_chr[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].annee + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = 'Chargement Grumes - Exploitant : ' +  liste_chr[0].exploitant
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        dataTableSnvlt("#tbl_donnees", denomination, 20)
+
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+        function rechercher_tous_les_chargemets(exercice){
+                let contenu = "";
+                let nb_billes = 0;
+                let volume_total = 0;
+                let nb_chr = 0;
+
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Extraction de toutes les données de chargements de grumes </h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/req/exploitation/chr/all/' + exercice ,
+                    type : 'POST',
+                    success : function (response){
+
+                        let liste_chr = JSON.parse(response);
+
+                        if (liste_chr.length > 0){
+                            contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                            contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                            contenu = contenu + '<thead>';
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<th class="text-center">N° Chargement</th>';
+                            contenu = contenu + '<th class="text-center">Date</th>';
+                            contenu = contenu + '<th class="">Immatriculation</th>';
+                            contenu = contenu + '<th class="">Chauffeur</th>';
+                            contenu = contenu + '<th class="">Parc Usine</th>';
+                            contenu = contenu + '<th class="">Destination</th>';
+                            contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                            contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                            contenu = contenu + '<th class="text-center">N° Document</th>';
+                            contenu = contenu + '<th class="text-center">Index Feuillet</th>';
+                            contenu = contenu + '<th class="text-center alert-light">Forêt</th>';
+                            contenu = contenu + '<th class=" alert-light">Exploitant</th>';
+                            contenu = contenu + '<th class="text-center alert-light">Exercice</th>';
+                            contenu = contenu + '</tr>';
+                            contenu = contenu + '</thead>';
+                            contenu = contenu + '<tbody>';
+
+                            for(var i=0; i< liste_chr.length; i++){
+                                contenu = contenu + '<tr>';
+                                contenu = contenu + '<td class=" text-center font-weight-bold text-primary">' + liste_chr[i].numero + '</td>';
+                                contenu = contenu + '<td class="font-weight-bold text-center">' + liste_chr[i].date_chr + '</td>';
+                                contenu = contenu + '<td class="">' + liste_chr[i].immatriculation + '</td>';
+                                contenu = contenu + '<td class="">' + liste_chr[i].chauffeur + '</td>';
+                                contenu = contenu + '<td class="">' + liste_chr[i].parc_usine + '</td>';
+                                contenu = contenu + '<td class="">' + liste_chr[i].destination + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].numero_doc + '</td>';
+                                contenu = contenu + '<td class="text-center font-weight-bold">' + liste_chr[i].index_page + '</td>';
+                                contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].foret + '</td>';
+                                contenu = contenu + '<td class="alert-light">' + liste_chr[i].exploitant + '</td>';
+                                contenu = contenu + '<td class="text-center alert-light">' + liste_chr[i].annee + '</td>';
+                                contenu = contenu + '</tr>';
+                                nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                                volume_total = volume_total + liste_chr[i].volume;
+                                nb_chr = nb_chr +1;
+                            }
+                            contenu = contenu + '</tbody>';
+                            contenu = contenu + '</table>';
+                            let denomination = 'Tous les chargements';
+                            document.querySelector('.contenu_div').innerHTML = contenu;
+                            document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de chargements : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span> Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                            dataTableSnvlt("#tbl_donnees", denomination, 20)
+
+                        } else {
+                            contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                            document.querySelector('.contenu_div').innerHTML = contenu;
+                        }
+                        document.querySelector('.spinload').style = "display:none;";
+
+                    }
+                })
+            }
+    </script>
+
+{% endblock %}

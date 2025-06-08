@@ -1,0 +1,332 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Validation LAAC{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/valid.png') }}" alt="forest">  {% trans %}Validation LAAC{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <!-- Latest compiled and minified CSS -->
+
+    <section class="section bg-white p-1">
+        <div class="align-content-md-start">
+            <span class="p-2 font-weight-bold" style="font-size: 20px;color: #ff8c00">{{ fiche.codeAttribution.codeForet.denomination }}</span>
+            <span class="p-2 ms-2 font-weight-bold" style="font-size: 20px;color: #0e5c03">{{ fiche.codeExploitant.sigle }}</span>
+
+                {% if not (fiche.valide) %}
+                    <a href="#" class="badge btn bg-danger p-2 ms-2 text-white btn_valider_fiche" data-bs-toggle="modal" data-bs-target="#modal_valider_fiche" id="{{ fiche.id }}" style="font-size: 20px;background: linear-gradient(#fe4804,#a75e06)">
+                        Valider la fiche N° {{ fiche.id }}
+                    </a>
+                {% else %}
+                    <span class="badge p-2 ms-2 text-white" style="font-size: 20px;background: #005700;float: right;width: 100%">
+                        Cette fiche a été validée le {{ fiche.updatedAt | date('d/m/Y') }} par {{ fiche.updatedBy }}
+                    </span>
+                {% endif %}
+
+
+        </div>
+        <div class="p-2" style="border: orange; min-height: 500px;" id="liste_arbres">
+            <table class="table" id="table_lac_details" style="width: 100%" >
+                <thead class=" bg-primary text-white">
+                <tr class="alert-success">
+                    <th style="font-size: 20px;" class="text-dark font-weight-bold">{% trans %}spices{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Zone{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}X{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Y{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}L{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}d{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Volume{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}LAAC{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Status{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-dark font-weight-bold">{% trans %}Modifié par{% endtrans %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for arbre in fiche.inventaireForestiers %}
+                        {% if (arbre.lac) %}
+                            <tr class="p-1" style="font-size: 18px;">
+                            {% if not (arbre.valide) %}
+                                <tr class="p-1 alert-warning" style="font-size: 18px;">
+                            {% endif %}
+                            {% if not (arbre.codeEssence.autorisation) %}
+                                <tr class="p-1 bg-danger text-white" style="font-size: 18px;">
+                            {% endif %}
+
+                            <td>{{ arbre.codeEssence.nomVernaculaire }}</td>
+                            <td class="text-center">{{ arbre.zoneh.zone }}</td>
+                            <td class="text-center">{{ arbre.x }}</td>
+                            <td class="text-center">{{ arbre.y }}</td>
+                            <td class="text-center">{{ arbre.lng }}</td>
+                            <td class="text-center">{{ arbre.dm }}</td>
+                            <td class="text-center">{{ arbre.volume }}</td>
+
+                            {% if (arbre.lac) %}
+                                <td class="text-center"><a class="" href="#"><img src="{{ asset('assets/images/valider.png') }}" height="32" alt="lac_valide"></a></td>
+                            {% else %}
+                                <td class="text-center"> - </td>
+                            {% endif %}
+
+
+
+                            {% if not (arbre.codeEssence.autorisation) %}
+                                <td class="text-center"><span class="bg-white badge rounded-5 p-2 text-danger font-weight-bold" style="font-size: 18px;">Non autorisé</span></td>
+                            {% else  %}
+                                {% if not (fiche.valide) %}
+                                    {% if (arbre.valide) %}
+                                        <td class="text-center"><a class="refus_arbre" href="#" id="{{ arbre.id }}" title="Cliquez pour refuser" data-bs-target="#refuser_arbre" data-bs-toggle="modal"><span class="bg-primary text-white p-1 rounded-5 m-1" style="font-size: 18px;">OK</span> <img src="{{ asset('assets/icons/16x16/trash.png') }}" height="32" alt="refuser"></a></td>
+                                    {% else %}
+                                        <td class="text-center"><a class="accept_arbre" href="#" title="cliquer pour accepter l'arbre dans l'inventaire" id="{{ arbre.id }}" data-bs-target="#accepter_arbre" data-bs-toggle="modal" ><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUSE</span><img src="{{ asset('assets/images/valider.png') }}" alt="valider"></a></td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if (arbre.valide) %}
+                                        <td class="text-center"><span class="bg-primary text-white p-1 rounded-5 m-1" style="font-size: 18px;">VALIDE</span></td>
+                                    {% else %}
+                                        <td class="text-center"><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUSE</span></td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+
+                            <td>{{ arbre.updatedAt | date('d/m/Y') }} - {{ arbre.updatedBy }}</td>
+                            </tr>
+                        {% else %}
+
+                        {% endif %}
+
+
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {#Modal Changer de status Refuser#}
+        <div class="modal fade" id="refuser_arbre" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/essences.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Changer le statut de l'arbre</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+
+                                <h3 class="text-danger ">Voulez-vous invalider cet arbre du fichier Inventaire</h3>
+                                <label for="motif" style="width: 100%;">
+                                    <textarea name="motif" id="motif" style="background: lightyellow;height: 300px;width: 100%;" value="">
+
+                                    </textarea>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success font-weight-light  refuse"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Changer
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {#Modal Changer de status Accepter#}
+        <div class="modal fade" id="accepter_arbre" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/essences.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Changer le statut de l'arbre</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+
+                                <h3 style="color: green;">Voulez-vous inclure cet arbre dans le fichier Inventaire</h3>
+
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-primary font-weight-light  accepter"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Accepter l'arbre
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {#Modal Valider fiche inventaire#}
+        <div class="modal fade" id="modal_valider_fiche" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/essences.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Changer le statut de l'arbre</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+
+                                <h1 style="color: black;">Validation de la LAAC</h1>
+                                <h4 class="text-danger">Attention, vous ne pourrez plus modifier les détails de l'invetaire car vous l'aurez clôturé</h4>
+
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-primary font-weight-light  valider_fiche"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Valider la fiche
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#table_lac_details');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+        let id_arbre = 0;
+        let id_fiche = 0;
+
+
+
+
+            $('body').on('click','.refuse', function (){
+                let motif = $('#motif').val();
+
+                if (motif){
+                    $.ajax({
+                        url: '{{ path('app_portail') }}snvlt/inv/validate/id_inv/refus/' + id_arbre + '/' + motif,
+                        type: 'POST',
+                        success: function (response){
+                            let reponse = JSON.parse(response);
+
+                            if (reponse[0].CODE === "SUCCESS"){
+                                alert("STATUS MIS A AJOUR")
+                                document.location.reload()
+                            } else {
+                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                            }
+                        }
+                    })
+                } else {
+                    alert('DESOLE! VOUS DEVEZ RENSEIGNER UN MOTIF')
+                    $('#motif').focus()
+                }
+            })
+
+            $('body').on('click','.accepter', function (){
+
+                    $.ajax({
+                        url: '{{ path('app_portail') }}snvlt/inv/validate/id_inv/accepter/' + id_arbre ,
+                        type: 'POST',
+                        success: function (response){
+                            let reponse = JSON.parse(response);
+
+                            if (reponse[0].CODE === "SUCCESS"){
+                                alert("STATUS MIS A AJOUR")
+                                document.location.reload()
+                            } else {
+                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                            }
+                        }
+                    })
+            })
+
+            $('body').on('click','.valider_fiche', function (){
+
+                    $.ajax({
+                        url: '{{ path('app_portail') }}snvlt/inv/validate/inv/fiche/' + id_fiche ,
+                        type: 'POST',
+                        success: function (response){
+                            let reponse = JSON.parse(response);
+
+                            if (reponse[0].CODE === "SUCCESS"){
+                                alert("FICHE INVENTAIRE VALIDEE")
+                                document.location.reload()
+                            } else {
+                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                            }
+                        }
+                    })
+            })
+
+
+
+        $('body').on('click','.refus_arbre', function (){
+            document.querySelector('#motif').value = "";
+           id_arbre = this.id
+        })
+
+        $('body').on('click','.accept_arbre', function (){
+           id_arbre = this.id
+        })
+
+         $('.btn_valider_fiche').on('click', function (){
+           id_fiche = this.id
+        })
+
+    </script>
+{% endblock %}

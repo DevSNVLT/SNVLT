@@ -1,0 +1,503 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeexploitant) %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}Validation of loading{% endtrans %}
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}Validation of loading{% endtrans %}
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/validation_respo.png') }}" alt="validation">
+            {% trans %}Validation of loading{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <section class="section">
+        <div class="alert-success" style="height: 40px;">
+            <h4 class="text-danger font-weight-bold ms-2 mt-2">Cliquez SVP sur le N° du chargement pour afficher les détails</h4>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_validations_loading" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #4d7304;color: #fffefe; font-weight: bold;">
+                        <th>{% trans %}Loading No{% endtrans %}</th>
+                        <th>{% trans %}Type document{% endtrans %}</th>
+                        <th>{% trans %}N° Document{% endtrans %}</th>
+                        <th>{% trans %}Forest{% endtrans %}</th>
+                        <th>{% trans %}Destination{% endtrans %}</th>
+                        <th>{% trans %}Factory{% endtrans %}</th>
+                        <th>{% trans %}Loading date{% endtrans %}</th>
+                        <th>{% trans %}Number of logs{% endtrans %}</th>
+                        <th>{% trans %}volume{% endtrans %}</th>
+                        <th>{% trans %}Vehicle registration{% endtrans %}</th>
+                        <th>{% trans %}Driver{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu">';
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+       {# Modal Validation Chargement#}
+        <div class="modal fade" id="load_chargement" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Validate BCBGFH Data' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+
+
+                        <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+
+                            <div class="card-body p-2" style="background: #f4f2f2">
+                                <div class="d-sm-flex justify-content-xl-between align-items-center mb-2 div_photo alert-warning">
+
+                                </div>
+                                <div class="alert-warning mb-3">
+
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Forest' | trans }}</span>
+                                        <label class="text-dark font-weight-bold badge alert-dark p-1" id="foret" style="font-size: 16px;margin-left: 10px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Document' | trans }}</span>
+                                        <label class="text-dark font-weight-bold badge alert-dark p-1" id="doc_brh" style="font-size: 16px;margin-left: 10px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'loading date'  | trans}}</span>
+                                        <label class="text-dark font-weight-bold col-md-9"  id="date_chr" style="font-size: 16px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Destination' | trans}}</span>
+                                        <label class="text-dark font-weight-bold col-md-9"  id="dest" style="font-size: 16px;"></label>
+                                    </div>
+
+                                </div>
+                                <table class="table table-responsive" id="data_brh">
+                                    <thead>
+                                    <tr class="alert-primary">
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
+                                        <th class="font-weight-bold" style="font-size: 20px;width: 15%;">{{ 'species' |trans }}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="bg-white text-center" id="body_chargement">
+
+                                    </tbody>
+                                </table>
+
+                                    <hr>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequest" class="btn btn-sm bg-primary p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-check-circle" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Validate the loading{% endtrans %}</a>
+                                    <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-cancel" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Cancel{% endtrans %}</a>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        {# Modal Validation Chargement BCBP#}
+        <div class="modal fade" id="load_chargement_bcbp" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">Valider les données BCBP</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+
+
+                        <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+
+                            <div class="card-body p-2" style="background: #f4f2f2">
+                                <div class="d-sm-flex justify-content-xl-between align-items-center mb-2 div_photo alert-warning">
+
+                                </div>
+                                <div class="alert-warning mb-3">
+                                    <div class="alert-primary p-1 mb-2 "><h3>Information sur le chargement BCBP</h3></div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Forest' | trans }}</span>
+                                        <label class="text-dark font-weight-bold badge alert-dark p-1" id="foret_bcbp" style="font-size: 16px;margin-left: 10px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Document' | trans }}</span>
+                                        <label class="text-dark font-weight-bold badge alert-dark p-1" id="doc_bcbp" style="font-size: 16px;margin-left: 10px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'loading date'  | trans}}</span>
+                                        <label class="text-dark font-weight-bold col-md-9"  id="date_chr_bcbp" style="font-size: 16px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Destination' | trans}}</span>
+                                        <label class="text-dark font-weight-bold col-md-9"  id="dest_bcbp" style="font-size: 16px;"></label>
+                                    </div>
+                                    <div class="row alert-secondary ">
+                                        <span class="col-md-2" style="font-size: 16px;">{{ 'Species' | trans}}</span>
+                                        <label class="text-dark font-weight-bold col-md-9"  id="essence_bcbp" style="font-size: 16px;"></label>
+                                    </div>
+                                </div>
+                                <table class="table table-responsive" id="data_brh">
+                                    <thead>
+                                    <tr class="alert-primary">
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="bg-white text-center" id="body_chargement_bcbp">
+
+                                    </tbody>
+                                </table>
+
+                                <hr>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequestBcbp" class="btn btn-sm bg-primary p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-check-circle" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Validate the loading{% endtrans %}</a>
+                                <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-cancel" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Cancel{% endtrans %}</a>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal ACCEPT-->
+        <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Loading validation' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                                style="display: none;"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to authorize this loading to the selected destination ?' |trans}}</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  accept_loading"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal ACCEPT BCBP-->
+        <div class="modal fade" id="acceptRequestBcbp" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Loading validation' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                                style="display: none;"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to authorize this loading to the selected destination ?' |trans}}</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter_bcbp font-weight-light  accept_loading_bcbp"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+        let index_page = 0;
+        let photo = "";
+        //Chargement de la liste des chargements BCBGFH à valider par le responsable
+        mes_chargements();
+
+        $('body').on('click', '.modifier_chargement', function (){
+            index_page = this.id;
+            load_chargements(index_page)
+        })
+
+        function load_chargements(id_page){
+
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbrh/validate_chargement/page/' + id_page,
+                type: 'POST',
+                success: function(response) {
+                    let info_chr = JSON.parse(response);
+                    let contenu = "";
+
+
+                    for(var i = 0; i < info_chr.length ; i++){
+                        contenu = contenu +'<tr class="alert-success">';
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="#" id="' + info_chr[i].id_arbre + '">' + info_chr[i].numero_arbre + '</a></td>' +
+                            '<td><span>' + info_chr[i].lettre_arbre  + '</span></td>'+
+                            '<td><span>' + info_chr[i].essence  + '</span></td>'+
+                            '<td><span>' + info_chr[i].zone  + '</span></td>'+
+                            '<td><span>' + info_chr[i].x  + '</span></td>'+
+                            '<td><span>' + info_chr[i].y  + '</span></td>'+
+                            '<td><span>' + info_chr[i].lng  + '</span></td>'+
+                            '<td><span>' + info_chr[i].dm  + '</span></td>'+
+                            '<td><span>' + info_chr[i].vol  + '</span></td>';
+
+                    }
+                    document.querySelector('#body_chargement').innerHTML = contenu;
+                    document.querySelector('#foret').innerHTML = info_chr[0].foret;
+                    document.querySelector('#doc_brh').innerHTML = info_chr[0].numero_doc;
+                    document.querySelector('#date_chr').innerHTML = info_chr[0].date_chargement;
+                    document.querySelector('#dest').innerHTML = info_chr[0].destination;
+                    if (info_chr[0].photo) {
+                        photo = "{{ asset('images/uploads/brh') }}/" + info_chr[0].photo;
+                        document.querySelector('.div_photo').innerHTML = '<a class="btn btn-primary p-2" href="'+photo+'" target="_blank">Afficher la photo</a>'
+                    }
+
+
+                }
+            })
+
+        }
+
+        function load_chargements_bcbp(id_page){
+
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbcbp/validate_chargement/page/' + id_page,
+                type: 'POST',
+                success: function(response) {
+                    let info_chr = JSON.parse(response);
+                    let contenu = "";
+
+
+                    for(var i = 0; i < info_chr.length ; i++){
+                        contenu = contenu +'<tr class="alert-success">';
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="#" id="' + info_chr[i].id_arbre + '">' + info_chr[i].numero_arbre + '</a></td>' +
+                            '<td><span>' + info_chr[i].lettre_arbre  + '</span></td>'+
+                            '<td><span>' + info_chr[i].zone  + '</span></td>'+
+                            '<td><span>' + info_chr[i].x  + '</span></td>'+
+                            '<td><span>' + info_chr[i].y  + '</span></td>'+
+                            '<td><span>' + info_chr[i].lng  + '</span></td>'+
+                            '<td><span>' + info_chr[i].dm  + '</span></td>'+
+                            '<td><span>' + info_chr[i].vol  + '</span></td>';
+
+                    }
+                    document.querySelector('#body_chargement_bcbp').innerHTML = contenu;
+                    document.querySelector('#foret_bcbp').innerHTML = info_chr[0].foret;
+                    document.querySelector('#doc_bcbp').innerHTML = info_chr[0].numero_doc;
+                    document.querySelector('#date_chr_bcbp').innerHTML = info_chr[0].date_chargement;
+                    document.querySelector('#dest_bcbp').innerHTML = info_chr[0].destination;
+                    document.querySelector('#essence').innerHTML = info_chr[0].essence;
+                    photo = "{{ asset('images/uploads/bcbp') }}/" + info_chr[0].photo;
+
+                    document.querySelector('.div_photo').innerHTML = '<a class="btn btn-primary p-2" href="'+photo+'" target="_blank">Afficher la photo</a>'
+                }
+            })
+
+        }
+        function mes_chargements(){
+            $.ajax({
+                url: '{{ path('app_validation_chargements') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let brh_liste = JSON.parse(response);
+                    let contenu = "";
+                    let table = document.querySelector("#my_brhs");
+
+                    for(var i = 0; i < brh_liste.length ; i++){
+
+                            contenu = contenu +'<tr class="bg-white">';
+
+
+                        if (brh_liste[i].type_doc === "BCBGFH"){
+                            contenu = contenu + '<td><a class="text-dark font-weight-bold numero_brh" style="font-size: 14px;" href="#" id="' + brh_liste[i].id_page + '"  data-bs-toggle="modal" data-bs-target="#load_chargement">' + brh_liste[i].numero_page + '</a></td>' ;
+                            contenu = contenu + '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + brh_liste[i].type_doc  + '</span></td>'+
+                                '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + brh_liste[i].numero_brh  + '</span></td>';
+                        } else {
+                            contenu = contenu + '<td><a class="text-dark font-weight-bold numero_bcbp" style="font-size: 14px;" href="#" id="' + brh_liste[i].id_page + '"  data-bs-toggle="modal" data-bs-target="#load_chargement_bcbp">' + brh_liste[i].numero_page + '</a></td>' ;
+                            contenu = contenu + '<td><span class="badge p-1 bg-primary text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + brh_liste[i].type_doc  + '</span></td>'+
+                                '<td><span class="badge p-1 bg-primary text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + brh_liste[i].numero_brh  + '</span></td>';
+                        }
+
+                        contenu = contenu + '<td><span>' + brh_liste[i].foret  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].destination_brh  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].usine_dest  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].date_chargement  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].nb_billes  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].volume_brh  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].immat  + '</span></td>'+
+                            '<td><span>' + brh_liste[i].conducteur  + '</span></td>';
+                            // '<td class="text-center"><a href="#" class="modifier_chargement"  data-bs-toggle="modal" data-bs-target="#load_chargement" id="' + brh_liste[i].id_page + '"><i class="mdi mdi-hand-okay text-danger" style="font-size: 32px;"></i></a></td>';
+                    }
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_validations_loading');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        $('.accepter').on('click', function (){
+            validate_pagebrh()
+        })
+        $('.accepter_bcbp').on('click', function (){
+            validate_pagebcbp()
+        })
+
+        $('body').on('click', '.numero_brh', function (){
+            index_page = this.id
+            load_chargements(index_page);
+        });
+        $('body').on('click', '.numero_bcbp', function (){
+            index_page = this.id
+            load_chargements_bcbp(index_page);
+        });
+
+        function validate_pagebrh()
+        {
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/brh/validate_form/' + index_page ,
+                type : 'POST',
+                data : {id_page: index_page},
+                success: function(response){
+                    console.log(response);
+                    let valeur = JSON.parse(response);
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}The loading is validate!{% endtrans %}',
+                        showConfirmButton: false
+                    });
+                    //document.location.reload()
+
+                    mes_chargements();
+                    $("#acceptRequest .btn-close").click()
+                    $("#load_chargement .btn-close").click()
+                    $("#acceptRequestBcbp .btn-close").click()
+                    $("#load_chargement_bcbp .btn-close").click()
+                }
+            });
+        }
+
+        function validate_pagebcbp()
+        {
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/bcbp/validate_form/' + index_page ,
+                type : 'POST',
+                data : {id_page: index_page},
+                success: function(response){
+                    console.log(response);
+                    let valeur = JSON.parse(response);
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}The loading is validate!{% endtrans %}',
+                        showConfirmButton: false
+                    });
+                   //document.location.reload()
+
+                    mes_chargements();
+                    $("#acceptRequest .btn-close").click()
+                    $("#load_chargement .btn-close").click()
+                    $("#acceptRequestBcbp .btn-close").click()
+                    $("#load_chargement_bcbp .btn-close").click()
+                }
+            });
+        }
+    </script>
+{% endblock %}

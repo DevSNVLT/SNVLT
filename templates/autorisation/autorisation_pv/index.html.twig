@@ -1,0 +1,65 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Plantation Wood Autorizations{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="attribution">  {% trans %}Plantation Wood Autorizations{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('autorisationpv.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <table class="table table-responsive-sm bg-white" id="autorisationpv">
+            <thead>
+            <tr style="background: #0e5e73; color: #f0fcf0;">
+                <th style="font-size: 18px;">{% trans %}Dossier{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Owner{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Logger{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Auth. Date{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Plot{% endtrans %}</th>
+                <th style="font-size: 18px;">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for autorisation in autorisationpvs %}
+                <tr>
+                    <td class="text-dark fw-bold"><a class=" editBtn" style="font-size: 16px; font-weight: bold;" href="{{ path('autorisationpv.edit', {'id_autorisation': autorisation.id}) }}" id="{{ autorisation.id }}"><h4 style="font-size: 18px;" class="badge text-danger">{{ autorisation.numeroAutorisation }}</h4></a></td>
+                    <td class="text-dark fw-bold"><h4 style="font-size: 18px;" class="badge font-weight-bold">{{ autorisation.codeAttributionPv.raisonSociale }}</h4></td>
+                    <td class="text-dark fw-bold"><h4 style="background-color: #ace9f4; font-size: 18px;" class="badge">{{ autorisation.codeExploitant.raisonSocialeExploitant }}</h4></td>
+                    <td class="text-dark fw-bold text-center">{{ autorisation.dateAutorisation | date('d m Y') }}</td>
+                    <td class="text-dark fw-bold">{{ autorisation.codeAttributionPv.codeParcelle.denomination }}</td>
+                    <td class="text-dark fw-bold"><a class="btn btn-sm text-danger"><i class="mdi mdi-cancel" style="font-size:  24px;" title="Retirer / Abandonner..."></i></a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#autorisationpv');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+{% endblock %}
+

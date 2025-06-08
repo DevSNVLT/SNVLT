@@ -1,0 +1,79 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Villages Forest Autorizations{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="attribution">  {% trans %}Villages Forest Autorizations{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set options = option_service.findAll %}
+    <link href="{{ asset('assets/dselect-main/dist/css/dselect.css') }}" rel="stylesheet" />
+    <section class="section">
+        <div class="p-2 w-100 banniere"></div>
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+
+                        <div class="">{{ form_row(form.numero_autorisation) }}</div>
+                        <div class="">{{ form_row(form.date_autorisation)}}</div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form_row(form.debutValidite)}}</div>
+                            <div class="col-md-6">{{ form_row(form.finValidite)}}</div>
+                        </div>
+                        <div class="">{{ form_row(form.code_exploitant) }}</div>
+                        <div class="">{{ form_row(form.code_attribution_pv) }}</div>
+
+
+                        {% set valeur = options['autorisations_validation'] %}
+
+                        <hr>
+                        <a href="{{ path('ref_directions') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+                            <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Autorisation{% endtrans %}
+                        </button>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+
+        <!--Modification de l'attribution -->
+
+    </section>
+
+    <script src="{{ asset('assets/dselect-main/dist/js/dselect.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+
+    <script>
+
+       /* $(document).ready(function() {
+
+        });*/
+
+    </script>
+
+
+
+
+{% endblock %}

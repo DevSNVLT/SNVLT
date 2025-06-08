@@ -1,0 +1,103 @@
+{% extends 'carto.html.twig' %}
+
+{% block Titre %}
+    Bois Légal - Cartographie forestière
+{% endblock %}
+ {% block filters %}
+     <select name="cmb_citere" id="cmb_citere" class="combo-list">
+         <option value="5"></option>
+         <option value="1">N° Titre</option>
+         <option value="2">Direction Régionale</option>
+         <option value="3">Cantonnement</option>
+         <option value="3">Essence</option>
+     </select>
+     <input type="text" name="txt-critere" id="txt-critere" class="combo-list" placeholder="valeur...">
+     <button onclick="rechercheValeurs();"  class = "btn"  id="btn_citere">Rechercher</button>
+     <a href="#editEmployeeModal"  data-toggle="modal" style="margin-top:10px;margin-left:10px;">Afficher les valeurs</a>
+ {% endblock %}
+
+
+{% block Contenu %}
+    <link rel="stylesheet" href="{{ asset('cartographie/resources/leaflet/leaflet.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('cartographie/resources/Leaflet.PolylineMeasure.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="{{ asset('cartographie/style.css') }}">
+
+
+    <!-- Esri Leaflet Geocoder -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css"
+    />
+    <script src="https://unpkg.com/esri-leaflet-geocoder"></script>
+
+
+
+    <link rel="stylesheet" href="{{ asset('cartographie/main.css') }}">
+
+    <div class="container-fluid">
+        <div class="m-3p-3 w-100" id="map"></div>
+    </div>
+
+    <script>
+        function myFunction() {
+            var input, filter, ul, li, a, i, txtValue;
+            input = document.getElementById("search-input");
+            filter = input.value.toUpperCase();
+            ul = document.getElementById("list");
+            li = ul.getElementsByTagName("li");
+            for (i = 0; i < li.length; i++) {
+                a = li[i].getElementsByTagName("a")[0];
+                p = li[i].getElementsByTagName("p")[0];
+                txtValue = a.textContent || a.innerText  ;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+
+    <script>
+        window.onload = function (){
+
+            function handler(event)  {
+                var response  = event.response;
+                var headers  = response.headers;
+
+                // If Access-Control-Allow-Origin CORS header is missing, add it.
+                // Since JavaScript doesn't allow for hyphens in variable names, we use the dict["key"] notation.
+                if (!headers['access-control-allow-origin']) {
+                    headers['access-control-allow-origin'] = {value: "*"};
+                    console.log("Access-Control-Allow-Origin was missing, adding it now.");
+                }
+
+                return response;
+            }
+        }
+    </script>
+
+    <script src="{{ asset('cartographie/resources/leaflet/leaflet.js') }}"></script>
+    <script src="{{ asset('cartographie/resources/libs/leaflet.browser.print.js') }}"></script>
+    <!--Leaflet Providers-->
+    <script src="{{ asset('cartographie/resources/jquery/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('cartographie/resources/jquery/jquery-3.4.1.js') }}"></script>
+    <!--Leaflet Providers-->
+    <script src="{{ asset('cartographie/resources/leaflet-providers.js') }}"></script>
+
+    <!--Leaflet Unité de mesure-->
+    <script src="{{ asset('cartographie/resources/Leaflet.PolylineMeasure.js') }}"></script>
+
+    <script src="{{ asset('cartographie/resources/libs/leaflet-measure.js') }}"></script>
+    <script src="{{ asset('cartographie/resources/data/depots.js') }}"></script>
+    <script src="{{ asset('cartographie/main.js') }}"></script>
+
+
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+{% endblock %}

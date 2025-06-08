@@ -1,0 +1,220 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Fiche Production{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/wood.png') }}" height="92" alt="fiche_prod">  {% trans %}Fiche Journalière de Production{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+
+    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <section class="section">
+        <div class="card">
+            <h4 class="alert-info p-1 mb-2">Cliquez sur une date de production pour afficher les billons</h4>
+            <div class="row p-2">
+                <div class="col-md-2 p-2 m-2 " style="height: 550px; border: 1px solid lightgrey">
+                    <table class="table table-responsive w-100" style="font-size: 18px;">
+                        <thead class="alert-light">
+                        <tr>
+                            <th class="font-weight-bold w-100" style="font-size: 18px;">Date Tronçonnage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for fiche in fiches %}
+                            <tr>
+                                <td class="font-weight-bold" style="font-size: 18px;"><a class="date_prod" href="#" id="{{ fiche.id }}">{{ fiche.dateFiche | date('d/m/Y') }}</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-9 m-2 p-2" style="height: 550px; border: 1px solid lightgrey;background-color: #e2e8ec">
+                    <div class="card-body text-center  alert-info" id="body_contenu" style="height: 500px;overflow-y: scroll;background-color: #e2e8ec"><img class="img-responsive img-fluid mx-auto my-auto" src="{{ asset('assets/images/logo_snvlt.png') }}" alt="logo_SNVLT" style="height: 256px;"></div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Modal Type Transfo-->
+        <div class="modal fade" id="edit_transfo" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/wood.png') }}" alt="daily_sheet" style="margin-right: 10px; height: 32px;">Type transformation</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <select class="form-control alert-warning" style="font-size: 18px;" name="id_transfo" id="id_transfo">
+                            <option value="0">Sélectionner le type de transformation</option>
+                            {% for transfo in app.user.codeindustriel.typeTransformation %}
+                                <option value="{{ transfo.id }}">{{ transfo.libelle }}</option> +
+                            {% endfor %}
+                        </select>
+                        <div class="text-center mt-3">
+
+                            <a type="button" class="btn btn-primary font-weight-light  accept_loading" id="valider_transfo" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Sélectionner
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+
+        let id_billon = 0;
+
+        $('.date_prod').on('click', function(){
+            affiche_billons(this.id)
+        })
+        function affiche_billons(id_fiche){
+
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/prod/ficheProd/' + id_fiche,
+                type: 'POST',
+                success : function (response){
+                    let valeur = JSON.parse(response);
+                    if (valeur.length > 0){
+                        contenu = '<a class="btn p-1 mb-2 text-white btn_imprimer" href="{{ path('app_portail') }}snvlt/PrintFicheProd/' + id_fiche + '" target="_blank" style="background: orangered;font-size:18px;" id="' + id_fiche + '"><i class="mdi mdi-printer me-2"></i> Imprimer la fiche</a>'
+                        contenu = contenu +'<div class=" mx-auto text-center"><table class="table" style="border: #0a0a0a solid 1px;">' +
+                            '<thead class="font-weight-bold alert-light mx-auto">' +
+                            '<th>Essence</th>' +
+                            '<th>Lng</th>' +
+                            '<th>Lrg</th>' +
+                            '<th>Ep</th>' +
+                            '<th>Nbre Elts</th>' +
+                            '<th>Volume</th>' +
+                            '<th>Transformation</th>' +
+                            '<th>Billons</th>' +
+                            '</thead>' +
+                            '<tbody class=" mx-auto">';
+                        if (valeur.length > 0){
+                            for(var i=0;i<valeur.length;i++){
+                                contenu = contenu + '<tr class="bg-white">';
+                                contenu = contenu + '<td class="font-weight-bold" style="font-size: 18px;">' + valeur[i].essence + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].lng + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].lrg + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].ep + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].nb + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].vol + '</td>';
+                                contenu = contenu + '<td class="" style="font-size: 18px;">' + valeur[i].type_transfo + '</td>';
+                                contenu = contenu + '<td class="text-left" style="font-size: 18px;">';
+                                if (valeur[i].type_transfo === "DEROULAGE"){
+                                    let billons = ";"
+                                    for(var j=0;j<valeur[i].billons.length;j++){
+                                        billons = billons + '<span class="badge bg-dark text-white font-weight-bold me-2" style="font-size: 18px;">' + valeur[i].billons[j].numero_billon + '</span>'+ " ";
+                                    }
+                                        contenu = contenu + billons
+                                } else {
+                                    contenu = contenu + '<span class="font-weight-bold me-2">' + valeur[i].billons
+                                }
+
+                                contenu = contenu + '</td>';
+                                contenu = contenu + '</tr>';
+                            }
+                            contenu = contenu + '</tbody></table></div>'
+                        }
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    }
+                }
+            })
+        }
+
+        $('body').on('click', '.btn_imprimer', function (){
+            let id_fiche = this.id;
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/PrintPdf/FicheProd/' + id_fiche,
+                type: 'POST',
+                success: function (response) {
+                    let reponse = JSON.parse(response);
+                }
+            });
+
+        });
+
+        $('body').on('change', '.select_transfo', function (){
+            let id_billon = this.id;
+            let id_type_transfo = this.value;
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/liste_billons/fiche_lot/billon/maj_transfo/' + id_billon + '/' + id_type_transfo,
+                type: 'POST',
+                success: function (response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "SUCCESS"){
+                        let date_tronconnage = $('#date_tronconnage').val();
+                        affiche_billons(date_tronconnage)
+                        alert('Transformation mise à jour');
+                    }
+                }
+            });
+
+        })
+        $('body').on('click', '.edit_transfo', function (){
+            id_billon = this.id;
+        })
+        $('body').on('click', '#valider_transfo', function (){
+            let id_type_transfo = $('#id_transfo').val();
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/liste_billons/fiche_lot/billon/maj_transfo/' + id_billon + '/' + id_type_transfo,
+                type: 'POST',
+                success: function (response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "SUCCESS"){
+                        let date_tronconnage = $('#date_tronconnage').val();
+                        affiche_billons(date_tronconnage)
+                        $('#edit_transfo').modal('hide')
+                    }
+                }
+            });
+
+        })
+    </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ categorie.name }}{% endblock %}
+
+{% block body %}
+
+    <div class="breadcrumb-section breadcrumb-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text">
+                        <h1 style="font-family: Arial, Helvetica, sans-serif">Catégorie {{ categorie.name }}</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <main class="container">
+        <div class="row g-5">
+            <div class="col mt-5">
+                <h4 class="pb-4 mb-4 fst-italic border-bottom"><i class="fa fa-tags"></i> Articles associés</h4>
+            </div>
+            <div class="container mx-md-auto my-md-auto" id="article-list">
+                {% include 'blog/article/list.html.twig' with {articles_blog: categorie.articleBlogs, leftCol:4, rightCol:8 } %}
+            </div>
+        </div>
+    </main>
+{% endblock %}

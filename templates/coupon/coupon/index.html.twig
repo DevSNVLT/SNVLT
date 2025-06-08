@@ -1,0 +1,65 @@
+{% extends '../../../template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Mes coupons{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/tag.png') }}" alt="{% trans %}coupon{% endtrans %}">  {% trans %}Mes coupons{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('coupon.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include '../../../base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include '../../../base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="coupons">
+                    <thead>
+                    <tr style="background: #098688;color: #fcf8f8">
+                        <th>{% trans %}Code{% endtrans %}</th>
+                        <th>{% trans %}Client{% endtrans %}</th>
+                        <th>{% trans %}Créé le{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for coupon in mes_coupons %}
+
+                        <tr style="background-color: #e6f8e7">
+                            <td class="text-dark fw-bold"><span class="badge text-white p-2" style="font-weight: bold;font-size: 18px;border-radius: 10px;background-color: rgba(26,137,26,0.89);color:white;"><a class="text-white editBtn" style="font-weight: bold;color: #370905" href="{{ path('coupon.edit')}}" id="{{ coupon.id }}">{{ coupon.codeCoupon }}</a></td>
+                            <td style="font-size: 16px;">{{ coupon.codeContrat.raisonSocialeClt }}</td>
+                            <td><span class="badge text-white p-2" style="font-weight: lighter;font-size: 16px;border-radius: 10px;background-color: rgba(36,35,35,0.89)">{{ coupon.updatedAt | date('d/m/Y') }}</span></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#coupons');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}
+

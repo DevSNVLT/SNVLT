@@ -1,0 +1,146 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Administrateur
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="documents">  {% trans %}My legacy documents{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <span class=" p-2 ms-2" style="font-size: 16px;font-weight: bold; color: red;">{% trans %}Status for step validation{% endtrans %} <i class="mdi mdi-arrow-right-bold" style="font-size: 18px;color: red"></i></span>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 alert-success ms-2 text-dark" title="EN COURS" style="border: 1px solid grey; font-size: 12px;width: 145px;">En cours de traitement</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-success ms-2 text-white" title="APPROUVE" style="border: 1px solid grey; font-size: 13px;width: 140px;">Validé</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-danger ms-2 text-white" title="EN COURS" style="border: 1px solid grey; font-size: 13px;width: 140px;">Rejetté</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <span class="badge rounded-5 p-2 bg-light ms-2 text-dark fs-8" title="EN COURS" style="border: 1px solid grey; font-size: 13px;width: 140px;">Non traité</span>
+        </div>
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn" style="border: 0px; font-size: 16px;" href="{{ path('document_operateur.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 32px;color: red"></i></a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+
+    <section class="section">
+                <table class="table table-responsive-sm bg-white" id="document_operateurs">
+                    <thead>
+                    <tr style="background: #46a46a; color: #f0fcf0;">
+                        <th>Document</th>
+                        <th>Date Etablissement</th>
+                        <th>Date Expiration</th>
+                        <th>Statut</th>
+                        <th>Fichier</th>
+                        <th>Action</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for document_operateur in liste_document_operateurs %}
+                        {% if (document_operateur.statut is same as 'EN ATTENTE') %}
+                            <tr class="alert-warning">
+                                {% elseif (document_operateur.statut is same as 'APPROUVE')%}
+                                    <tr class="alert-success">
+                                {% elseif (document_operateur.statut is same as 'REJETTE')%}
+                                    <tr class="alert-danger">
+                                {% elseif (document_operateur.statut is same as 'EXPIRE')%}
+                                    <tr class="alert-dark">
+                        {% endif%}
+
+                        {% if (document_operateur.statut is same as 'APPROUVE') %}
+                            <td class="text-dark font-weight-bold"><i class="mdi mdi-check"  style="font-weight: bold; font-size: 18px;color: green"></i> {{ document_operateur.codeDocumentGrille.libelleDocument }}</td>
+                        {% else %}
+                            <td class="text-dark fw-bold">{{ document_operateur.codeDocumentGrille.libelleDocument }}</td>
+                        {% endif %}
+
+                            <td>{{ document_operateur.dateEtablissement | date('d-m-Y')  }}</td>
+                            <td>{{ document_operateur.dateExpiration  | date('d-m-Y') }}</td>
+                            <td>
+
+                                {% for circuit in mes_circuits.findCircuitByDocument(document_operateur.id) %}
+                                    {% if(circuit.statut == 'EN COURS') %}
+                                        <span class="badge rounded-5 p-2 alert-success border-success" title="EN COURS - {{ circuit.serviceValidation }}" style="border: 1px solid grey">-</span>
+                                    {% elseif(circuit.statut == 'VALIDE') %}
+                                        <span class="badge rounded-5 p-2 bg-success" title="VALIDE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                                    {% elseif (circuit.statut == 'REJETTE')%}
+                                        <span class="badge rounded-5 p-2 bg-danger" title="REJETTE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                                    {% else %}
+                                        <span class="badge rounded-5 p-2 bg-light" title="EN ATTENTE - {{ circuit.serviceValidation }}" style="border: 1px solid grey;">-</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td><a class="" style="cursor: pointer;height: 32px;" data-height="32" target="popup" onclick="window.open('{{ asset('images/doc_operateurs/') }}{{ document_operateur.imageName}}','{{ document_operateur.imageName}}','width=600,height=800,margin=auto')"
+                                ><i class="mdi mdi-file-pdf text-danger" style="font-size: xx-large"></i></a>
+                            </td>
+                        <td>
+                            <a id="{{ document_operateur.id }}" class="delete_doc" style="cursor: pointer;height: 32px;" data-height="32" ><i class="mdi mdi-delete text-danger" style="font-size: xx-large"></i></a></td>
+                        <td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+    <script>
+
+
+
+        // Simple Datatable
+        let table1 = document.querySelector('#document_operateurs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+        $('.delete_doc').on('click', function (){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                html: "<h4 class='text-danger'>Voulez-vous supprimer votre document ?</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: 'Oui, Supprimer',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('app_portail') }}snvlt/ref/admin/docop/del/' + this.id ,
+                        type : 'POST',
+                        success: function(response){
+                            console.log(response);
+                            render_toast_value("Document supprimé", 3);
+                            document.location.reload();
+                        },
+                        error: function (){
+                            render_toast_value("Erreur lors de la suppression du document", 0);
+                        }
+                    });
+
+                }
+            });
+        })
+    </script>
+
+{% endblock %}
+

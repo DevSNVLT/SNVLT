@@ -1,0 +1,109 @@
+<div class="col-md-12">
+    <div class="row  bg-white p-1">
+        <div class="col-md-2">
+            <a href="#" class="badge text-dark d-inline-flex" style="width: 100%;background: white;">
+                <i class="mdi mdi-file-document" style="font-size: 32px"></i>
+                <div class="my-auto">
+                    <span class="font-weight-bold text-dark" style="font-size: 24px;margin-left: 5px;">{{ app.user.codeOi.publicationRapports.count }}</span>
+                    <span class="text-dark" style="font-size: 24px;">rapport(s)</span>
+                </div>
+            </a>
+            <hr style="border: 2px solid orangered;">
+        </div>
+        <div class="col-md-2">
+            <a href="#" class="badge text-dark d-inline-flex" style="width: 100%;background: white;">
+                <i class="mdi mdi-face-profile" style="font-size: 32px"></i>
+                <div class="my-auto">
+                    <span class="font-weight-bold text-dark" style="font-size: 24px;margin-left: 5px;">{{ app.user.codeOi.users.count }}</span>
+                    <span class="text-dark" style="font-size: 24px;">agent(s)</span>
+                </div>
+            </a>
+            <hr style="border: 2px solid darkgreen;">
+        </div>
+
+        <div class="col-md-4 offset-4" style="font-size: 20px;">
+            <a href="{{ path('add_rapport') }}" class="link-primary d-inline-flex mt-2" style="">
+                <i class="mdi mdi-file-pdf text-primary"></i>
+                <span class="text-primary mt-1">Soumettre un rapport</span>
+            </a>
+            <a href="{{ path('add_ticket') }}" class="link-danger d-inline-flex ms-4" style="">
+                <i class="mdi mdi-image-area text-danger"></i>
+                <span class="text-danger mt-1">Signaler une situation</span>
+            </a>
+        </div>
+    </div>
+</div>
+<div class="col-md-5 p-2">
+   {# <div class="" style="width: 100%;" id="chart_oi_rapports"></div>#}
+
+  <div class="mb-4" style="" id="oi">
+      <div class="alert-light p-2 text-center" style=" font-size: 32px;font-weight: bold;" >Bienvenue dans l'espace OI</div>
+      <img src="{{ asset('assets/images/oi.png') }}" width="100%" alt="oi">
+  </div>
+
+</div>
+<div class="col-md-7 p-2 row">
+    <h3 class="bg-warning text-dark p-2" style="width: 100%;">Mes publications</h3>
+    <div class="col-md-8">
+        <div class="" style="width: 100%;" id="chart_oi_rapports"></div>
+    </div>
+    <div class="col-md-4" style="border-left: solid lightgrey 1px;">
+        <h5 class="text-white p-2 mt-2" style="width: 100%;background-color: #0e6d40">les 5 derniers rapports publiés</h5>
+        <table>
+            <tbody>
+            {% for rapport in app.user.codeOi.publicationRapports %}
+                {% if(rapport.statut == "PUBLIE") %}
+                <tr>
+                    <td><span class="text-danger font-weight-bold" style="font-size: 24px;"><i class="mdi mdi-file-pdf"></i> </span>
+                        <a href="{{ path('infos_admin_analyse_fiche_oi_respond', {'id_rapport': rapport.id })}}" class="link ms-2"><span class="badge alert-light p-1"></span>
+                            {% if(rapport.libelle | length > 75) %}
+                                {{ rapport.libelle | slice(0, 75)}}...
+                                {% else %}
+                                    {{ rapport.libelle }}
+                            {% endif %}
+                        </a></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <h3 class="bg-pinterest text-white p-2" style="width: 100%;">Zones d'actions</h3>
+    {% for dr in drs %}
+        {% if (dr.publicationRapports.count > 0) %}
+        <span class="badge p-1 m-1 bg-primary text-white" style="font-size: 14px;">{{ dr.denomination }}</span>
+        {% endif %}
+    {% endfor %}
+    <h3 class="bg-secondary text-white p-2" style="width: 100%;background: linear-gradient(#27a368, #81976e)">Tickets / Incidents</h3>
+    <table class="table table-responsive" style="width: 100%;">
+        <thead class="alert-light p-1">
+
+                <th style="font-size: 20px;width: 80%;">sujet</th>
+                <th style="font-size: 20px;width: 20%;">emis le</th>
+
+
+        </thead>
+        <tbody>
+        {% for ticket in tickets_oi %}
+            <tr>
+                <td class="font-weight-light" style="font-size: 18px;"><i class="mdi mdi-arrow-right" style="font-size: 24px;"></i>
+                    {% if(ticket.statut == "ALARMANT") %}
+                        <a class="font-weight-light alert-warning" href="{{ path('details_ticket', {'id_ticket': ticket.id}) }}" >
+                    {% elseif(ticket.statut == "CRITIQUE") %}
+                         <a class="font-weight-light alert-danger" href="{{ path('details_ticket', {'id_ticket': ticket.id}) }}" >
+                     {% else %}
+                    <a class="font-weight-light text-dark" href="{{ path('details_ticket', {'id_ticket': ticket.id}) }}" >
+                    {% endif %}
+                        {{ ticket.sujet }}
+                    </a>
+                </td>
+                <td>{{ ticket.createdAt | date('d/m/Y') }}</td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+</div>
+

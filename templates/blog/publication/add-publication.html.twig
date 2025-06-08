@@ -1,0 +1,169 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Publications{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publication.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Publications{% endtrans %} - [{% trans %}ADD{% endtrans %}]
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+
+    <section class="section">
+        <div class="card">
+            <span class="alert-info p-2">{{ publication.libellePublication }}</span>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.libellePublication) }}</div>
+                        <div class="ms-4" style="margin-left: 25px;">{{ form_row(form.actif) }}</div>
+                        <div class="ms-4" >{{ form_row(form.codeCategory) }}</div>
+                        <div class="ms-4" >{{ form_row(form.fichiers) }}</div>
+                        <hr>
+
+                        <div class="d-inline-flex">
+                            <a href="{{ path('ref_infos_legales') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                            <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                                {% if (titre is same as "Ajouter une publication") %}
+                                    <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Ajouter la publication{% endtrans %}
+                                {% else %}
+                                    <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Modifier la publication{% endtrans %}
+                                {% endif %}
+                            </button>
+                        </div>
+                        <br>
+                        <h1 class="patientez text-danger">Patientez... <img src="{{ asset('assets/images/wait.gif') }}" alt="wait" style="height: 100px;"></h1>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="alert-danger mb-2 p-1">Attention ! Charger des fichiers PDF par palier de 20 au maximum</div>
+                        <table class="table table-responsive">
+                            <thead class="bg-success text-dark font-weight-bold">
+                                <th> Fichiers
+                                    {% if (publication.fichierPublications.count > 1) %}
+                                        <a href="#" class="bg-danger text-white p-1" id="del_all" style="margin-left: 5%;border-radius: 20px;">Supprimer les {{ publication.fichierPublications.count }} fichiers</a>
+                                    {% endif %}
+                                </th>
+                            </thead>
+                            <tbody>
+                            {% for fichier in liste_fichiers  %}
+                                <tr class="alert-success">
+                                    <td><a href="#" id="{{ fichier.id }}" title="Supprimer le fichier" class="me-2 btn_supprimer"><i class="mdi mdi-delete text-danger" style="font-size: 20px;"></i></a></a><a class="text-dark font-weight-bold p-1 m-2"  title="Supprimer le fichier" target="_blank" href="{{ asset('uploads/publications/') }}{{ fichier.fichier }}">{{ fichier.fichier }}</a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        document.querySelector('.patientez').style = "display:none";
+        $('.btn_supprimer').on('click', function (){
+            let valeur = this.id;
+            Swal.fire({
+                title: '{% trans %}Suppression Fichier{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Voulez-vous vraiment supprimer le fichier ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: '{% trans %}Oui Supprimer{% endtrans %}',
+                cancelButtonText: '{% trans %}Non{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url  :'{{ path('app_portail') }}snvlt/pub/del/' + valeur,
+                        type : 'POST',
+                        success : function (response){
+                            let reponse = JSON.parse(response);
+                            if (reponse[0].CODE === "SUCCESS"){
+                                Swal.fire(
+                                    'Publication de Textes',
+                                    'Votre Fichier a été suprrimé',
+                                    '{% trans %}Success{% endtrans %}' )
+                                    .then((result) => {
+                                        if (result.isConfirmed) {
+                                            document.location.reload();
+                                        }
+                                    });
+                            }
+                        }
+                    });
+
+                }
+            });
+        })
+
+
+        $('#del_all').on('click', function (){
+
+            Swal.fire({
+                title: '{% trans %}Suppression Fichiers{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Voulez-vous vraiment supprimer tous les fichiers de cette publication ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: '{% trans %}Oui Supprimer tous{% endtrans %}',
+                cancelButtonText: '{% trans %}Non{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url  :'{{ path('app_portail') }}snvlt/pub/del/all/{{ publication.id }}',
+                        type : 'POST',
+                        success : function (response){
+                            let reponse = JSON.parse(response);
+                            if (reponse[0].CODE === "SUCCESS"){
+                                Swal.fire(
+                                    'Publication de Textes',
+                                    'Fichiers suprrimés',
+                                    '{% trans %}Success{% endtrans %}' )
+                                    .then((result) => {
+                                        if (result.isConfirmed) {
+                                            document.location.reload();
+                                        }
+                                    });
+                            }
+                        }
+                    });
+
+                }
+            });
+        })
+    </script>
+{% endblock %}
+

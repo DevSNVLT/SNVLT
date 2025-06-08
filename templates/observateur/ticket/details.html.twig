@@ -1,0 +1,123 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Détails Incident{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/observer.png') }}" alt="{% trans %}Direction{% endtrans %}">  Détails Incident N° {{ ticket.id }}
+        signalé par <span class="p-1" style="background-color: orangered;color: white;border-radius: 10px;">{{ ticket.codeOi.sigle }}</span>
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/choices.js/choices.min.css') }}" />
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="p-1 font-weight-bold mt-3 mb-3 text-danger">{{ ticket.sujet }}</h3>
+                <hr>
+                <span class="bg-dark p-1 text-white font-weight-light" style="border-radius: 25px;">émis le {{ ticket.createdAt | date('d/m/Y') }} par {{ ticket.createdBy }}</span>
+                <p class="mt-4 text-dark" style="background-color: #f7f5f5;font-size: 18px;">{{ ticket.messageText }}</p>
+
+                <hr>
+                <h3 class="alert-light p-1 font-weight-bold">Destinataires</h3>
+                {% for dest in ticket.codeDirection %}
+                    <div class="row justify-content-center d-inline-flex p-4">
+                        <div class="card text-center" style="border: 1px solid lightgrey;background-color: #f3f7f7">
+                            <div class="card-title bg-warning text-dark font-weight-bold">{{ dest.sigle }}</div>
+                                <h6 class="p-2">{{ dest.personneRessource }}</h6>
+                            <a href="#"><h6 class="p-2">{{ dest.emailPersonneRessource }}</h6></a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% for dest in ticket.codeService %}
+                    <div class="row justify-content-center d-inline-flex p-4">
+                        <div class="card text-center" style="border: 1px solid lightgrey;background-color: #f3f7f7">
+                            <div class="card-title bg-danger text-white">{{ dest.sigle }}</div>
+                            <h6 class="p-2">{{ dest.personneRessource }}</h6>
+                            <a href="#"><h6 class="p-2">{{ dest.emailPersonneRessource }}</h6></a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% for dest in ticket.codeDr %}
+                    <div class="row justify-content-center d-inline-flex p-4">
+                        <div class="card text-center" style="border: 1px solid lightgrey;background-color: #f3f7f7">
+                            <div class="card-title text-white" style="background-color: #0c4128;">{{ dest.denomination }}</div>
+                            <h6 class="p-2">{{ dest.personneRessource }}</h6>
+                            <a href="#"><h6 class="p-2">{{ dest.emailPersonneRessource }}</h6></a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% for dest in ticket.codeCef %}
+                    <div class="row justify-content-center d-inline-flex p-4">
+                        <div class="card text-center" style="border: 1px solid lightgrey;background-color: #f3f7f7">
+                            <div class="card-title bg-primary text-white">{{ dest.nomCantonnement }}</div>
+                            <h6 class="p-2">{{ dest.personneRessource }}</h6>
+                            <a href="#"><h6 class="p-2">{{ dest.emailPersonneRessource }}</h6></a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <hr>
+
+                <h3 class="alert-light p-1 font-weight-bold">Fichier</h3>
+                {% for fich in ticket.ticketFiles %}
+                    <div class="row justify-content-center d-inline-flex p-4">
+                        <div class="card text-center" style="border: 1px solid lightgrey;background-color: #f3f7f7;height: 300px;width: 400px;">
+                            <div class="card-title bg-secondary font-weight-light text-white">{{ fich.libelle }}</div>
+                            {% if (fich.extension == "jpg" or fich.extension == "jpeg" or fich.extension == "png" or fich.extension == "bmp" or fich.extension == "svg" ) %}
+                                <a href="#" class="fichier" id="{{ fich.fichier }}" data-bs-toggle="modal" data-bs-target="#affiche_image"><img src="{{ asset('uploads/oi/tickets/') }}{{ fich.fichier }}" alt="{{ fich.fichier }}" height="220"></a>
+                            {% else %}
+                                <a href="{{ asset('uploads/oi/tickets/') }}{{ fich.fichier }}"><img src="{{ asset('assets/images/attached.png') }}" alt="{{ fich.fichier }}"></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </section>
+
+
+
+
+
+
+    <div class="modal fade  modal-fullscreen" id="affiche_image"  tabindex="-1">
+        <div class="modal-dialog modal-fullscreen modal-xl">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/observation.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Afficher image</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" id="image_file" alt="">
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        $('body').on('click', '.fichier', function (){
+            let chemin ="{{ asset('uploads/oi/tickets/') }}";
+                $('#image_file').attr('src', chemin + this.id);
+        })
+    </script>
+{% endblock %}

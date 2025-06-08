@@ -1,0 +1,303 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Document Signature{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/contract.png') }}" alt="{% trans %}documents_requests{% endtrans %}">  {% trans %}Document Signature{% endtrans %}
+    </h2>
+    {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <section class="section">
+        {{ demande.signatureDr }}
+        <div class="card">
+            {{ demande.signatureCef }}
+            {% if (app.user.codeCantonnement and app.user.codeCantonnement) %}
+
+                {% if (demande.signatureCef) %}
+                    <h1 class="text-danger"> {{ 'These documents have already signed by you' | trans}}</h1>
+                {% else %}
+
+                    <div class="alert-warning p-2"><h4 class="text-dark m-2">{{ 'Document dilivered on  ' | trans }} {{ demande.dateDelivrance | date('d/m/Y') }}</h4></div>
+                    <div class="card-body">
+                        {% if (demande.demandeur.codeexploitant) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Exploitant</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.raisonSocialeExploitant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.numeroExploitant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Marteau</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.marteauExploitant }}</h4></div>
+                            <hr>
+                            {%  if (demande.codeReprise) %}
+                                <div class="row"><span class="font-weight-bold col-md-1">Foret</span> : <h3 class="text-primary">{{ demande.codeReprise.codeAttribution.codeForet.denomination }}</h3></div><br>
+                            {% endif %}
+
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeindustriel) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeindustriel.raisonSocialeUsine }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeindustriel.numeroUsine }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeExportateur) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeExportateur.raisonSocialeExportateur }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeExportateur.codeExportateur }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary" style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeCommercant) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeCommercant.prenoms }} {{ demande.demandeur.codeCommercant.nom }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeCommercant.numeroCommercant }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% endif %}
+                        <br>
+                        <div class="alert-light p-2 col-md-4">
+                            <table class="table table-responsive" id="drs" style="height: 250px; overflow-y: scroll;">
+                                <thead>
+                                <tr style="background: #f55e04;color: #fcf8f8">
+                                    <th>{{ 'Document' | trans}}</th>
+                                    <th>{{ 'Number of pages' | trans }}</th>
+                                    <th>{{ 'action' | trans}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% if(demande.docStat.id == 1) %}
+                                    {% for doc in demande.documentcps %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDoccp }} </td>
+                                            <td> {{ doc.pagecps.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider"></a> </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% elseif(demande.docStat.id == 2) %}
+                                    {% for doc in demande.documentbrhs %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDocbrh }} </td>
+                                            <td> {{ doc.pagebrhs.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider"></a> </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% elseif(demande.docStat.id == 14) %}
+                                    {% for doc in demande.documentbths %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDocbth }} </td>
+                                            <td> {{ doc.pagebths.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider" height="16"> </a></td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                </tbody>
+                            </table>
+
+
+                        </div>
+                        <a href="#" class="btn text-white btn_signer-cef" data-bs-toggle="modal" data-bs-target="#acceptCefRequest" id="{{ demande.id }}" style="font-size: 16px;background-color: #047304;margin-top: 5px;"><i class="mdi mdi-check-circle text-white" style="margin-right: 5px;font-size:24px;"></i> {{ 'Validate signature' | trans}}</a>
+                        <hr>
+                    </div>
+
+
+                {% endif %}
+
+
+            {% elseif(app.user.codeDr) %}
+                {% if (demande.signatureDr) %}
+                    <h1 class="text-danger"> {{ 'These documents have already signed by you' | trans}}</h1>
+                {% else %}
+
+                    <div class="alert-warning p-2"><h4 class="text-dark m-2">{{ 'Document dilivered on  ' | trans }} {{ demande.dateDelivrance | date('d/m/Y') }}</h4></div>
+                    <div class="card-body">
+                        {% if (demande.demandeur.codeexploitant) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Exploitant</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.raisonSocialeExploitant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.numeroExploitant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Marteau</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.marteauExploitant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">CEF</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeexploitant.codeCantonnement }}</h4></div>
+                            <hr>
+                            {%  if (demande.codeReprise) %}
+                                <div class="row"><span class="font-weight-bold col-md-1">Foret</span> : <h3 class="text-primary">{{ demande.codeReprise.codeAttribution.codeForet.denomination }}</h3></div><br>
+                            {% endif %}
+
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeindustriel) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeindustriel.raisonSocialeUsine }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeindustriel.numeroUsine }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">CEF</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeindustriel.codeCantonnement }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeExportateur) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeExportateur.raisonSocialeExportateur }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeExportateur.codeExportateur }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">CEF</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeExportateur.codeCantonnement }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary" style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% elseif (demande.demandeur.codeCommercant) %}
+                            <div class="row"><span class="font-weight-bold col-md-1">Usine</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeCommercant.prenoms }} {{ demande.demandeur.codeCommercant.nom }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">Code</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeCommercant.numeroCommercant }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-1">CEF</span> : <h4 class="text-danger col-md-8">{{ demande.demandeur.codeCommercant.codeCantonnement }}</h4></div>
+                            <hr>
+                            <div class="row"><span class="font-weight-bold col-md-2">Type de Document</span> : <h4 class="badge p-2 text-white" style="font-size: 16px;background-color: #366804; margin-left: 10px;">{{ demande.docStat.abv }}</h4></div>
+                            <div class="row"><span class="font-weight-bold col-md-2">Nombre de documents</span> : <h4 class="text-primary"  style="margin-left: 10px;">{{ demande.qteValidee }}</h4></div>
+
+                        {% endif %}
+                        <br>
+                        <div class="alert-light p-2 col-md-4">
+                            <table class="table table-responsive" id="drs" style="height: 250px; overflow-y: scroll;">
+                                <thead>
+                                <tr style="background: #057403;color: #fcf8f8">
+                                    <th>{{ 'Document' | trans}}</th>
+                                    <th>{{ 'Number of pages' | trans }}</th>
+                                    <th>{{ 'action' | trans}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% if(demande.docStat.id == 1) %}
+                                    {% for doc in demande.documentcps %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDoccp }} </td>
+                                            <td> {{ doc.pagecps.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider"></a> </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% elseif(demande.docStat.id == 2) %}
+                                    {% for doc in demande.documentbrhs %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDocbrh }} </td>
+                                            <td> {{ doc.pagebrhs.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider"></a> </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% elseif(demande.docStat.id == 14) %}
+                                    {% for doc in demande.documentbths %}
+                                        <tr class="bg-white">
+                                            <td> {{ doc.numeroDocbth }} </td>
+                                            <td> {{ doc.pagebths.count }} </td>
+                                            <td><a href="#" id="{{ doc.id }}" class="doc_op"><img src="{{ asset('assets/images/valider.png') }}" title="{{ 'Validate' | trans }}" alt="valider" height="16"> </a></td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                </tbody>
+                            </table>
+
+
+                        </div>
+                        <a href="#" class="btn text-white btn_signer_dr" data-bs-toggle="modal" data-bs-target="#acceptDrRequest" id="{{ demande.id }}" style="font-size: 16px;background-color: #ff7003;margin-top: 5px;"><i class="mdi mdi-check-circle text-white" style="margin-right: 5px;font-size:24px;"></i> {{ 'Validate signature' | trans}}</a>
+                        <hr>
+                    </div>
+
+
+                {% endif %}
+            {% endif %}
+        </div>
+
+
+        <!-- Modal ACCEPT FOR CEF-->
+        <div class="modal fade" id="acceptCefRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle">{{ 'Document Signature' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <label for="motif" class="text-dark font-weight-bold">{{ 'Do you want to sign these documents ? ' |trans}}</label>
+                        <h6  class="text-danger ">{{ 'This action is irreversible ' |trans}}</h6>
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2" style="font-size: 24px;margin-right: 5px;"></i>{{ 'Don\'t sign'|trans }}
+                            </a>
+                            <a class="btn btn-success font-weight-light cef_accept" id="{{ demande.id }}" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-pen text-white ms-4" style="font-size: 24px;margin-right: 5px;"></i> {{ 'Sign'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Modal ACCEPT FOR DR-->
+        <div class="modal fade" id="acceptDrRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle">{{ 'Document Signature' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <label for="motif" class="text-dark font-weight-bold">{{ 'Do you want to sign these documents ? ' |trans}}</label>
+                        <h6  class="text-danger ">{{ 'This action is irreversible ' |trans}}</h6>
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2" style="font-size: 24px;margin-right: 5px;"></i>{{ 'Don\'t sign'|trans }}
+                            </a>
+                            <a  class="btn btn-success font-weight-light dr_accept" id="{{ demande.id }}" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-pen text-white ms-4" style="font-size: 24px;margin-right: 5px;"></i> {{ 'Sign'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        //let table1 = document.querySelector('#document_operateurs');
+
+
+        $('body').on('click', '.cef_accept', function (){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/demop/sign/cef/{{ demande.id }}' ,
+                type : 'POST',
+                success: function (response){
+                    document.location.reload()
+                }
+            })
+        })
+        $('body').on('click', '.dr_accept', function (){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/demop/sign/dr/{{ demande.id }}',
+                type : 'POST',
+                success: function (response){
+                    document.location.reload()
+                }
+            })
+        })
+        // Simple Datatable
+        let table1 = document.querySelector('#document_operateurs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

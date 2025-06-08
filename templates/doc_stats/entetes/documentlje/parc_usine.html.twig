@@ -1,0 +1,304 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+
+    {% trans %}SNVLT{% endtrans %} -
+    {% if (app.user.codeexploitant) %}
+        {% trans %}My CP{% endtrans %}
+    {% else %}
+        {% trans %}CP{% endtrans %}
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/increase.png') }}" alt="{% trans %}stock{% endtrans %}">
+        <img src="{{ asset('assets/images/webapp/parc_usine.png') }}" alt="{% trans %}stock{% endtrans %}" height="48" >
+
+        {% trans %}Factory Park{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style_snvlt.css') }}">
+    <section class="section">
+        <div class="alert-primary p-2" style="height: 40px;">
+            {% if(app.user.codeCantonnement or app.user.codeDr or app.user.codeDdef or app.user.codeOperateur.id == 1) %}
+            <select name="usines" id="usines" style="margin: 5px;background-color: #cbd8e3; ">
+
+            </select>
+            {% endif %}
+           {# <input type="text" id="bille" placeholder="{{ 'log No' | trans }}" style="margin: 5px;background-color: #cbd8e3; ">#}
+            <a href="#" class="text-dark alert-info p-1 font-weight-bold" style="border-radius: 10px;border: 1px solid white" onclick="tableToCSV()"><i class="mdi mdi-export" style="margin-right: 5px;"></i>{{ 'Export data' | trans}}</a>
+            <label id="lbl_infos"></label>
+        </div>
+        <div class="card">
+
+            <div class="card-body">
+                <div class="">
+                    <span class="text-dark font-weight-bold">{{ 'Legend' | trans }}</span> :
+                    <div class="row">
+                    <h4 class="alert-success col-md-4" >{{ 'this log was sawed' | trans }}</h4>
+                    <h4 class="alert-warning col-md-4">{{ 'This log is on site' | trans }}</h4>
+                    <h4 class="alert-danger col-md-4">{{ 'this log has been reported' | trans }}</h4>
+                    </div>
+                </div>
+                <div style="background-color: #f0f7f7; padding: 10px;">
+                <table class="tbl-responsive table p-1 mt-2" id="my_logs" >
+                    <thead>
+                    <tr class="bg-secondary text-white">
+                        <th class="text-center font-weight-bold">{{ 'Wood Log N°' |trans}}</th>
+                        <th class="text-center font-weight-bold" >{{ 'species' |trans }}</th>
+                        <th class="text-center font-weight-bold" >Forêt</th>
+                        <th class="text-center font-weight-bold">{{ 'Zone' |trans }}</th>
+                        <th class="text-center font-weight-bold">{{ 'X' |trans}}</th>
+                        <th class="text-center font-weight-bold">{{ 'Y' |trans}}</th>
+                        <th class="text-center font-weight-bold">{{ 'length' |trans}}</th>
+                        <th class="text-center font-weight-bold">{{ 'Diameter' |trans}}</th>
+                        <th class="text-center font-weight-bold">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                        <th class="text-center font-weight-bold">{{ 'Billon length' |trans}}</th>
+                        <th class="text-center font-weight-bold">{{ 'RM' |trans}}</th>
+                        {#<th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Logger' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'forest' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Last factory' |trans}}</th>#}
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu" style="font-size: 13px;">
+
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}" style="color: #ff8404"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        let id_usine = 0;
+        let nom_fichier = "";
+        {% if(app.user.codeCantonnement or app.user.codeDr or app.user.codeDdef or app.user.codeOperateur.id == 1) %}
+            mes_usines()
+        {% elseif (app.user.codeindustriel) %}
+            mes_billes()
+        {% endif %}
+
+        $('#usines').on('change', function (){
+            if (this.value === 0){
+                id_usine = 0;
+            } else {
+                id_usine = this.value;
+            }
+
+            billes_usines()
+        })
+
+       /* $('#forets').on('change', function (){
+            document.querySelector('#lbl_infos').innerHTML ="";
+            liste_arbres(this.value)
+        })*/
+
+        function mes_usines(){
+            let contenu_usines = '<option value="0">Toutes les usines</option>';
+            $.ajax({
+                url: '{{ path('app_liste_usines') }}',
+                type: 'POST',
+                success: function (response) {
+                    let reponse_usines = JSON.parse(response);
+
+                    for (var i = 0; i < reponse_usines.length; i++){
+                        contenu_usines = contenu_usines + '<option value="' + reponse_usines[i].idusine +'">' + reponse_usines[i].denomination + '</option>'
+                    }
+
+                    document.querySelector('#usines').innerHTML = contenu_usines;
+                    id_usine = document.querySelector('#usines').value;
+                    billes_usines(id_usine)
+                }
+            });
+        }
+        function mes_billes(){
+
+            $.ajax({
+                url: '{{ path('app_logs_lje_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let doclje_liste = JSON.parse(response);
+                    let contenu = ""
+
+                    for(var i = 0; i < doclje_liste.length ; i++){
+                        if(doclje_liste[i].billons_lng === 0){
+                            contenu = contenu +'<tr class="alert-warning">';
+                        } else if(doclje_liste[i].tronconnee) {
+                            contenu = contenu +'<tr  class="alert-success">';
+                        }/*else  {
+                            contenu = contenu +'<tr class="alert-danger">';
+                        }*/
+
+                        contenu = contenu + '<td class="text-center"  data-label="{{ 'Wood Log N°' |trans}}"><a class="text-white p-1 badge" style="font-size: 18px;background-color:darkgreen;" href="#" id="' + doclje_liste[i].id_bille + '">' + doclje_liste[i].bille + '</a></td>' +
+                            '<td class="font-weight-bold text-center  " style="font-size: 13px;" data-label="{{ 'Tree No' |trans}}"><span > ' + doclje_liste[i].essence  + '</span></td>'+
+                            '<td  class="font-weight-bold text-center"><span>' + doclje_liste[i].pef  + '</span></td>'+
+                            '<td  class="font-weight-light text-center"><span>' + doclje_liste[i].zh_bille  + '</span></td>'+
+                            '<td  class="font-weight-light text-center"><span>' + doclje_liste[i].x_bille  + '</span></td>'+
+                            '<td class="font-weight-light text-center"><span >' + doclje_liste[i].y_bille  + '</span></td>'+
+                            '<td class="font-weight-light text-center"><span >' + doclje_liste[i].lng  + '</span></td>'+
+                            '<td  class="font-weight-light text-center"><span>' + doclje_liste[i].dm  + '</span></td>'+
+                            '<td  class="font-weight-bold text-center"><span>' + doclje_liste[i].volume_arbre  + '</span></td>' +
+                            '<td  class="font-weight-bold text-center text-danger"><span>' + doclje_liste[i].billons_lng  + '</span></td>' +
+                            '<td  class="font-weight-bold text-center text-danger"><span>' + doclje_liste[i].rm  + '</span></td></tr>';
+                    }
+
+
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+                    nom_fichier = doclje_liste[0].nom_fichier;
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_logs');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+
+        function billes_usines(){
+            if (id_usine === "0"){
+                nom_fichier = "Parc Usine - Tous"
+                mes_billes();
+            } else {
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/doclje/logs/flt/' + id_usine,
+                    type: 'POST',
+                    success: function(response) {
+
+                        let doclje_liste = JSON.parse(response);
+                        let contenu = ""
+
+                        for(var i = 0; i < doclje_liste.length ; i++){
+                             if(doclje_liste[i].billons_lng === 0){
+                                 contenu = contenu +'<tr class="alert-warning">';
+                             } else if(doclje_liste[i].billons_lng  > 0) {
+                                 contenu = contenu +'<tr  class="alert-success">';
+                             }else  {
+                            contenu = contenu +'<tr class="alert-danger">';
+                            }
+
+                            contenu = contenu + '<td class="font-weight-bold text-center  "  data-label="{{ 'Tree No' |trans}}"><a class="text-danger font-weight-bold" style="font-size: 13px;" href="#" id="' + doclje_liste[i].id_bille + '">' + doclje_liste[i].bille + '</a></td>' +
+                                '<td class="font-weight-bold text-center  " style="font-size: 13px;" data-label="{{ 'Tree No' |trans}}"><span > ' + doclje_liste[i].essence  + '</span></td>'+
+                                '<td  class="font-weight-light text-center"data-label="{{ 'species' |trans}}"><span>' + doclje_liste[i].foret  + '</span></td>'+
+                                '<td  class="font-weight-light text-center"data-label="{{ 'species' |trans}}"><span>' + doclje_liste[i].zh_bille  + '</span></td>'+
+                                '<td  class="font-weight-light text-center"data-label="{{ 'X' |trans}}"><span>' + doclje_liste[i].x_bille  + '</span></td>'+
+                                '<td class="font-weight-light text-center" data-label="{{ 'Y' |trans}}"><span >' + doclje_liste[i].y_bille  + '</span></td>'+
+                                '<td class="font-weight-light text-center" data-label="{{ 'length' |trans}}"><span >' + doclje_liste[i].lng  + '</span></td>'+
+                                '<td  class="font-weight-light text-center" data-label="{{ 'Diameter' |trans}}"><span>' + doclje_liste[i].dm  + '</span></td>'+
+                                '<td  class="font-weight-bold text-center" data-label="{{ 'Volume' |trans}}"><span>' + doclje_liste[i].volume_arbre  + '</span></td>' +
+                                '<td  class="font-weight-bold text-center text-danger" data-label="{{ 'Volume' |trans}}"><span>' + doclje_liste[i].billons_lng  + '</span></td>' +
+                                '<td  class="font-weight-bold text-center text-danger" data-label="{{ 'Volume' |trans}}"><span>' + doclje_liste[i].rm  + '</span></td></tr>';
+                        }
+
+
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+                        nom_fichier = "Parc Usine " + doclje_liste[0].nom_fichier;
+
+                            // Simple Datatable
+                        let table1 = document.querySelector('#my_logs');
+                        let dataTable = new simpleDatatables.DataTable(table1);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                })
+            }
+
+        }
+
+        document.querySelectorAll('.tbl-responsive').forEach(function (table) {
+            let labels = Array.from(table.querySelectorAll('th')).map(function (th) {
+                return th.innerText
+            })
+            table.querySelectorAll('td').forEach(function (td, i) {
+                td.setAttribute('data-label', labels[i % labels.length])
+            })
+        })
+
+
+
+
+
+        //EXPORT DATA
+
+        function tableToCSV() {
+
+            // Variable to store the final csv data
+            let csv_data = [];
+
+            // Get each row data
+            let rows = document.querySelector('#my_logs').rows;
+            for (let i = 0; i < rows.length; i++) {
+
+                // Get each column data
+                let cols = rows[i].querySelectorAll('td,th');
+
+                // Stores each csv row data
+                let csvrow = [];
+                for (let j = 0; j < cols.length; j++) {
+
+                    // Get the text data of each cell of
+                    // a row and push it to csvrow
+                    csvrow.push(cols[j].innerText);
+                }
+                    var separateur = ","
+                // Combine each column value with comma
+                {% if(app.user.locale == 'fr') %}
+                    separateur = ";"
+                {% endif %}
+
+                csv_data.push(csvrow.join(separateur));
+            }
+            // Combine each row data with new line character
+            csv_data = csv_data.join('\n');
+
+            // Call this function to download csv file
+            downloadCSVFile(csv_data);
+        }
+
+
+        //TELECHARGER LE CSV
+        function downloadCSVFile(csv_data) {
+
+            // Create CSV file object and feed our
+            // csv_data into it
+            CSVFile = new Blob([csv_data], { type: "text/csv" });
+
+            // Create to temporary link to initiate
+            // download process
+            let temp_link = document.createElement('a');
+
+            // Download csv file
+            temp_link.download = nom_fichier + ".csv";
+            let url = window.URL.createObjectURL(CSVFile);
+            temp_link.href = url;
+
+            // This link should not be displayed
+            temp_link.style.display = "none";
+            document.body.appendChild(temp_link);
+
+            // Automatically click the link to trigger download
+            temp_link.click();
+            document.body.removeChild(temp_link);
+        }
+    </script>
+{% endblock %}

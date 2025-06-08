@@ -1,0 +1,93 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {{ notification.sujet }}
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/notification.png') }}"  alt="{{ notification.reference }}">{{ notification.sujet }}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+
+    <section class="section p-2  mx-auto">
+        <div class="w-100 text-dark text-dark"><p class="p-2" style="font-size: 20px;background-color: #e7e2e2" >{{ notification.description }}</p></div>
+
+
+        <div class="mt-1">
+            <span class="text-white badge bg-dark p-2" style="font-size: medium">{% trans %}Created at{% endtrans %} {{ notification.createdAt | date('d m Y  h:i:s') }}</span>
+            <span class="text-white badge bg-info p-2" style="font-size: medium">{% trans %}sent to you on{% endtrans %} {{ circuit.updatedAt | date('d m Y  h:i:s') }}</span>
+        </div>
+        <hr>
+        <div class="bg-white p-2 mt-5"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Operator Type{% endtrans %} :</span> : <span class="text-danger" style="font-weight: bold">{{ circuit.codeDocumentOperateur.typeOperateur}} </span></div>
+        <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Operator{% endtrans %} :</span> : <span class="badge bg-success text-white p-2" style="font-weight: bold; font-size: large">{{ operateur['rs']}} </span></div>
+        <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Code{% endtrans %} :</span> : <span class="text-danger" style="font-weight: bold">{{ operateur['code']}} </span></div>
+        <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Cantonnement{% endtrans %} :</span> : <span class="text-danger" style="font-weight: bold">{{ operateur['cantonnement']}} </span></div>
+        <div class="bg-white mt-3">
+            <div class="alert-success p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Document Name{% endtrans %} :</span> : <span class="badge bg-warning m-2 text-dark" style="font-weight: bold; font-size: large; border-radius: 10px;">{{ circuit.codeDocumentOperateur.codeDocumentGrille.libelleDocument}} </span></div>
+            <div class="bg-white p-2" style="background-color: #f8fbfe;"><span class="text-dark" style="font-weight: bold; font-size: 14px;" >{% trans %}Delivery date{% endtrans %} :</span> : <span class="text-dark badge p-2 alert-info" style="font-weight: bold; font-size: 14px;">{{ circuit.codeDocumentOperateur.dateEtablissement | date('d m Y')}} </span></div>
+            <div class="bg-white p-2 mb-3" style="background-color: #f8fbfe;"><span class="text-dark" style="font-weight: bold; font-size: 14px;" >{% trans %}Due date{% endtrans %} :</span> : <span class="text-dark badge p-2 alert-danger" style="font-weight: bold; font-size: 14px;">{{ circuit.codeDocumentOperateur.dateExpiration | date('d m Y')}} </span></div>
+            <div class="p-2 text-center" style="background-color: #f8fbfe">
+                <iframe src="{{ asset('images/doc_operateurs/') }}{{ circuit.codeDocumentOperateur.imageName }}" height="800" width="90%" style="border: 0px; box-shadow: 10px 10px lightgrey;"></iframe>
+                <br>
+                <br>
+                <a class="p-2" style="cursor: pointer;" target="popup" onclick="window.open('{{ asset('images/doc_operateurs/') }}{{ circuit.codeDocumentOperateur.imageName }}','{{ circuit.codeDocumentOperateur.imageName}}','width=600,height=800,margin=auto')">
+                    <span class="text-primary me-3" style="font-size: 20px;">{% trans %}download file{% endtrans %}</span>
+                    <img src="{{ asset('assets/icons/16x16/pdf.png') }}" height="20" alt="pdf_file">
+
+                </a>
+
+            </div>
+        </div>
+        <div class="mt-5">
+            <a class="btn btn-danger text-white p-2 refuser" style="font-size: large"  id="{{ circuit.id }}"><i class="mdi mdi-cancel text-white me-2" style="font-size: 20px"></i> {% trans %}Refuse document{% endtrans %}</a>
+            <a class="btn btn-success text-white p-2 accepter" style="font-size: large"  id="{{ circuit.id }}"><i class="mdi mdi-check text-white me-2" style="font-size: 20px"></i> {% trans %}Accept document{% endtrans %}</a>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        let notification_id = {{ notification.id }}
+
+        $(document).ready(function() {
+        $('.accepter').on('click', function(){
+            let value = 1;
+
+            $.ajax({
+                url:'{{path('app_login')}}snvlt/validation/circuit/' + this.id + '/' + value + '/' + notification_id,
+                type : 'POST',
+                data : {id_circuit: this.id, value: value},
+                success: function(response){
+                    console.log(response);
+                    document.location.reload();
+                    }
+            });
+        });
+
+        $('.refuser').on('click', function(){
+            let value = 0;
+            $.ajax({
+                url:'{{path('app_login')}}snvlt/validation/circuit/' + this.id + '/' + value + '/' + notification_id,
+                type : 'POST',
+                data : {id_circuit: this.id, value: value},
+                success: function(response){
+                    console.log(response);
+                    document.location.reload();
+                }
+            });
+        });
+
+        });
+    </script>
+
+{% endblock %}

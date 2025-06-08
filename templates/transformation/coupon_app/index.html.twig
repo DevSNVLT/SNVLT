@@ -1,0 +1,212 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Coupons{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/tag.png') }}" alt="coupons">  {% trans %}Gestion des Coupons{% endtrans %}
+    </h2>
+
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            {% if (role_utilisateur == "IND") %}
+            <a class="btn btn-primary fw-light p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('add_coupon-new') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+            {% elseif (role_utilisateur == "MINEF")  %}
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;"><img class="me-3" src="{{ asset('assets/icons/worker.png') }}" alt="requete"> Industriel</span>
+                    <select  class="form-control h4 border-0" required style="font-size: large;text-transform: uppercase;min-width: 200px;" id="select_ind"  aria-label="Industriel" aria-describedby="Industriel">
+                        <option value="0">Liste usines</option>
+                        {% for usine in industriels %}
+                            <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn"><img src="{{ asset('assets/icons/requete.png') }}" alt="requete"></button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css" />
+
+    <section class="section">
+        <h3 class="p-1 alert-info">Le coupon constitue un ensemble d'informations spécifiques fourni par le transformateur du bois à son client</h3>
+        <div class="card">
+            <div class="card-body">
+                {% if (role_utilisateur == "IND") %}
+                    <div class="p-2 row" >
+                        <img class="col-md-3" src="{{ asset('assets/images/coupons-client.jpg') }}" alt="coupon">
+                        <table class="col-md-9 table table-responsive" style="max-height: 400px;">
+                            <thead style="background: #0a430c;color: white;">
+                                <tr style="">
+                                    <th style="font-size: 16px;">N° Coupon</th>
+                                    <th style="font-size: 16px;">N° Contrat</th>
+                                    <th style="font-size: 16px;">Client</th>
+                                    <th style="font-size: 16px;">Contact</th>
+                                    <th style="font-size: 16px;">Adresse</th>
+                                    <th style="font-size: 16px;">Expire le</th>
+                                </tr>
+                            </thead>
+                            <tbody class="body_coupons">
+
+                            </tbody>
+                        </table>
+                    </div>
+                {% elseif (role_utilisateur == "MINEF") %}
+                    <div class="mx-auto p-2 text-center div_img" style="width: 100%;"><img class="" src="{{ asset('assets/images/coupons-client.jpg') }}" alt="coupon"></div>
+                    <div class="div_tbl_coupons" style="max-height: 400px;display:none;">
+                        <table class="table tbl_coupons_minef">
+                            <thead style="background: #0a430c;color: white;">
+                            <tr style="">
+                                <th style="font-size: 16px;">N° Coupon</th>
+                                <th style="font-size: 16px;">N° Contrat</th>
+                                <th style="font-size: 16px;">Client</th>
+                                <th style="font-size: 16px;">Contact</th>
+                                <th style="font-size: 16px;">Adresse</th>
+                                <th style="font-size: 16px;">Expire le</th>
+                            </tr>
+                            </thead>
+                            <tbody class="body_coupons">
+
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+    <script>
+        //Affiche les coupons
+        load_coupons()
+        $('#select_ind').on('change', function (){
+            if (this.value === "0"){
+                document.querySelector('.div_tbl_coupons').style = 'display:none';
+                document.querySelector('.div_img').style = 'display:inline;width: 100%;';
+
+                $('.div_img').addClass('mx-auto p-2 text-center div_img');
+
+            } else {
+                load_coupons();
+                document.querySelector('.body_coupons').innerHTML = '';
+                document.querySelector('.div_img').style = 'display:none';
+                document.querySelector('.div_tbl_coupons').style = 'display:inline';
+            }
+        })
+            function load_coupons() {
+                let url = "";
+                {% if(app.user.codeIndustriel) %}
+                url = '{{ path('app_portail') }}snvlt/coupon/all/{{ app.user.codeIndustriel.id }}';
+                {% else %}
+                url = '{{ path('app_portail') }}snvlt/coupon/all/' + $('#select_ind').val();
+                {% endif %}
+                let contenu = ''
+                $.ajax({
+                    url : url,
+                    type: 'POST',
+                    success : function (response){
+                        let reponse = JSON.parse(response);
+                        if (reponse.length > 0){
+                            for(var i=0; i < reponse.length; i++){
+                                contenu = contenu + '<tr>';
+                                {%  if(role_utilisateur == "MINEF") %}
+                                contenu = contenu + '<td><a href="#" class="badge p-1 bg-danger text-white h2" style="font-size: 20px;">' + reponse[i].numero + '</a></td>';
+                                {% else %}
+                                contenu = contenu + '<td><a href="{{ path('app_portail') }}snvlt/coupon/edit/' + reponse[i].id_coupon + '" class="badge p-1 bg-danger text-white h2" style="font-size: 20px;">' + reponse[i].numero + '</a></td>';
+                                {% endif %}
+                                contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].contrat + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].client + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].contact + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].adresse + '</td>';
+                                contenu = contenu + '<td style="font-size: 16px;">' + reponse[i].expire_le + '</td>';
+                                contenu = contenu + '</tr>';
+                            }
+                            document.querySelector('.body_coupons').innerHTML = contenu;
+
+                            let table = new DataTable('.tbl_coupons_minef', {
+                                responsive: true,
+                                // layout: {
+                                //     topStart: {
+                                //         buttons: [
+                                //             {
+                                //                 extend: 'excelHtml5',
+                                //                 title: 'Coupons',
+                                //                 text: 'Exporter en excel',
+                                //
+                                //             }
+                                //         ]
+                                //     }
+                                // },
+                                pageLength: 25,
+                                colReorder: true,
+                                language: {
+                                    processing:     "Traitement en cours...",
+                                    search:         "Rechercher&nbsp;:",
+                                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                    info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                    infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                    infoPostFix:    "",
+                                    loadingRecords: "Chargement en cours...",
+                                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                    emptyTable:     "Aucune donnée disponible dans le tableau",
+                                    paginate: {
+                                        first:      "Premier",
+                                        previous:   "Pr&eacute;c&eacute;dent",
+                                        next:       "Suivant",
+                                        last:       "Dernier"
+                                    },
+                                    aria: {
+                                        sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                        sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+            }
+
+
+        //let table1 = new DataTable('.sasies_brh');
+
+
+    </script>
+{% endblock %}
+

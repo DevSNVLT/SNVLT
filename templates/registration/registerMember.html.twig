@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('assets/login/style_login.css') }}">
+
+  <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <title>{% trans %} SNVLT - Register {% endtrans %}</title>
+</head>
+<body class="d-flex text-center" style="background-image: path('{{ asset('assets/images/fond_login.jpg') }}'); background-size: cover; background-repeat: no-repeat;">
+
+
+        {{ form_errors(form) }}
+
+        {{ form_start(form, {'attr' : {'class' : 'form-login mx-auto w-50', novalidate: 'novalidate'}}) }}
+
+        <img src="{{ asset('assets/images/logo_snvlt.png') }}" height="190" alt="SNVLT">
+
+        <h3 class="h3 mb-3 font-weight-normal text-center mb-3 rex">{% trans %} SNVLT - Register Please {% endtrans %}</h3>
+
+        <div class="mb-2">
+                {{ form_row(form.nom_utilisateur, {'attr' : {'class' : 'form-control'}}) }}
+        </div>
+
+        <div class="mb-2">
+            {{ form_row(form.prenoms_utilisateur, {'attr' : {'class' : 'form-control'}}) }}
+        </div>
+
+        <div class="mb-2">
+            {{ form_row(form.mobile, {'attr' : {'class' : 'form-control w-100'}}) }}
+
+        </div>
+
+        <div class="mb-2">
+            {{ form_row(form.email, {'attr' : {'class' : 'form-control'}}) }}
+        </div>
+
+        <div class="mb-2 ">{{ form_row(form.code_operateur) }}</div>
+        <div class="mb-2 codeexploitant"> {{ form_row(form.codeexploitant) }}</div>
+
+        <div class="row mb-2">
+                <div class="code_direction col-md-6">{{ form_row(form.code_direction) }}</div>
+                <div class="code_service col-md-6">{{ form_row(form.code_service) }}</div>
+        </div>
+
+        <div class="codeindustriel mb-2">{{ form_row(form.codeindustriel) }}</div>
+        <div class="codeexportateur mb-2">{{ form_row(form.code_exportateur) }}</div>
+
+        <div class="codedr mb-2">{{ form_row(form.code_dr) }}</div>
+        <div class="codecantonnement mb-2">{{ form_row(form.code_cantonnement) }}</div>
+        <div class="d_def"> {{ form_row(form.code_ddef) }}</div>
+
+        <div class="p_f mb-2">{{ form_row(form.code_poste_controle) }}</div>
+
+        {{ form_rest(form) }}
+
+        <div class="p-t-20  mb-2">
+            <input type="submit" class="btn btn--radius btn-primary mt-2 w-100" value="Soumettre">
+        </div>
+        {{ form_end(form) }}
+
+        <!-- Main JS-->
+
+        <script
+                src="https://code.jquery.com/jquery-3.7.1.js"
+                integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+
+        <script>
+            const codeexploitant = document.querySelector(".codeexploitant");
+            const codeservice = document.querySelector(".code_service");
+            const codeindustriel = document.querySelector(".codeindustriel");
+            const codedirection = document.querySelector(".code_direction");
+            const codedr = document.querySelector(".codedr");
+            const codecantonnement = document.querySelector(".codecantonnement");
+            const codeddf = document.querySelector(".d_def");
+            const codepc = document.querySelector(".p_f");
+            const codeexportateur = document.querySelector(".codeexportateur");
+
+            window.onload = () =>{
+                codeexploitant.style = 'display:none';
+                codeservice.style = 'display:none';
+                codedirection.style = 'display:none';
+                codeindustriel.style = 'display:none';
+                codedr.style = 'display:none';
+                codecantonnement.style = 'display:none';
+                codeddf.style = 'display:none';
+                codepc.style = 'display:none';
+                $('.role_user').val(null);
+                // on va chercher la direction MINEF
+                let direction_minef = document.querySelector('#register_member_form_code_direction');
+                direction_minef.addEventListener('change', function(){
+                    let form = this.closest("form");
+                    let data = this.name + "=" + this.value ;
+                    //alert(data);
+                    fetch(form.action, {
+                        method: form.getAttribute("method"),
+                        body: data,
+                        headers:{
+                            "Content-Type":"application/x-www-form-urlencoded;charset:UTF-8"
+                        }
+                    })
+                        .then(response => response.text())
+                        .then(html=>{
+                            let content = document.createElement("html");
+                            content.innerHTML = html;
+                            let nouveauSelect = content.querySelector("#register_member_form_code_service");
+                            document.querySelector("#register_member_form_code_service").replaceWith(nouveauSelect);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+
+                });
+
+                const phoneInputField = document.querySelector("#register_member_form_mobile");
+                phoneInputField.value = "+225";
+                const phoneInput = window.intlTelInput(phoneInputField, {
+                    utilsScript:
+                        "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                    width : '100%'
+                });
+
+                //$('#register_member_form_mobile').mask('+000 00-00-00-00-00');
+            }
+
+            $(document).ready(function() {
+                $('.code_groupe').select2({
+                    placeholder: "-- Groupe --",
+                    allowClear: true,
+                    width: '100%'
+                });
+                $('.role_user').select2({
+                    placeholder: "--Vous êtes --",
+                    allowClear: true
+                });
+                $('.code_exploitant').select2({
+                    placeholder: "-- Exploitants Forestiers --",
+                    width: '100%',
+                    allowClear: true
+                });
+
+                $('.code_industriel').select2({
+                    placeholder: "-- Transformateurs du bois --",
+                    allowClear: true
+                });
+
+                $('.exportateur').select2({
+                    placeholder: "-- Exportateurs du bois --",
+                    width: '100%',
+                    allowClear: true
+                });
+
+
+                $('.code_dr').select2({
+                    placeholder: "-- Directions Régionale -",
+                    allowClear: true
+                });
+
+                $('.code_cantonnement').select2({
+                    placeholder: "-- Cantonnements Forestiers --",
+                    allowClear: true
+                });
+
+                $('.ddef').select2({
+                    placeholder: '-- Direction départementale --',
+                    allowClear: true
+                });
+
+                $('.pf').select2({
+                    placeholder: '-- Poste Forestier --',
+                    allowClear: true,
+                });
+
+            });
+            $(".direction_minef").change(function () {
+                var me = this.value;
+                if (me){
+                    codeservice.style = 'display:inline';
+                    $('.service_minef').select2('open');
+                } else {
+                    codeservice.style = 'display:none';
+                    $('.service_minef').val(null).trigger('change');
+                }
+            });
+
+            $(".role_user").change(function () {
+                var me = this.value;
+
+                codeexploitant.style = 'display:none';
+                codeservice.style = 'display:none';
+                codedirection.style = 'display:none';
+                codeindustriel.style = 'display:none';
+                codedr.style = 'display:none';
+                codecantonnement.style = 'display:none';
+                codeddf.style = 'display:none';
+                codepc.style = 'display:none';
+                codeexportateur.style = 'display:none';
+
+                $('.code_exploitant').val(null).trigger('change');
+                $('.code_industriel').val(null).trigger('change');
+                $('.code_dr').val(null).trigger('change');
+                $('.code_cantonnement').val(null).trigger('change');
+                $('.ddef').val(null).trigger('change');
+                $('.pf').val(null).trigger('change');
+                $('.direction_minef').val(null).trigger('change');
+                $('.service_minef').val(null).trigger('change');
+                $('.exportateur').val(null).trigger('change');
+
+                switch(me) {
+                    case "1":
+                        codedirection.style = 'display:inline';
+                        /*$('.direction_minef').select2('open');*/
+
+                        break;
+                    case "2":
+                        codeexploitant.style = 'display:inline';
+                        $('.code_exploitant').select2('open');
+
+                        break;
+                    case "3":
+                        codeindustriel.style = 'display:inline';
+
+                        $('.code_industriel').select2('open');;
+                        break;
+
+                    case "4":
+                        codeexportateur.style = 'display:inline';
+
+                        $('.exportateur').select2('open');;
+                        break;
+
+                    case "5":
+                        codedr.style = 'display:inline';
+
+                        $('.code_dr').select2('open');;
+                        break;
+
+                    case "7":
+                        codecantonnement.style = 'display:inline';
+
+                        $('.code_cantonnement').select2('open');;
+                        break;
+
+                    case "6":
+                        codeddf.style = 'display:inline';
+
+                        $('.ddef').select2('open');;
+                        break;
+
+                    case "10":
+                        codepc.style = 'display:inline';
+
+                        $('.pf').select2('open');;
+                        break;
+
+
+                    default:
+                    // code block
+                }
+            });
+        </script>
+
+</body>
+</html>

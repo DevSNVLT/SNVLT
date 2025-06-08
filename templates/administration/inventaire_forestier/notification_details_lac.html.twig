@@ -1,0 +1,112 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Validation LAAC{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/valid.png') }}" alt="forest">  Validation LAAC - {{ fiche.id }} - [{{ fiche.codeAttribution.codeForet.denomination }}]
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-primary p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('imprime_fiche_lac', {'id_fiche': fiche.id })}}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>Imprimer la LAAC</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <!-- Latest compiled and minified CSS -->
+
+    <section class="section bg-white p-1">
+        <div class="align-content-md-start">
+            <span class="badge p-2 ms-2 text-white" style="font-size: 20px;background: #005700;float: right;width: 100%">
+                        Cette fiche a été validée le {{ fiche.updatedAt | date('d/m/Y') }}
+           </span>
+        </div>
+        <div class="p-2" style="border: orange; min-height: 500px;" id="liste_arbres">
+            <table class="table" id="table_lac_notification" style="width: 100%" >
+                <thead class=" bg-primary text-white">
+                <tr class="alert-success">
+                    <th style="font-size: 20px;" class="text-dark font-weight-bold">{% trans %}spices{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-dark font-weight-bold">{% trans %}N° Arbre Inv{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Zone{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}X{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Y{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}L{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}d{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Volume{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}LAAC{% endtrans %}</th>
+                    <th style="font-size: 20px;" class="text-center text-dark font-weight-bold">{% trans %}Status{% endtrans %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for arbre in fiche.inventaireForestiers %}
+                    {% if (arbre.lac) %}
+                        <tr class="p-1 alert-warning" style="font-size: 18px;">
+                    {% else %}
+                        <tr class="p-1" style="font-size: 18px;">
+                    {% endif %}
+
+                    {% if not (arbre.valide) %}
+                        <tr class="p-1 alert-danger" style="font-size: 18px;">
+                    {% endif %}
+
+                    <td>{{ arbre.codeEssence.nomVernaculaire }}</td>
+                    <td>{{ arbre.numeroArbre }}</td>
+                    <td class="text-center">{{ arbre.zoneh.zone }}</td>
+                    <td class="text-center">{{ arbre.x }}</td>
+                    <td class="text-center">{{ arbre.y }}</td>
+                    <td class="text-center">{{ arbre.lng }}</td>
+                    <td class="text-center">{{ arbre.dm }}</td>
+                    <td class="text-center">{{ arbre.volume }}</td>
+
+                    {% if (arbre.lac) %}
+                        <td class="text-center"><a class="" href="#"><img src="{{ asset('assets/images/valider.png') }}" height="32" alt="lac_valide"></a></td>
+                    {% else %}
+                        <td class="text-center"> - </td>
+                    {% endif %}
+
+
+                        {% if (arbre.valide) %}
+                            <td class="text-center"><span class="bg-primary text-white p-1 rounded-5 m-1" style="font-size: 18px;">OK</span></td>
+                        {% else %}
+                            <td class="text-center"><span class="bg-danger text-white p-1 m-1 " data-bs-target="#accepter_arbre" data-bs-toggle="modal" style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUSE</span></td>
+                        {% endif %}
+
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#table_lac_notification');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+{% endblock %}

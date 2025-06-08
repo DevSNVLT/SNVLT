@@ -1,0 +1,173 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}CAROI{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/meeting.png') }}" alt="caroi">   Comité d'Analyse de Rapport <span class="badge text-white font-weight-bold" style="font-size: 24px;background: green">OI</span> (CAROI)
+    </h2>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <h3 class="text-dark alert-light p-2"><img class="me-2" src="{{ asset('assets/images/webapp/responsable.png') }}" height="32" alt="caroi"> Sélectionnez ci-dessous les membres du comité</h3>
+
+                <div class="row m-1 p-2 alert-warning">
+                        <select class="services_list ms-2 form-control m-2 alert-primary font-weight-bold" style="width: 300px;font-size: 16px;" name="users_list">
+
+                        </select>
+                        <select class="users_list ms-2 form-control m-2 alert-primary font-weight-bold" style="width: 300px;font-size: 16px;" name="users_list">
+
+                        </select>
+                    <a href="#" class="btn  btn-primary ajouter_detail ms-2 font-weight-light m-2" style="font-size: 16px;">Ajouter</a>
+                </div>
+
+                <table class="table m-1" id="table_caroi" style="border-radius: 10px; border: 2px solid black;">
+                    <thead>
+                    <tr style="background: #e2ffed">
+                        <th>{% trans %}Structure{% endtrans %}</th>
+                        <th>{% trans %}Personne Ressource{% endtrans %}</th>
+                        <th>{% trans %}email{% endtrans %}</th>
+                        <th>{% trans %}Mobile{% endtrans %}</th>
+                        <th>{% trans %}Action{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="body_caroi">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+        // Simple Datatable
+        /*let table1 = document.querySelector('#caroi');
+        let dataTable = new simpleDatatables.DataTable(table1);*/
+
+
+        liste_users_all();
+        liste_services();
+
+        liste_users(document.querySelector('.services_list').value);
+
+        $('.services_list').on('change', function (){
+            liste_users(this.value);
+        })
+
+        $('.ajouter_detail').on('click', function (){
+            ajouter_user($('.users_list').val());
+        })
+
+        $('body').on('click', '.btnDelete', function (){
+            delete_user(this.id);
+        })
+
+        function liste_users(id_service){
+
+            $.ajax({
+                url : '{{path('app_portail') }}snvlt/users/caroi/'  + id_service.substring(0, 1) + '/' + id_service.substring(1),
+                type : 'POST',
+                success: function(response){
+                    let users = JSON.parse(response);
+                    var contenu = "";
+                    for(var i = 0; i < users.length; i++){
+                        contenu = contenu + '<option value="' + users[i].id_user + '">' + users[i].nom_prenoms + '</option>'
+                    }
+                    document.querySelector('.users_list').innerHTML = contenu;
+                }
+            })
+        }
+
+        function delete_user(id_caroi){
+
+            $.ajax({
+                url : '{{path('app_portail') }}snvlt/membres/caroi/sup_c/'  + id_caroi,
+                type : 'POST',
+                success: function(response){
+                    let caroi_response = JSON.parse(response);
+                    //console.log(caroi_response);
+                    liste_users_all();
+                }
+            })
+        }
+        function liste_services(){
+            $.ajax({
+                url : '{{path('app_portail') }}snvlt/liste_services/caroi',
+                type : 'POST',
+                success: function(response){
+                    let services = JSON.parse(response);
+                    var contenu = "";
+                    for(var i = 0; i < services.length; i++){
+                        contenu = contenu + '<option value="' + services[i].id_service + '">' + services[i].libelle + '</option>';
+                    }
+                    document.querySelector('.services_list').innerHTML = contenu;
+
+                }
+            })
+        }
+        function ajouter_user(id_user){
+                    $.ajax({
+                        url : '{{path('app_portail') }}snvlt/add_user/caroi/' + id_user,
+                        type : 'POST',
+                        success: function(response){
+                            let user_info = JSON.parse(response);
+                            if (user_info[0].code === "INSIDE"){
+                                alert('CET AGENT EST DEJA ENREGISTRE')
+                            } else if  (user_info[0].code === "FAILED"){
+                                alert('AUCUN AGENT SELECTIONNE')
+                            } else {
+                                liste_users_all();
+                            }
+
+                        }
+                    })
+                }
+        function liste_users_all(){
+            $.ajax({
+                url : '{{path('app_portail') }}snvlt/liste_users/caroi/all',
+                type : 'POST',
+                success: function(response){
+                    let users = JSON.parse(response);
+                    var contenu = "";
+                    for(var i = 0; i < users.length; i++){
+                        contenu = contenu +  '<tr><td>' + users[i].service + '</td>' +
+                                                '<td>' + users[i].nom_prenoms + '</td>' +
+                                                '<td>' + users[i].email + '</td>' +
+                                                 '<td>' + users[i].Mobile + '</td>' +
+                                                 '<td><a class="btnDelete" href="#" id="' + users[i].id_caroi +'"><img src="{{ asset('assets/icons/16x16/delete.png') }}" alt="delete"></a></td></tr>';
+
+                    }
+                    document.querySelector('#body_caroi').innerHTML = contenu;
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

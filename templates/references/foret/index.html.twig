@@ -1,0 +1,171 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Forests{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/foret.png') }}" alt="attribution">  {% trans %}Forests{% endtrans %}
+    </h2>
+
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="alert-warning p-2 text-dark m-1" style="border: 1px orange solid; margin-right: 10px;">
+            {% trans %}The forest is owned but not in activity{% endtrans %}
+        </div>
+        <div class="alert-success p-2 text-dark m-1" style="border: 1px green solid">
+            {% trans %}The forest is in activity{% endtrans %}
+        </div>
+
+        <div class="btn-group p-1 rounded-5 m-1" role="group" aria-label="Basic example">
+            <a class="btn" style="border: 0px; font-size: 16px;" href="{{ path('foret.edit') }}" title="{% trans %}Add a manager{% endtrans %}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 32px;color: red"></i></a>
+        </div>
+
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <table class="table table-responsive" id="forets" style="border: darkslategrey solid 1px;">
+                    <thead>
+                    {#<tr style="background: #8ff0b4">#}
+                    <tr style="background: #517b61;color: white;">
+                        <th>{% trans %}Name{% endtrans %}</th>
+                        <th>{% trans %}Area{% endtrans %}</th>
+                        <th>{% trans %}Dernier N°{% endtrans %}</th>
+
+                        <th>{% trans %}Forest Type{% endtrans %}</th>
+                        <th>{% trans %}Cantonment{% endtrans %}</th>
+                        <th>{% trans %}CG / UGF{% endtrans %}</th>
+                        <th>{% trans %}Owner{% endtrans %}</th>
+                        <th class="text-center">{% trans %}Status{% endtrans %}</th>
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                    {% for foret in liste_forets %}
+
+                        {% if (foret.attribue) %}
+                            <tr class="alert-light-success">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+
+                            {#<td>{{ foret.numeroForet }}</td>#}
+                            <td class="text-dark fw-bold"><a class="link editBtn badge bg-info text-white" style="font-weight: bold;font-size: 14px;" href="{{ path('foret.edit', {'id_foret': foret.id })}}" id="{{ foret.id }}">{{ foret.denomination }}</a></td>
+
+
+                            {% if (foret.superficie) %}
+                                <td>{{ foret.superficie }}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+
+                            {% if (foret.dernierNumero) %}
+                                <td>{{ foret.dernierNumero }}</td>
+                            {% else %}
+                                <td>0</td>
+                            {% endif %}
+
+                            {% if (foret.codeTypeForet) %}
+                                <td>{{ foret.codeTypeForet.libelle }}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+
+
+                            {% if (foret.codeCantonnement) %}
+                                <td style="font-weight: bold">{{ foret.codeCantonnement.nomCantonnement}}</td>
+                            {% else %}
+                                <td style="font-weight: bold">-</td>
+                            {% endif %}
+
+                            {% if (foret.codeUgf) %}
+                                <td style="font-weight: bold">{{ foret.codeUgf.codeDcg.denomination}} / {{ foret.codeUgf.denomination}}</td>
+                            {% else %}
+                                <td style="font-weight: bold">-</td>
+                            {% endif %}
+
+                            {% if (foret.attribue) %}
+                                <td style="font-weight: bold">
+
+                                  {% if(foret.attributions.count > 0) %}
+                                        {% if(foret.attributions.get(0).reprises.count > 0) %}
+                                            <span class="badge alert-success text-dark" title="{{ foret.attributions.get(0).codeExploitant.raisonSocialeExploitant }} - {% trans %}This foresst is currently in activity{% endtrans %}" style="font-size: 14px; font-weight: lighter;">
+                                                {% if(foret.attributions.get(0).codeExploitant.sigle) %}
+                                                    {{ foret.attributions.get(0).codeExploitant.sigle }}
+                                                {% else %}
+                                                    {{ foret.attributions.get(0).codeExploitant.raisonSocialeExploitant }}
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge alert-warning text-dark" title='{{ foret.attributions.get(0).codeExploitant.raisonSocialeExploitant }} - {% trans %}NOT IN ACTIVITY{% endtrans %}' style="font-size: 14px; font-weight: lighter;">
+                                                {% if(foret.attributions.get(0).codeExploitant.sigle) %}
+                                                    {{ foret.attributions.get(0).codeExploitant.sigle }}
+                                                {% else %}
+                                                    {{ foret.attributions.get(0).codeExploitant.raisonSocialeExploitant }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+                                      </td>
+                                      {% elseif (foret.attributionPvs.count > 0)%}
+                                          {% if(foret.attributionPvs.get(0).autorisationPvs.count > 0) %}
+                                              <span class="badge alert-success text-dark" title="{{ foret.attributionPvs.get(0).raisonSociale }} - {% trans %}This foresst is currently in activity{% endtrans %}" style="font-size: 14px; font-weight: lighter;">
+                                                {% if(foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.sigle) %}
+                                                    {{ foret.attributionPvs.get(0).raisonSociale }} / <span class="font-weight-bold text-primary">{{ foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.sigle }}</span>
+                                                {% else %}
+                                                    {{ foret.attributionPvs.get(0).raisonSociale }} / <span class="font-weight-bold text-primary">{{ foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.raisonSocialeExploitant }}</span>
+                                                {% endif %}
+                                            </span>
+                                          {% else %}
+                                              <span class="badge alert-warning text-dark" title='{{ foret.attributionPvs.autorisationPvs.get(0).codeExploitant.raisonSocialeExploitant }} - {% trans %}NOT IN ACTIVITY{% endtrans %}' style="font-size: 14px; font-weight: lighter;">
+                                                {% if(foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.sigle) %}
+                                                    {{ foret.attributionPvs.get(0).raisonSociale }} / <span class="font-weight-bold text-primary">{{ foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.sigle }}</span>
+                                                {% else %}
+                                                    {{ foret.attributionPvs.get(0).raisonSociale }} / <span class="font-weight-bold text-primary">{{ foret.attributionPvs.get(0).autorisationPvs.get(0).codeExploitant.raisonSocialeExploitant }}</span>
+                                                {% endif %}
+                                            </span>
+                                          {% endif %}
+                                    {% endif %}
+                            {% else %}
+                                <td class="text-danger text-center" style="font-weight: bold"> - </td>
+                            {% endif %}
+                            <td class="text-center">
+                            {% if (foret.reprise) %}
+                                    <i class="text-success mdi mdi-check-circle" style="font-weight: bold; font-size: 24px;"></i>
+                                {% else %}
+                                    <i class="text-danger mdi mdi-cancel" style="font-weight: bold; font-size: 24px;"></i>
+                              {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#forets');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+
+{% endblock %}
+

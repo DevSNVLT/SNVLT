@@ -1,0 +1,54 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Mediatèque{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/course.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Mediatèque{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="alert-light p-2 font-weight-bold text-dark sticky-top">Aide SNVLT assistée par vidéo</h1>
+                <div class="list-group">
+                    {% for media in mes_media %}
+                        {% if(app.user.codeOperateur in media.codeOperateur) %}
+                            <a style="font-size: 20px;border-bottom: 1px lightgrey solid;" href="{{ path('show_media', {'id_media': media.id })}}" class="list-group-item list-group-item-action mb-2 border-0"><img style="height: 64px;margin-right: 25px;" src="{{ asset('assets/images/film.png') }}" alt="video"> {{ media.libelle }}</a>
+                        {% elseif(app.user.codeGroupe.id == 1)  %}
+                            <a style="font-size: 20px;border-bottom: 1px lightgrey solid;" href="{{ path('show_media', {'id_media': media.id })}}" class="list-group-item list-group-item-action mb-2 border-0"><img style="height: 64px;margin-right: 25px;" src="{{ asset('assets/images/film.png') }}" alt="video"> {{ media.libelle }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+
+
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}
+

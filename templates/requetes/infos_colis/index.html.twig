@@ -1,0 +1,189 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Informations Billes{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/billons.png') }}" height="64" alt="requetes">  Informations Colis
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <input class="text-center" id="colis" type="text" placeholder="Entrez le N° du colis" style="font-size: 16px;width:200px; background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+        <a id="btn_search_colis" href="#" style="background-color: #fcf378; margin-right:10px; color: black;"><i class="mdi mdi-search-web" style="margin-right: 5px;"></i></a>
+
+        <select  name="contrat_value" id="contrat_value"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;display:none;">
+            <option value="0">--Contrat--</option>
+        </select>
+
+        {#<a id="rechercher_bille" class="btn-danger text-white" href="#" style="margin-left: 10px;border: orangered solid 1px;padding-left: 5px;padding-right: 5px;"><i class="mdi mdi-search-web" style="margin-right: 5px;"></i> rechercher</a>#}
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <style>
+        .bordure{
+            background-color: #eeecec;
+            color: black;
+            border: 1px solid black;
+        }
+    </style>
+
+    <div class="contenu_div sticky-top" style="background-color: #e7f8ee">
+        <h2 class="" style="background: #0b511b; color: white; padding: 5px;">Informations Colis</h2>
+        <div class="text-center"><img src="{{ asset('assets/images/pile-wood-planks.png') }}" alt="requetes" height="75%" class="img-fluid mx-auto my-auto"></div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script>
+        $('#btn_search_colis').on('click', function (){
+            var valeur = $('#colis').val();
+            recherche_contrat(valeur);
+        })
+
+        $('#contrat_value').on('change', function (){
+            var valeur = $('#colis').val();
+            var contrat = this.value;
+            recherche_infos_colis(valeur, contrat);
+        })
+
+        function recherche_contrat(numero_colis){
+            let contenu = '<option id="0">--Contrats--</option>';
+            document.querySelector('#contrat_value').style = "display:none";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_contrat/colis/' + numero_colis,
+                type : 'POST',
+                success : function (response){
+                    let liste_contrats = JSON.parse(response);
+
+                    if (liste_contrats.length === 0){
+                        document.querySelector('#contrat_value').style = "display:none";
+                    } {
+                        for(var i=0; i < liste_contrats.length; i++){
+                            contenu = contenu + '<option value="' + liste_contrats[i].id_contrat + '">' + liste_contrats[i].reference + '</option>'
+                        }
+
+                        document.querySelector('#contrat_value').style = "display:inline;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;";
+                        document.querySelector('#contrat_value').innerHTML = contenu;
+                    }
+
+                }
+            })
+        }
+
+
+        function recherche_infos_colis(numero_colis, id_contrat){
+            let contenu = '<h2 style="background: #0b511b; color: white; padding: 5px;">Informations colis</h2>' +
+                '<div class="row"><div class="col-md-2"><img class="img-fluid" src="{{ asset('assets/images/pile-wood-planks.png') }}" alt="colis"></div>' +
+                '<div class="col-md-10 p-2"><div class="m-2">';
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_infos_colis/infos/' + numero_colis + '/' + id_contrat,
+                type : 'POST',
+                success : function (response){
+                    let infos_colis = JSON.parse(response);
+                    contenu = contenu + '<div class="row border-1 border-success">' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Réf. Colis</span> : ' + infos_colis[0].reference + '</div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Réf. Contrat</span> : ' + infos_colis[0].contrat + '</div>' +
+                                        '<div class="col-md-3 bordure"><span class="font-weight-bold">Date Confection</span> : ' + infos_colis[0].date_confection + '</div>' +
+                                        '<div class="col-md-3 bordure"><span class="font-weight-bold">Type Contrat</span> : ' + infos_colis[0].type_contrat + '</div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Type Transfo</span> : ' + infos_colis[0].type_transformation + '</div>' +
+                                        '<div class="col-md-4 bordure"><span class="font-weight-bold">Fournisseur</span> : ' + infos_colis[0].fournisseur + '</div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">volume</span> : <span class="text-danger font-weight-bold">' + infos_colis[0].volume + ' m<sup>3</sup></span></div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Nb Eléments</span> : <span class="text-danger font-weight-bold">' + infos_colis[0].nb_elts + '</span></div>' +
+                                        '</div>';
+
+                    contenu = contenu + '<div class="row border-1 border-success mt-3">' +
+                                        '<div class="col-md-3 bordure"><span class="font-weight-bold">Essence</span> : ' + infos_colis[0].essence + '</div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Etat Hygro.</span> : ' + infos_colis[0].etat_hygro + '</div>' +
+                                        '<div class="col-md-5 bordure"><span class="font-weight-bold">Client</span> : ' + infos_colis[0].client + '</div>' +
+                                        '<div class="col-md-2 bordure"><span class="font-weight-bold">Pays</span> : ' + infos_colis[0].pays + '</div>' +
+                                        '<div class="col-md-12 bordure"><span class="font-weight-bold">Destination</span> : ' + infos_colis[0].Destination + '</div>' +
+                                        '</div></div></div><hr>'+
+                                        '<div class="border-1 border-success mt-3 contenu_table"></div>';
+
+                    contenu = contenu + '</div></div>'
+                    //document.querySelector('#source_value').style = "display:inline;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;";
+                    document.querySelector('.contenu_div').innerHTML = contenu;
+
+                    let contenu_table = "";
+
+                    contenu_table = contenu_table + '<div class="col-md-12 text-center"><h3>Infos Eléments</h3>' +
+                        '<table  class="table table-responsive  mx-auto" id="elements" style="border: 1px solid lightgrey; width:100%;">' +
+                        '<thead>' +
+                        '<tr style="background: #e2e3e2;color: black;">' +
+                        '<th>{{ 'Reference' | trans}}</th>' +
+                        '<th class="text-center">Lng</th>' +
+                        '<th class="text-center">Lrg</th>' +
+                        '<th class="text-center">Ep</th>' +
+                        '<th class="text-center">Nb</th>' +
+                        '<th class="text-center">Cubage</th>' +
+                        '<th>{{ 'N° voyage' | trans}}</th>' +
+                        '<th>Usine Origine</th>' +
+                        '<th class="text-center">{{ 'Document' | trans}}</th>' +
+                        '<th class="text-center">{{ 'X' | trans}}</th>' +
+                        '<th class="text-center">{{ 'Y' | trans}}</th>' +
+                        '<th>{{ 'Forest' | trans}}</th>' +
+                        '<th>{{ 'Région' | trans}}</th>' +
+                        '<th>{{ 'Attributaire' | trans}}</th>' +
+                        '</tr>' +
+                        '</thead>' +
+                        '<tbody>' ;
+                    /* Recherche les éléments du colis*/
+
+                    $.ajax({
+                        url : '{{ path('app_portail') }}snvlt/rechercher_colis/elts/' + infos_colis[0].id_colis,
+                        type : 'POST',
+                        success : function (response_json){
+                            let liste_elements = JSON.parse(response_json);
+
+                            if (liste_elements.length > 0){
+
+                                for(var j=0; j < liste_elements.length; j++){
+                                    contenu_table = contenu_table + '<tr style="background-color: #fbfafa; "><td>' + liste_elements[j].billon + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].lng + '</td>' +
+                                        '<td class="text-center" style="border: 1px solid lightgrey">' + liste_elements[j].lrg + '</td>' +
+                                        '<td class="text-center" style="border: 1px solid lightgrey">' + liste_elements[j].ep + '</td>' +
+                                        '<td class="text-center" style="border: 1px solid lightgrey">' + liste_elements[j].nb + '</td>' +
+                                        '<td class="text-center" style="border: 1px solid lightgrey">' + liste_elements[j].vol + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].numpagebrh + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].usine_origine + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].numero_doc + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].x + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].y + '</td>' +
+                                        '<td style="border: 1px solid lightgrey"><span class="badge p-1 text-white" style="background-color: #0c4128;font-size: 16px;"> ' + liste_elements[j].foret + '<span></td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].region + '</td>' +
+                                        '<td style="border: 1px solid lightgrey">' + liste_elements[j].attributaire + '</td></tr>' ;
+                                }
+                                contenu_table = contenu_table + '</tbody>' +
+                                    '</table>' +
+                                    '</div></div>';
+
+                                document.querySelector('.contenu_table').innerHTML = contenu_table;
+                            }
+
+                        }
+                    })
+                    /* Fin de la recherche*/
+
+
+                }
+
+                /*}*/
+            })
+        }
+    </script>
+
+{% endblock %}

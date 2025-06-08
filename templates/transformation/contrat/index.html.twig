@@ -1,0 +1,96 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Contracts{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/wood.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}My Contracts{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('contrat.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="drs">
+                    <thead>
+                    <tr style="background: #febd7f;color: black">
+                        <th>{% trans %}Contract No{% endtrans %}</th>
+                        <th>{% trans %}Client{% endtrans %}</th>
+                        <th>{% trans %}Manager{% endtrans %}</th>
+                        <th>{% trans %}Manager Phone{% endtrans %}</th>
+                        <th>{% trans %}Country{% endtrans %}</th>
+                        <th>{% trans %}Destination{% endtrans %}</th>
+                        <th>{% trans %}Volume Requested{% endtrans %}</th>
+                        <th>{% trans %}Transformation Type{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for contrat in contrats %}
+
+                        {% if (contrat.cloture) %}
+                            <tr class="alert-success">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                                <td class="text-dark fw-bold"><a class="link-dark editBtn" style="font-weight: bold;color: #370905" href="{{ path('contrat.edit', {'id_contrat': contrat.id })}}" id="{{ contrat.id }}">{{ contrat.numeroContrat }}</a></td>
+                                <td>{{ contrat.raisonSocialeClt }}</td>
+                                <td>{{ contrat.personneResource }}</td>
+                                <td>{{ contrat.contactPersonneRessource }}</td>
+                                <td>{{ contrat.pays }}</td>
+                                <td>{{ contrat.destinationColis }}</td>
+                                <td>{{ contrat.volumeDemande }}</td>
+                                <td>
+                                    {%  if (contrat.typeTransfo) %}
+                                        {% if (contrat.typeTransfo.libelle == "DEROULAGE") %}
+                                        <span class="badge bg-success text-white p-2 font-weight-bold">
+                                            {% elseif (contrat.typeTransfo.libelle == "SCIAGE") %}
+                                               <span class="badge bg-danger text-white p-2 font-weight-bold">
+                                             {% else %}
+                                               <span class="badge bg-primary text-white p-2 font-weight-bold">
+                                        {% endif %}
+
+                                   {{ contrat.typeTransfo.libelle }}
+                                           {% else %}
+                                           -
+                                   {% endif %}
+                                           </span>
+                                </td>
+
+                            </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}
+

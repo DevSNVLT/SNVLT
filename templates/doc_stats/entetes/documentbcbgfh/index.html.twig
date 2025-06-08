@@ -1,0 +1,190 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeexploitant) %}
+        {% trans %}SNVLT{% endtrans %} - Mes BCBGFH-FC
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - BCBGFH-FC
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeexploitant) %}
+            Mes BCBGFH-FC
+        {% else %}
+            DOCUMENTS BCBGFH-FC
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+        <div class="bg-white p-2">
+            {% if( app.user.codeOperateur.id == 1) %}
+                <div class="p-1 alert-light">
+                    <select class="foret" name="foret" id="foret">
+                        <option value="0">Tous les BCBGFH-FC</option>
+                        {% for fore in liste_forets %}
+                            <option value="{{ fore.id }}">{{ fore.denomination }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            <div class="div_contenu"></div>
+            <div class="text-center mt-2">
+                <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+            </div>
+        </div>
+    </section>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script>
+
+
+        //Chargement de la liste des BRH pour l'opérateur
+        mes_bcbgfh(0);
+        $('.foret').select2({
+            theme: "classic"
+        });
+        $('#foret').on('change', function (){
+            document.querySelector('.div_contenu').innerHTML = "";
+            mes_bcbgfh(this.value);
+        })
+
+        function mes_bcbgfh(id_foret){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbcbgfh/op/' + id_foret,
+                type: 'POST',
+                success: function(response) {
+
+                    let docbcbgfh_liste = JSON.parse(response);
+                    let contenu = "";
+                    contenu = contenu + '<table class="table" id="my_bcbgfhs" style="width: 100%;border:lightgrey 1px solid;">'
+                    contenu = contenu + '<thead>'
+                    contenu = contenu + '<tr style="background: #4d7304;color: #fffefe; font-weight: bold;width: 100%;">'
+                    contenu = contenu + '<th>{% trans %}BRH No{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Forest{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Cantonment{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Regional Direction{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Delivery date{% endtrans %}</th>'
+                    {% if not app.user.codeexploitant %}
+                    contenu = contenu + '<th>{% trans %}Logger{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Sigle{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Code Logger{% endtrans %}</th>'
+                    {% endif %}
+                    contenu = contenu + '<th>{% trans %}Nb billes{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Nb arbres{% endtrans %}</th>'
+                    contenu = contenu + '<th>{% trans %}Volume{% endtrans %}</th>'
+                    contenu = contenu + '</tr>'
+                    contenu = contenu + '</thead>'
+                    contenu = contenu + '<tbody>'
+                    for(var i = 0; i < docbcbgfh_liste.length ; i++){
+                        if(docbcbgfh_liste[i].etat === false){
+                            contenu = contenu +'<tr class="alert-danger">';
+                        } else if(docbcbgfh_liste[i].volume_bcbgfh > 0) {
+                            contenu = contenu +'<tr class="text-dark" style="background: #fcfcda">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{ path('app_portail') }}snvlt/docbcbgfh/op/pages/' + docbcbgfh_liste[i].id_document_bcbgfh + '" id="' + docbcbgfh_liste[i].id_document_bcbgfh + '" target="_blank">' + docbcbgfh_liste[i].numero_docbcbgfh + '</a></td>' +
+                            '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + docbcbgfh_liste[i].foret  + '</span></td>'+
+                            '<td><span>' + docbcbgfh_liste[i].cantonnement  + '</span></td>'+
+                            '<td><span>' + docbcbgfh_liste[i].dr  + '</span></td>'+
+                            '<td><span>' + docbcbgfh_liste[i].date_delivrance  + '</span></td>';
+                        {% if not app.user.codeexploitant %}
+                        contenu = contenu +'<td><span>' + docbcbgfh_liste[i].exploitant  + '</span></td>'+
+                            '<td><span>' + docbcbgfh_liste[i].sigle  + '</span></td>' +
+                            '<td><span>' + docbcbgfh_liste[i].code_exploitant  + '</span></td>';
+                        {% endif %}
+                        contenu = contenu +'<td>'+ docbcbgfh_liste[i].nb_billes + '</td>';
+                        contenu = contenu +'<td>'+ docbcbgfh_liste[i].nb_arbres + '</td>';
+                        contenu = contenu +'<td>'+ docbcbgfh_liste[i].volume_bcbgfh + '</td></tr>';
+                    }
+                    contenu = contenu + '</tbody>'
+                    contenu = contenu + '</table>'
+
+                    document.querySelector('.div_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+
+                    let aujourdhui = new Date()
+
+                    let table1 = new DataTable('#my_bcbgfhs', {
+                        initComplete: function (settings, json) {
+                            document.querySelector('.spinload').style = "display:none";
+                        },
+                        responsive: true,
+                        //"bDestroy": true,
+                        layout: {
+                            topStart: {
+                                buttons: [
+                                    {
+                                        extend: 'excelHtml5',
+                                        title: 'Documents BRH - ' + aujourdhui.getDay() + '-' + aujourdhui.getMonth() + '-' + aujourdhui.getFullYear()
+                                    }
+                                ]
+                            }
+                        },
+                        colReorder: true,
+                        language: {
+                            processing:     "Traitement en cours...",
+                            search:         "Rechercher&nbsp;:",
+                            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                            infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                            infoPostFix:    "",
+                            loadingRecords: "Chargement en cours...",
+                            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                            emptyTable:     "Aucune donnée disponible dans le tableau",
+                            paginate: {
+                                first:      "Premier",
+                                previous:   "Pr&eacute;c&eacute;dent",
+                                next:       "Suivant",
+                                last:       "Dernier"
+                            },
+                            aria: {
+                                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                            }
+                        }
+                    });
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

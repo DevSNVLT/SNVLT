@@ -1,0 +1,102 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Document{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <img src="{{ asset('assets/images/webapp/doc_gen.png') }}" alt="doc_gen"><a href="#"> {% trans %}Statistical document sheet{% endtrans %} </a>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <section class="section bg-white p-3">
+        <div class="row">
+                <div class="col-md-7 fs-5 fw-bold mb-5"  style="height: 300px;">
+
+                    <table class="table table-stripped" style="height: 300px;overflow-y: auto;">
+                        <thead class=" bg-success text-light">
+                        <tr style="">
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}Document No.{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">{{ document.numeroDoc }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}Document Type{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">{{ document.codeTypeDoc.codeTypeDocStat.abv }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}Number of pages{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">{{ document.pageDocGens.count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}Created at{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">{{ document.createdAt | date('d M Y')  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}By{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">{{ document.createdBy }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-dark fw-bold">{% trans %}Assigned{% endtrans %} :</td>
+                            <td style="color: #2c1bff;font-size: 16px;font-weight: bold">
+                                {% if(document.attribue ) %}
+                                    {% trans %}YES{% endtrans %}
+                                {% else %}
+                                    {% trans %}NO{% endtrans %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <div class="col-md-2  text-center mb-3 mt3" style="height: 300px;">
+                <span class="fw-bold text-dark text-center">{% trans %}Pages{% endtrans %}</span>
+                <ul class="list-group alert-light-primary"  style="height: 300px;overflow-y: auto;">
+                    {% for page in pages %}
+
+                        <li class="list-group-item list-group-item-action text-center font-weight-bold"><a href="#" style="color: #ff572f" id="{{ page.id }}" >{{ page.numpage }}</a></li>
+
+               {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-3 mb-3 mt3"><img src="{{ qr_code_path('/snvlt/secauth/') }}{{ document.uniqueDoc }}" alt=""></div>
+        </div>
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+        $(document).ready(function() {
+            $('.codetype').select2({
+                placeholder: "--Sélectionnez la direction départementale...",
+                theme: "bootstrap-5"
+            });
+
+        });
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Informations Billes{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/billons.png') }}" height="64" alt="requetes">  Informations billes
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <input id="bille" type="text" placeholder="bille" style="font-size: 16px;width:100px; background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+        <a id="btn_search_source" href="#" style="background-color: #fcf378; margin-right:10px; color: black;"><i class="mdi mdi-search-web" style="margin-right: 5px;"></i></a>
+
+        <select  name="source_value" id="source_value"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;display:none;">
+            <option value="0">--Source--</option>
+        </select>
+
+        {#<a id="rechercher_bille" class="btn-danger text-white" href="#" style="margin-left: 10px;border: orangered solid 1px;padding-left: 5px;padding-right: 5px;"><i class="mdi mdi-search-web" style="margin-right: 5px;"></i> rechercher</a>#}
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+            <div class="contenu_div alert-success sticky-top">
+                <h2 class="" style="background: #0b511b; color: white; padding: 5px;">Informations Billes</h2>
+                <div class="text-center"><img src="{{ asset('assets/images/bille.png') }}" alt="requetes" height="75%" class="img-fluid mx-auto my-auto"></div>
+            </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+        $('#btn_search_source').on('click', function (){
+            var valeur = $('#bille').val();
+            recherche_source__bille(valeur);
+        })
+
+        $('#source_value').on('change', function (){
+            var valeur = $('#bille').val();
+            var source = $('#source_value').val();
+            recherche_bille(valeur, source);
+        })
+
+        function recherche_source__bille(numero_bile){
+            let contenu = '<option id="0">--Source--</option>';
+            document.querySelector('#source_value').style = "display:none";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_source/bille/' + numero_bile,
+                type : 'POST',
+                success : function (response){
+                    let liste_pef = JSON.parse(response);
+
+                    if (liste_pef.length === 0){
+                        document.querySelector('#source_value').style = "display:none";
+                    } {
+                        for(var i=0; i < liste_pef.length; i++){
+                            contenu = contenu + '<option value="' + liste_pef[i].id_source + '">' + liste_pef[i].denomination + '</option>'
+                        }
+
+                        document.querySelector('#source_value').style = "display:inline;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;";
+                        document.querySelector('#source_value').innerHTML = contenu;
+                    }
+
+                }
+            })
+        }
+
+        function recherche_bille(numero_bile, numero_source){
+            let contenu = '<h2 style="background: #0b511b; color: white; padding: 5px;">Informations Billes</h2>' +
+                '<div class="row"><div class="col-md-3"><img class="img-fluid" src="{{ asset('assets/images/bille.png') }}" alt="requetes"></div>' +
+                '<div class="col-md-9 p-2"><div class="m-2">';
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_bille/infos/' + numero_bile + '/' + numero_source,
+                type : 'POST',
+                success : function (response){
+                    let infos_bille = JSON.parse(response);
+
+   /*                 if (liste_pef.length === 0){
+                        document.querySelector('#source_value').style = "display:none";
+                    } {*/
+                        /*for(var i=0; i < liste_pef.length; i++){*/
+                    contenu = contenu + '<div class="bg-white"><div class="alert-info text-dark font-weight-bold text-center p-2" style="font-size: 18px;"> <span class="font-weight-bold" >Origine</span></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">N° bille :</span> ' + infos_bille[0].numero_bille + '</div>';
+                            contenu = contenu + '<div class="alert-light p-2"> <span class="font-weight-bold">Inventaire :</span> ' + infos_bille[0].fiche_inventaire + '</div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Essence :</span> <span class="badge p-1 text-white" style="font-size: 16px;background-color: green;color: white">' + infos_bille[0].essence + '</span></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Source :</span> ' + infos_bille[0].source + '</div>';
+                            contenu = contenu + '<div class="bg-white p-2" > <span class="font-weight-bold">Exploitant :</span> ' + infos_bille[0].operateur + '</div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Cantonnement :</span> ' + infos_bille[0].cantonnement + ' [' + infos_bille[0].dr +  ']<hr></div>';
+                            contenu = contenu + '<div class="alert-light p-2 row text-danger" style="margin-left: 2px;margin-right: 2px;"> <u class="font-weight-bold text-dark">Coordonnées cartésiennes</u><div class="col-md-3"><span class="font-weight-bold">Zone H. : </span><span class="badge bg-white  p-1 text-dark" style="font-size: 16px;;"> ' + infos_bille[0].zh + '</span></div><div class="col-md-3"><span class="font-weight-bold">    X : </span><span class="badge bg-white  text-dark p-1 text-white" style="font-size: 16px;;">' + infos_bille[0].x +  '</span></div><div class="col-md-3"><span class="font-weight-bold">    Y : </span><span class="badge bg-white  text-dark p-1 text-white" style="font-size: 16px;">' + infos_bille[0].y +  '</span><a href="#" class="link link-danger" style="margin-left: 10px;">afficher sur la carte</a> </div></div>';
+                            contenu = contenu + '<div class="bg-white p-2 row text-danger" style="margin-left: 2px;margin-right: 2px;"> <u class="font-weight-bold text-dark">Dimensions</u><div class="col-md-3"><span class="font-weight-bold">Longueur : </span><span class="badge bg-primary p-1 text-white" style="font-size: 16px;;"> ' + infos_bille[0].lng + ' cm </span></div><div class="col-md-3"><span class="font-weight-bold">    Diamètre : </span><span class="badge bg-primary p-1 text-white" style="font-size: 16px;;">' + infos_bille[0].dm +  ' cm</span></div><div class="col-md-3"><span class="font-weight-bold">    Cubage : </span><span class="badge bg-primary p-1 text-white" style="font-size: 16px;">' + infos_bille[0].cubage +  ' m<sup>3</sup></span></div></div>';
+                            contenu = contenu + '</div>'
+                            contenu = contenu + '<div class="bg-white mt-2"><div class="alert-info text-dark font-weight-bold text-center p-2" style="font-size: 18px;"> <span class="font-weight-bold" >Acheminement Usine et Déchargement</span></div>';
+                            contenu = contenu + '<div class="row"><div class="col-md-9"><div class="bg-white p-2"> <span class="font-weight-bold">Chauffeur :</span> ' + infos_bille[0].chauffeur + '</div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Immatriculation :</span> ' + infos_bille[0].immat + '</div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Date Chargement :</span><span class="font-weight-bold text-danger">' + infos_bille[0].date_transport + '</span></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Destination :</span><span class="font-weight-bold text-danger">' + infos_bille[0].destination + '</span><hr></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Usine :</span><span class="badge p-1 font-weight-bold text-white rounded-5" style="font-size: 18px;background-color: #0c4128;">' + infos_bille[0].parc_usine + '</span></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Date Déchargement :</span><span class="font-weight-bold text-danger" style="font-size: 18px;">' + infos_bille[0].date_dechargement + '</span></div>';
+                            contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Document LJE N°  :</span><span class="font-weight-bold text-danger" style="font-size: 18px;">' + infos_bille[0].lje + '</span></div></div>';
+                            contenu = contenu + '<div class="col-md-3 "> <img class="img-fluid responsive img-thumbnail" src="{{ asset('images/uploads/brh/') }}' + infos_bille[0].photo + '" alt=""></div></div>';
+
+                            contenu = contenu + '<div class="bg-white mt-2"><div class="alert-info text-dark font-weight-bold text-center p-2" style="font-size: 18px;"> <span class="font-weight-bold" >Transformation et Production</span></div>';
+
+                            if (infos_bille[0].tronconnee === true){
+                                contenu = contenu + '<div class="row"><div class="col-md-9"><div class="bg-white p-2"> <span class="font-weight-bold">Nb Billons :</span> ' + infos_bille[0].nb_billons + '</div>';
+                                contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Billons :</span> ' + infos_bille[0].billons + '</div>';
+                                contenu = contenu + '<div class="bg-white p-2"> <span class="font-weight-bold">Date Chargement :</span><span class="font-weight-bold text-danger">' + infos_bille[0].date_transport + '</span></div>';
+
+                                /*Informations Billons*/
+                                $.ajax({
+                                    url: '{{ path('app_portail') }}snvlt/rechercher_billons/infos/' + numero_bile + '/' + numero_source,
+                                    type: 'POST',
+                                    success: function (response) {
+                                        let infos_billons = JSON.parse(response);
+                                    }
+                                });
+                            }
+                      /* }*/
+                    contenu = contenu + '</div></div></div>'
+                        //document.querySelector('#source_value').style = "display:inline;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;margin-left: 10px;";
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+
+                /*}*/
+            })
+        }
+    </script>
+
+{% endblock %}

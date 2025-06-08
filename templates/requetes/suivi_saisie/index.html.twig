@@ -1,0 +1,556 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Suivi des saisies{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/saisie_brh.png') }}" height="64" alt="requetes">  Suivi des saisies
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <input id="date_debut" type="date" placeholder="date_debut" style="font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;margin-right:5px;">
+        <input id="date_fin" type="date" placeholder="date_fin" style="font-size: 16px; background-color: #f6d9c5; border: 1px solid lightgrey;margin-right:20px;">
+        <a id="btn_search_source" href="#" style="background-color: blue; margin-right:10px; color: white;" title="Rechercher"><i class="mdi mdi-search-web" style="margin-right: 5px;margin-left: 5px;"></i></a>
+        {#<a id="rechercher_bille" class="btn-danger text-white" href="#" style="margin-left: 10px;border: orangered solid 1px;padding-left: 5px;padding-right: 5px;"><i class="mdi mdi-search-web" style="margin-right: 5px;"></i> rechercher</a>#}
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <div class="contenu_div alert-success sticky-top">
+        <h2 class="" style="background: #0b511b; color: white; padding: 5px;">Saisies</h2>
+        
+		<div class="row">
+            <div class="col-md-7">
+			
+			<div class="contenu" style="width: 100%;"></div>
+            </div>
+            <div class="col-md-4 alert-light">
+                <div class="bg-white m-2 p-2" style="border-top: 4px solid orange">
+                    <p class="text-dark alert-info p-1">Cliquez sur une date dans la table ci-dessous pour afficher les performances des utilisateurs</p>
+                    <h4 class="alert-primary fw-bold w-100 p-1" style="width:100%;">Saisies journalières <img src="{{ asset('assets/icons/refresh.png') }}" id="btn_refresh" style="cursor:pointer;"></h4>
+                    <table class="table table-responsive overflow-y-scroll" style="width:100%;height:200px;">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Nb BRH</th>
+                            <th>Nb lignes</th>
+                            <th>Cubage total</th>
+                        </tr>
+                        </thead>
+                        <tbody class="body_performance">
+                        {% for jour in suivi_jour %}
+                            <tr>
+                                <td class="text-dark fw-bold elt_jour"><a class="link-dark dateBtn" style="font-weight: bold;color: #370905;cursor:pointer;" id="{{ jour.idPerformance }}">{{ jour.createdAt | date('d-m-Y') }}</a></td>
+                                <td>{{ jour.nbBrh }}</td>
+                                <td>{{ jour.nbLigne }}</td>
+                                <td class="text-danger">{{ jour.volume }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+                    <h4 class="alert-success fw-bold w-100 p-1" style="width:100%;">Performances Agents</h4>
+
+                    <table class="table table-responsive  overflow-y-scroll" style="width:95%;height:300px;">
+                        <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Nb BRH</th>
+                            <th>Nb lignes</th>
+                            <th>Cubage total</th>
+                        </tr>
+                        </thead>
+                        <tbody class="agents">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#Modification Lignepagebrh GROUPE ADMIN#}
+    <div class="modal fade" id="saisiebrh_dpif" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle"></h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <p class="alert-danger p-1 text-danger">ATTENTION!!! <br>Ne pas modifier les données si vous ne savez pas ce que vous faites!</p>
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+                                <input type="number" value="" id="numero_lignepagebrh_dpif" style="font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;" onload="this.focus()">
+
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select id="nom_essencebrh_dpif" readonly  style="font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une essence ---</option>
+                                    {% for essence in essences %}
+                                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+
+                                <select id="zh_lignepagebrh_dpif"  style="font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une zone ---</option>
+                                    {% for zone in zones %}
+                                        <option value="{{ zone.id }}">{{ zone.zone }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number"  value="" id="x_lignepagebrh_dpif" style="font-weight: bold;font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number"  value="" id="y_lignepagebrh_dpif" style="font-weight: bold;font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;"></div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select  id="lettre_lignepagebrh_dpif" style="font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;font-weight: bold;">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number"  value="" id="longeur_lignepagebrh_dpif" style="font-weight: bold;font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number"  value="" id="diametre_lignepagebrh_dpif" style="font-weight: bold;font-size: 16px;background-color: #f6d9c5; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebrh_dpif" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="save_data_dpif" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Delete Bille-->
+    <div class="modal fade" id="deleteBille" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle">SNVLT - Suppression  Bille</h5>
+                </div>
+                <div class="modal-body">
+                    <label for="motif" class="text-dark font-weight-bold">Voulez-vous vraiment supprimer cette bille ?</label>
+                    <h6  class="text-danger ">Cette action est irreversible</h6>
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-success text-white font-weight-light" data-bs-dismiss="modal" id=""  style="font-size: 16px;">
+                            <i class="mdi mdi-pen text-white ms-4" style="font-size: 24px;margin-right: 5px;"></i>Ne pas supprimer
+                        </a>
+                        <a  class="btn btn-danger font-weight-light supprimer_bille"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-cancel text-white me-2" style="font-size: 24px;margin-right: 5px;"></i> Supprimer
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        let id_bille = 0;
+
+        document.getElementById('date_debut').valueAsDate = new Date();
+        document.getElementById('date_fin').valueAsDate = new Date();
+
+        $('#btn_search_source').on('click', function (){
+            let date_debut = document.getElementById('date_debut').value;
+            let date_fin = document.getElementById('date_fin').value;
+            document.querySelector('.contenu').innerHTML = '<h3 class="text-danger">Chargement des données en cours. Patientez SVP!</h3>';
+            getResults(date_debut, date_fin);
+        })
+		$('#btn_search_source').click();
+        $('body').on('click', '.btn_edit', function (){
+            id_bille = this.id;
+            findSingleResult(this.id);
+        })
+
+        $('body').on('click', '.btn_delete', function (){
+            id_bille = this.id;
+
+        })
+        $('.supprimer_bille').on('click', function (){
+            deleteSingleResult(id_bille);
+        })
+
+        $('body').on('click', '.dateBtn', function (){
+            let date_performance = this.text;
+
+
+            getAgents(date_performance);
+
+            //Affiche la grille
+
+            var dateParts = date_performance.split("-");
+
+            // month is 0-based, that's why we need dataParts[1] - 1
+            var date_select = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+
+            //alert(date_select);
+
+            document.getElementById('date_debut').valueAsDate = date_select;
+            document.getElementById('date_fin').valueAsDate = date_select;
+
+
+            let date_debut = document.getElementById('date_debut').value;
+            let date_fin = document.getElementById('date_fin').value;
+
+            document.querySelector('.contenu').innerHTML = '<h3 class="text-danger">Chargement des données en cours. Patientez SVP!</h3>';
+            getResults(date_debut, date_fin);
+        })
+
+
+        $('#save_data_dpif').on('click', function (){
+
+
+            if (
+                $('#numero_lignepagebrh_dpif').val() === "" ||
+                $('#lettre_lignepagebrh_dpif').val() === "" ||
+                $('#nom_essencebrh_dpif').val() === "" ||
+                $('#x_lignepagebrh_dpif').val() === "" ||
+                $('#y_lignepagebrh_dpif').val() === "" ||
+                $('#longeur_lignepagebrh_dpif').val() === "" ||
+                $('#diametre_lignepagebrh_dpif').val() === "" ||
+                $('#zh_lignepagebrh_dpif').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+                alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+
+            }else if ( $('#longeur_lignepagebrh_dpif').val() > 2000 || $('#longeur_lignepagebrh_dpif').val() < 0 ||
+                $('#diametre_lignepagebrh_dpif').val() > 200 || $('#diametre_lignepagebrh_dpif').val() < 0 ||
+                ($('#x_lignepagebrh_dpif').val()).length > 7 || ($('#x_lignepagebrh_dpif').val()).length  < 6 ||
+                ($('#y_lignepagebrh_dpif').val()).length > 7 || ($('#y_lignepagebrh_dpif').val()).length  < 6
+            ) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: "{% trans %}The values seem to be invalid{% endtrans %}",
+                    padding: '1em'
+                });
+            } else {
+                editElement();
+            }
+
+
+        })
+
+        $('#longeur_lignepagebrh_dpif').on('change', function (){
+            $("#cubage_lignepagebrh_dpif").val(calcul_volume(this.value, $('#diametre_lignepagebrh_dpif').val()))
+        })
+
+        $('#diametre_lignepagebrh_dpif').on('change', function (){
+            $("#cubage_lignepagebrh_dpif").val(calcul_volume($('#longeur_lignepagebrh_dpif').val(), this.value))
+        })
+
+
+        function getResults(date_1, date_2){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/rechercher_saisie/' + date_1 + '/' + date_2 ,
+                type : 'POST',
+                success : function (response){
+                    let liste_saisie = JSON.parse(response);
+
+                    if (liste_saisie.length === 0){
+                        document.querySelector(".contenu").innerHTML = '<h3 class="text-danger">Aucune saisie à cette période</h3>'
+                    } {
+
+                        contenu = contenu + '<table class="table table-responsive sasies_brh bg-white m-2" style="">';
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th>Type</th>';
+                        contenu = contenu + '<th>N°</th>';
+                        contenu = contenu + '<th>Essence</th>';
+                        contenu = contenu + '<th class="text-center">Zone H.</th>';
+                        contenu = contenu + '<th class="text-center">X</th>';
+                        contenu = contenu + '<th class="text-center">Y</th>';
+                        contenu = contenu + '<th class="text-center">Lettre</th>';
+                        contenu = contenu + '<th class="text-center">Longueur</th>';
+                        contenu = contenu + '<th class="text-center">Diamètre</th>';
+                        contenu = contenu + '<th class="text-center">Cubage</th>';
+                        contenu = contenu + '<th class="text-center">Date Chargement</th>';
+                        contenu = contenu + '<th class="text-center">Usine Destination</th>';
+                        contenu = contenu + '<th class="text-center">Forêt</th>';
+                        contenu = contenu + '<th>Exploitant</th>';
+                        contenu = contenu + '<th>Agent</th>';
+                        contenu = contenu + '<th>Date Saisie</th>';
+                        {% if(app.user.codeGroupe.id == 1) %}
+                        contenu = contenu + '<th>Actions</th>';
+                        {% endif %}
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i < liste_saisie.length; i++){
+                            if (liste_saisie[i].type_doc === "BCBGFH"){
+                                contenu = contenu + '<tr class="alert-info">';
+                            } else {
+                                contenu = contenu + '<tr>';
+                            }
+							contenu = contenu + '<td>' + liste_saisie[i].type_doc + '</td>';
+                            contenu = contenu + '<td>' + liste_saisie[i].numero_ligne + '</td>';
+                            contenu = contenu + '<td>' + liste_saisie[i].essence + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].zh + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].x + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].y + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].lettre + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].lng + '</td>';
+                            contenu = contenu + '<td class="text-center">' + liste_saisie[i].dm + '</td>';
+                            contenu = contenu + '<td class="text-center fw-bold">' + liste_saisie[i].cubage + '</td>';
+                            contenu = contenu + '<td class="text-center fw-bold">' + liste_saisie[i].date_chargement + '</td>';
+                            contenu = contenu + '<td class="text-center fw-bold">' + liste_saisie[i].usine + '</td>';
+                            contenu = contenu + '<td class="alert-warning text-center">' + liste_saisie[i].foret + '</td>';
+                            contenu = contenu + '<td class="alert-warning">' + liste_saisie[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="">' + liste_saisie[i].agent + '</td>';
+                            contenu = contenu + '<td class="">' + liste_saisie[i].date_saisie + '</td>';
+                            {% if(app.user.codeGroupe.id == 1) %}
+                            contenu = contenu + '<td><button class="btn-sm btn-success btn_edit" style="margin-right:5px;" id="'+ liste_saisie[i].id + '"   data-bs-toggle="modal" data-bs-target="#saisiebrh_dpif" >Editer</a>';
+                            contenu = contenu + '<button class="btn-sm btn-danger btn_delete ms-2" data-bs-toggle="modal" data-bs-target="#deleteBille" id="'+ liste_saisie[i].id + '" >Supprimer</a></td>';
+                            {% endif %}
+                            contenu = contenu + '</tr>';
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        document.querySelector('.contenu').innerHTML = contenu;
+
+                        //let table1 = new DataTable('.sasies_brh');
+                        let table = new DataTable('.sasies_brh', {
+                            responsive: true,
+                            layout: {
+                                topStart: {
+                                    buttons: ['excel']
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+
+                    }
+
+                }
+            })
+        }
+
+        function findSingleResult(id_bille){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/brh/edit/' + id_bille + '/B2',
+                type : 'POST',
+                success : function (response){
+                    let info_bille = JSON.parse(response);
+
+                    if (info_bille.length > 0){
+                        $('#numero_lignepagebrh_dpif').val(info_bille[0].numero);
+                        $('#nom_essencebrh_dpif').val(info_bille[0].essence);
+                        $('#zh_lignepagebrh_dpif').val(info_bille[0].zh);
+                        $('#x_lignepagebrh_dpif').val(info_bille[0].x);
+                        $('#y_lignepagebrh_dpif').val(info_bille[0].y);
+                        $('#lettre_lignepagebrh_dpif').val(info_bille[0].lettre);
+                        $('#longeur_lignepagebrh_dpif').val(info_bille[0].lng);
+                        $('#diametre_lignepagebrh_dpif').val(info_bille[0].dm);
+                        $('#cubage_lignepagebrh_dpif').val(info_bille[0].cubage);
+
+                    }
+
+                }
+            })
+        }
+
+
+        function editElement(){
+            var obj = {};
+
+            obj.numero_lignepagebrh =  $("#numero_lignepagebrh_dpif").val();
+            obj.lettre_lignepagebrh =  document.querySelector("#lettre_lignepagebrh_dpif").value;
+            obj.nom_essencebrh =  $("#nom_essencebrh_dpif").val();
+            obj.zh_lignepagebrh =  $("#zh_lignepagebrh_dpif").val();
+            obj.x_lignepagebrh =  $("#x_lignepagebrh_dpif").val();
+            obj.y_lignepagebrh =  $("#y_lignepagebrh_dpif").val();
+            obj.longeur_lignepagebrh =  $("#longeur_lignepagebrh_dpif").val();
+            obj.diametre_lignepagebrh =  $("#diametre_lignepagebrh_dpif").val();
+            obj.cubage_lignepagebrh =  $("#cubage_lignepagebrh_dpif").val();
+
+
+            var data = JSON.stringify(obj);
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbrh/op/data/edit_lignes/'  + data + "/" + id_bille,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    //console.log(retour)
+                    alert("Mise à jour effectuée")
+                    let date_debut = document.getElementById('date_debut').value;
+                    let date_fin = document.getElementById('date_fin').value;
+                    document.querySelector('.contenu').innerHTML = '<h3 class="text-danger">Chargement des données en cours. Patientez SVP!</h3>';
+                    getResults(date_debut, date_fin);
+
+
+                }
+            })
+        }
+
+        function getAgents(date_performance){
+            let contenu_agents = "";
+            document.querySelector('.agents').innerHTML = '<h6 class="text-danger">Chargement! Patientez...</h6>';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/performances/users/' + date_performance ,
+                type : 'POST',
+                success : function (response){
+                    let liste_agents = JSON.parse(response);
+
+                    if (liste_agents.length > 0){
+
+
+                        for(var i=0; i < liste_agents.length; i++){
+                            contenu_agents = contenu_agents + '<tr>';
+                            contenu_agents = contenu_agents + '<td><span class="fw-bold badge p-1 text-white" style="background: #0c5460;border-radius: 25px;font-size:14px;">' + liste_agents[i].created_by + '</span></td>';
+                            contenu_agents = contenu_agents + '<td class="text-center">' + liste_agents[i].nb_brh + '</td>';
+                            contenu_agents = contenu_agents + '<td class="text-center text-primary">' + liste_agents[i].nb_ligne + '</td>';
+                            contenu_agents = contenu_agents + '<td class="text-center">' + liste_agents[i].volume + '</td>';
+                            contenu_agents = contenu_agents + '</tr>';
+                        }
+
+                        document.querySelector('.agents').innerHTML = contenu_agents;
+                    }
+
+                }
+            })
+        }
+
+
+        $('#btn_refresh').on('click', function (){
+            refresh_data();
+        })
+
+
+
+        function refresh_data() {
+            let contenu = ""
+
+            document.querySelector('.body_performance').innerHTML = '<h6 class="text-danger">Chargement! Patientez...</h6>';
+            $.ajax({
+                url : '{{ path('performances_jours') }}',
+                type : 'POST',
+                success : function (response){
+                    let liste_jours = JSON.parse(response);
+
+                    if (liste_jours.length > 0){
+
+
+                        for(var i=0; i < liste_jours.length; i++){
+
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="text-dark fw-bold elt_jour"><a class="link-dark dateBtn" style="font-weight: bold;color: #370905;cursor:pointer;" id="'  + liste_jours[i].id_performance +  '">'  + liste_jours[i].created_at + '</a></td>';
+                            contenu = contenu + '<td class="">' + liste_jours[i].nb_brh + '</td>';
+                            contenu = contenu + '<td class="">' + liste_jours[i].nb_ligne + '</td>';
+                            contenu = contenu + '<td class="text-danger">' + liste_jours[i].volume + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+
+                        document.querySelector('.body_performance').innerHTML = contenu;
+                    }
+
+                }
+            })
+        }
+
+
+        function deleteSingleResult(id_bille){
+            let contenu = "";
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/brh/del/' + id_bille + '/B1',
+                type : 'POST',
+                success : function (response){
+                    let info_bille = JSON.parse(response);
+
+                    if (info_bille[0].valeur === "SUCCESS"){
+                        alert('Bille supprimée')
+						document.location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression')
+                    }
+
+                }
+            })
+        }
+
+		
+
+    </script>
+
+{% endblock %}

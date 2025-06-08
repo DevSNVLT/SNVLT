@@ -1,0 +1,857 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Statistiques mensuelles
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/search_doc.png') }}" height="64" alt="requetes">  Statistiques mensuelles sur l'exploitation
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <div class="bg-white" style="min-height: 500px; border: 1px lightblue solid;">
+        <div class="p-1 alert-primary text-center">
+            <label class="ms-2" for="foret" style="font-size: 19px;">Critère</label>
+            <select class="ms-2" name="critere" id="critere" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                <option value="1">Par Exploitant</option>
+                <option value="2">Par Forêt</option>
+                <option value="3">Par Essence</option>
+            </select>
+            <div class="exploitant" style="display: none;">
+                <label class="ms-2" for="foret" style="font-size: 19px;">Exploitant</label>
+                <select class="ms-2" name="exploitant" id="exploitant" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for exploitant in exploitants %}
+                        {% if (exploitant.sigle) %}
+                            <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                        {% else %}
+                            <option value="{{ exploitant.id }}">{{ exploitant.raisonSocialeExploitant }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="foret" style="display: none;">
+                <label class="ms-2" for="foret" style="font-size: 19px;">Forêt</label>
+                <select class="ms-2" name="foret" id="foret" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for foret in forets %}
+                        <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="essence" style="display: none;">
+                <label class="ms-2" for="essence" style="font-size: 19px;">Essence</label>
+                <select class="ms-2" name="essence" id="essence" style="height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    {% for essence in essences %}
+                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <label for="foret ms-4 mt-2" style="font-size: 19px;margin-left: 50px;">Exercice</label>
+            <select class="ms-2 text-center"  name="exercice" id="exercice" style="height: 30px;width: 100px;background: white;font-size: 18px;border:1px lightgrey solid;margin-left: 5px;">
+                {% for exercice in exercices %}
+                    <option value="{{ exercice.id }}">{{ exercice.annee }}</option>
+                {% endfor %}
+            </select>
+            <div style="font-size: 19px;float: right;">
+                <label for="foret" style="font-size: 19px;">Afficher Par mois ?</label>
+                <input type="checkbox" style="font-size: 24px;" id="chk">
+                <select class="ms-2" name="mois" id="mois" style="display:none; height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;">
+                    <option value="1">Janvier</option>
+                    <option value="2">Février</option>
+                    <option value="3">Mars</option>
+                    <option value="4">Avril</option>
+                    <option value="5">Mai</option>
+                    <option value="6">Juin</option>
+                    <option value="7">Juillet</option>
+                    <option value="8">Août</option>
+                    <option value="9">Septembre</option>
+                    <option value="10">Octobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Décembre</option>
+                </select>
+                <a class="btn btn-primary btn-sm" style="height: 30px;font-size: 16px;margin-left:15px;" id="btn_rechercher">Rechercher</a>
+            </div>
+        </div>
+
+        <div class="row p-4">
+            <div class="alert-light stats_generales col-md-3" style="min-height: 700px;margin: 5px;">
+
+            </div>
+            <div class="stats_div  col-md-8 m-2  border">
+                <div class="text-center">
+                    <img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="300" style="margin-top: -8px;">
+                </div>
+                <div class="contenu_div p-2">
+                    <div class="text-center">
+                        <img class="mx-auto" src="{{ asset('assets/images/stats_mensuelles.png') }}"  alt="stock_image">
+                        <h3 class="text-danger">Statistiques Exploitation</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script>
+
+        document.querySelector('.spinload').style = "display:none";
+        document.querySelector('#critere').value = null;
+
+        let exo = document.querySelector('#exercice');
+        rechercher_tous_les_mois(exo.value)
+
+        $("#exercice").on('change', function (){
+            rechercher_tous_les_mois(this.value)
+        })
+
+        $("#chk").on('click', function (){
+
+               if (this.checked){
+                   document.querySelector('#mois').style = " height: 30px;max-width: 250px;background: white;font-size: 19px;border:1px lightgrey solid;margin-left: 5px;";
+               } else {
+                   document.querySelector('#mois').style = "display:none";
+                   }
+            })
+
+        $('#critere').on('change', function () {
+            let value = this.value
+            document.querySelector('.foret').style= "display:none;"
+            document.querySelector('.exploitant').style= "display:none;"
+            document.querySelector('.essence').style= "display:none;"
+            document.querySelector('#foret').value= null
+            document.querySelector('#exploitant').value = null
+            document.querySelector('#essence').value = null
+
+
+            document.querySelector('.contenu_div').innerHTML = "";
+            if(value === "0" ){
+                document.querySelector('.foret').style= "display:none;"
+                document.querySelector('.exploitant').style= "display:none;"
+                document.querySelector('.essence').style= "display:none;"
+            } else if(value === "1" ){
+                document.querySelector('.exploitant').style= "display:inline;"
+            } else if(value === "2" ){
+                document.querySelector('.foret').style= "display:inline;"
+            } else if(value === "3" ){
+                document.querySelector('.essence').style= "display:inline;"
+            }
+        });
+        $('#btn_rechercher').on('click', function (){
+
+            let critere = document.getElementById('critere').value;
+            let foret = document.getElementById('foret').value;
+            let exploitant = document.getElementById('exploitant').value;
+            let essence = document.getElementById('essence').value;
+            let exercice = document.getElementById('exercice').value;
+            let mois = document.getElementById('mois').value;
+            let chk = document.getElementById('chk');
+            if (exercice === ""){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: 'Liste des arbres',
+                    html: "<h4 class='text-danger'>Sélectionnez une année d'exercice avant de continuer SVP!</h4>",
+                    padding: '1em'
+                });
+            } else {
+                if ( critere === ""){
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: 'Liste des arbres',
+                        html: "<h4 class='text-danger'>Sélectionnez un critère avant de continuer SVP!</h4>",
+                        padding: '1em'
+                    });
+                } else if (critere === "1" && exploitant === ""){
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: 'Liste des arbres',
+                        html: "<h4 class='text-danger'>Sélectionnez un exploitant avant de continuer SVP!</h4>",
+                        padding: '1em'
+                    });
+                } else if (critere === "2" && foret === ""){
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: 'Liste des arbres',
+                        html: "<h4 class='text-danger'>Sélectionnez une forêt avant de continuer SVP!</h4>",
+                        padding: '1em'
+                    });
+                } else if (critere === "3" && essence === ""){
+                    Swal.fire({
+                        toast: true,
+                        background: '#f8e9e9',
+                        icon: "error",
+                        allowEscapeKey: false,
+                        title: 'Liste des arbres',
+                        html: "<h4 class='text-danger'>Sélectionnez une essence forestière avant de continuer SVP!</h4>",
+                        padding: '1em'
+                    });
+                } else {
+                    document.querySelector('.spinload').style = "display:inline;margin-top: -8px;";
+                    document.querySelector('.contenu_div').innerHTML = "";
+                    if (critere === "1"){
+                        if(!chk.checked){
+                            rechercher_exploitant(exploitant, exercice)
+                        } else {
+                            rechercher_exploitant_mois(exploitant, mois, exercice)
+                        }
+
+                    } else if (critere === "2"){
+                        if(!chk.checked){
+                            rechercher_foret(foret, exercice)
+                        } else {
+                            rechercher_foret_mois(foret, mois, exercice)
+                        }
+
+                    } else if (critere === "3"){
+                        if(!chk.checked){
+                            rechercher_essence(essence, exercice)
+                        } else {
+                            rechercher_essence_mois(essence, mois, exercice)
+                        }
+
+                    }
+
+                }
+            }
+
+        });
+
+        function rechercher_foret(foret, exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let foret_denomination= document.querySelector('#foret');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de la forêt '+ foret_denomination.options[foret_denomination.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/foret/' + foret + '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="text" style="width: 0;">N° Mois</th>';
+                        contenu = contenu + '<th class="">Mois</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].numero_mois + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].mois + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].foret
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats mensuelles - Forêt : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_exploitant(exploitant, exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let rs= document.querySelector('#exploitant');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de la société forestière '+ rs.options[rs.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/exploitant/' + exploitant + '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="" style="width: 0;">N° Mois</th>';
+                        contenu = contenu + '<th class="">Mois</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].numero_mois + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].mois + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].exploitant
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats mensuelles - Forêt : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_essence(essence, exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let essence_denomination= document.querySelector('#essence');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de l\'essence '+ essence_denomination.options[essence_denomination.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/essence/' + essence + '/' + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="" style="width: 0;">N° Mois</th>';
+                        contenu = contenu + '<th class="">Mois</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].numero_mois + '</td>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].mois + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].essence
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats mensuelles - Forêt : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+
+        function rechercher_exploitant_mois(exploitant, mois,  exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let denomination_foret = document.querySelector('#exploitant');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de la société foreetière '+ denomination_foret.options[denomination_foret.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/exploitant/mois/' + exploitant + '/' + mois + '/'  + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="">Essence</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].essence + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].exploitant + " - Mois de : " + document.querySelector('#mois').options[document.querySelector('#mois').selectedIndex].text
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats Mensuelles - Exploitant : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+        function rechercher_foret_mois(foret, mois,  exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let denomination_foret = document.querySelector('#foret');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de la forêt '+ denomination_foret.options[denomination_foret.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/foret/mois/' + foret + '/' + mois + '/'  + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class="">Essence</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold">' + liste_chr[i].essence + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].foret + " - Mois de : " + document.querySelector('#mois').options[document.querySelector('#mois').selectedIndex].text
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats Mensuelles - Forêt : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+        function rechercher_essence_mois(foret, mois,  exercice){
+            let contenu = "";
+            let denomination = "";
+            let nb_billes = 0;
+            let volume_total = 0;
+            let essence = document.querySelector('#essence');
+            document.querySelector(".contenu_div").innerHTML ='<h4 class="mx-auto text-center">Chargement des données de l\'essence '+ essence.options[essence.selectedIndex].text + '</h4><h2 class="text-danger text-center">Cette opération peut être longue. Merci de patienter!</h2>';
+
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/essence/mois/' + foret + '/' + mois + '/'  + exercice ,
+                type : 'POST',
+                success : function (response){
+
+                    let liste_chr = JSON.parse(response);
+
+                    if (liste_chr.length > 0){
+                        contenu = '<div class="alert-secondary text-dark info_donnees"></div>'
+                        contenu = contenu + '<table class="table border-2" style="border:solid lightgrey 1px;" id="tbl_donnees">'
+                        contenu = contenu + '<thead>';
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<th class=" text-center">Forêt</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Nb Billes</th>';
+                        contenu = contenu + '<th class="text-center alert-warning">Volume</th>';
+                        contenu = contenu + '</tr>';
+                        contenu = contenu + '</thead>';
+                        contenu = contenu + '<tbody>';
+
+                        for(var i=0; i< liste_chr.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td class="font-weight-bold text-center">' + liste_chr[i].foret + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].nb_billes).toLocaleString() + '</td>';
+                            contenu = contenu + '<td class="text-center alert-warning">' + (liste_chr[i].volume).toLocaleString() + '</td>';
+                            contenu = contenu + '</tr>';
+                            nb_billes = nb_billes + liste_chr[i].nb_billes ;
+                            volume_total = volume_total + liste_chr[i].volume
+                        }
+                        contenu = contenu + '</tbody>';
+                        contenu = contenu + '</table>';
+                        denomination = liste_chr[0].essence + " - Mois de : " + document.querySelector('#mois').options[document.querySelector('#mois').selectedIndex].text
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                        document.querySelector('.info_donnees').innerHTML = '<h4 class="font-weight-light ms-2">Nombre de billes : <span class="h4 font-weight-bold">'+ nb_billes.toLocaleString() + '</span><span class="h4 font-weight-light" style="margin-left: 25px;">Volume total : <span class="font-weight-bold">'+ volume_total.toLocaleString() + '</span> m<sup>3</sup></span></h4>';
+
+                        let table = new DataTable('#tbl_donnees', {
+                            responsive: true,
+                            pageLength: 20,
+                            layout: {
+                                topStart: {
+                                    buttons: [
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: 'Stats Mensuelles - Essence : ' + denomination,
+                                            text: 'Exporter en excel',
+
+                                        }
+                                    ]
+                                }
+                            },
+                            colReorder: true,
+                            language: {
+                                processing:     "Traitement en cours...",
+                                search:         "Rechercher&nbsp;:",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                                infoPostFix:    "",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                emptyTable:     "Aucune donnée disponible dans le tableau",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                                aria: {
+                                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                                }
+                            }
+                        });
+                    } else {
+                        contenu = '<h2 class="text-danger text-center">Désolé! Aucune donnée pour ces critères</h2>'
+                        document.querySelector('.contenu_div').innerHTML = contenu;
+                    }
+                    document.querySelector('.spinload').style = "display:none;";
+
+                }
+            })
+        }
+        function rechercher_tous_les_mois(exercice){
+                let contenu = "";
+                let exo = document.querySelector('#exercice');
+                document.querySelector('.stats_generales').innerHTML = '<h5 class="text-danger" style="font-size: 18px;;">Chargement Stats générales en cours...</h5>'
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/req/exploitation/stats/tous-les-mois/' + exercice ,
+                    type : 'POST',
+                    success : function (response){
+                        let liste_mois = JSON.parse(response);
+                        if (liste_mois.length > 0){
+                            contenu = '<h3 class="text-primary text-center">Statistiques Générales sur l\'exercice ' + exo.options[exo.selectedIndex].text + '</h3>'
+                            contenu = contenu + '<h3 class="text-center"><a class="btn btn-danger h3 p-1 mt-2 mb-2">Exporter les données</a></h3>'
+                            contenu = contenu + '<table class="table border">'
+                            contenu = contenu + '<thead>'
+                            contenu = contenu + '<tr>'
+                            contenu = contenu + '<th style="background: #fcf7f7;font-size: 18px;;">Mois</th>'
+                            contenu = contenu + '<th style="background: #fcf7f7;font-size: 18px;;">volume</th>'
+                            contenu = contenu + '<th style="background: #fcf7f7;font-size: 18px;;">Nb Billes</th>'
+                            contenu = contenu + '</tr>'
+                            contenu = contenu + '</thead>'
+                            contenu = contenu + '<tbody class="contenu_mois">'
+
+                            for(var i=0; i< liste_mois.length; i++){
+                                contenu = contenu + '<tr class="bg-white">';
+                                contenu = contenu + '<td class="font-weight-bold text-dark" style="font-size: 18px;;">' + liste_mois[i].mois + '</td>';
+                                contenu = contenu + '<td class="text-center alert-success font-weight-bold text-dark" style="font-size: 18px;;">' + (liste_mois[i].volume).toLocaleString() + '</td>';
+                                contenu = contenu + '<td class="text-center alert-success font-weight-bold text-dark" style="font-size: 18px;;">' + (liste_mois[i].nb_billes).toLocaleString() + '</td>';
+                                contenu = contenu + '</tr>';
+                            }
+
+                            contenu = contenu + '</tbody>'
+                            contenu = contenu + '</table>';
+                        } else {
+                            contenu = '<h5 class="text-danger font-weight-light">Aucune donnée recueillie</h5>'
+                        }
+                        document.querySelector('.stats_generales').innerHTML = contenu;
+
+                    }
+                })
+            }
+    </script>
+
+{% endblock %}

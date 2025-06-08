@@ -1,0 +1,124 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} -
+    {% if (app.user.codeexploitant) %}
+        Mes Carnets de Chantier [CC]
+    {% else %}
+        Carnets de Chantier
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeexploitant) %}
+            Mes Carnets de Chantier [CC]
+        {% else %}
+            Carnets de Chantier
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-warning" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body"  id="body_contenu">
+                <h2 class="text-danger">Chargement CC</h2>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+        //Chargement de la liste des CC pour l'opérateur
+        $(document).ready(function () {
+            mes_cp();
+        })
+
+
+        function mes_cp(){
+            $('#chargement_snvlt').modal('show');
+            $.ajax({
+                url: '{{ path('app_docs_cp_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let doccp_liste = JSON.parse(response);
+                    let contenu = ""
+                    contenu = contenu + '<table class="table table-responsive" id="my_cps" style="width: 100%;border: solid 1px lightgrey">' +
+                        '<thead>' +
+                    '<tr style="background: lightgreen;color: #3f3e3e; font-weight: bold;">' +
+                    '<th>CC N°</th>' +
+                    '<th class="text-center">{% trans %}Forest{% endtrans %}</th>' +
+                    '<th>{% trans %}Cantonment{% endtrans %}</th>' +
+                    '<th>{% trans %}Regional Direction{% endtrans %}</th>' +
+                    '<th>{% trans %}Delivery date{% endtrans %}</th>' +
+                                {% if not app.user.codeexploitant %}
+                    '<th>{% trans %}Logger{% endtrans %}</th>' +
+                    '<th>{% trans %}Code Logger{% endtrans %}</th>' +
+                                {% endif %}
+                    '<th>{% trans %}Volume{% endtrans %}</th>' +
+                    '<th>{% trans %}Number of trees{% endtrans %}</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>';
+
+
+                    for(var i = 0; i < doccp_liste.length ; i++){
+                        if(doccp_liste[i].etat === false){
+                        contenu = contenu +'<tr class="alert-danger">';
+                        } else if(doccp_liste[i].volume_arbre > 0) {
+                            contenu = contenu +'<tr class="text-dark" style="background: #fcfcda">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                                contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 18px;" href="{{ path('app_portail') }}snvlt/doccp/op/pages/' + doccp_liste[i].id_document_cp + '" id="' + doccp_liste[i].id_document_cp + '">' + doccp_liste[i].numero_doccp + '</a></td>' +
+                                '<td><span class="badge p-1 bg-warning font-weight-bold text-center" style="font-size: 16px;"> ' + doccp_liste[i].foret  + '</span></td>'+
+                                '<td><span>' + doccp_liste[i].cantonnement  + '</span></td>'+
+                                '<td><span>' + doccp_liste[i].dr  + '</span></td>'+
+                                '<td><span>' + doccp_liste[i].date_delivrance  + '</span></td>';
+                                {% if not app.user.codeexploitant %}
+                                contenu = contenu +'<td><span>' + doccp_liste[i].exploitant  + '</span></td>'+
+                                                    '<td><span>' + doccp_liste[i].code_exploitant  + '</span></td>';
+                                {% endif %}
+                                contenu = contenu +'<td>'+ doccp_liste[i].volume_arbre + '</td>';
+                                contenu = contenu +'<td class="font-weight-bold text-danger">'+ doccp_liste[i].nb_arbres + '</td></tr>';
+                    }
+                    contenu = contenu +'</tbody></table>';
+
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_cps');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                    $('#chargement_snvlt .btn-close').click();
+                },
+                error: function(error) {
+                    console.log(error);
+                    render_toast_value("Erreur dans le chargement des données CP", 0)
+                    $('#chargement_snvlt .btn-close').click();
+                }
+            })
+
+        }
+
+    </script>
+{% endblock %}

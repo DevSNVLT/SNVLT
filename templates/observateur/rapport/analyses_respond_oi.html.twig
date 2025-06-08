@@ -1,0 +1,183 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Commission Analyse{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="rapport"> Complétez l'analyse CAROI sur le Rapport N° {{ analyse.codeRapport.id}} - <span class="badge p-2 bg-danger text-white" style="font-size: 16px;" >{{ analyse.codeRapport.codeOi.sigle }}</span>
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <section class="section">
+        <h3 class="bg-warning text-dark text-center">{{ analyse.codeRapport.libelle }}</h3>
+        <div class="card">
+            <div class="card-body row">
+                <div class="col-md-4 p-3" style="border: lightgrey solid 1px;background: #f6f8fb;">
+                    <input class="form-control text-center text-white font-weight-bold" type="text" id="numero_ligne" readonly style="background: #046c1b;font-size: 20px;width: 100%;" value="{{ analyse.numeroLigne }}">
+                    {% if (analyse.codeRapport.statut == "Publication") %}
+                        <div class="p-3 m-1 text-center" style="border: lightgrey solid 1px;background-color: #108e5d;">
+                            <span class="text-white  mx-auto my-auto" style="font-size: 32px;">Ce rapport a été accepté et publié par le CAROI</span>
+                            <a href="{{ asset('images/uploads/reports//') }}{{ dernier_analyse.fichier }}" target="_blank" class="btn p-4 mt-4 mb-2 text-white font-weight-light" style="background-color: orangered;font-size: 24px;">Télécharger le rapport</a>
+                        </div>
+                    {% elseif (analyse.codeRapport.statut == "REJETTE") %}
+                        <div class="p-3 m-1 text-center" style="border: lightgrey solid 1px;background-color: #fc0303;">
+                            <span class="text-white  mx-auto my-auto" style="font-size: 32px;">PUBLICATION REFUSEE</span>
+                        </div>
+                    {% elseif(dernier_analyse.fichier and dernier_analyse.fichierRecommande) %}
+                        <div class="p-2 mt-2 text-white text-center" style="background-color: #bd4700;font-size: 20px; width:100%;">Cette recommandation a déjà été traitée</div>
+                        {% if(dernier_analyse.statut == "Prise en Compte des propositions") %}
+                            <h1 class="text-center mt-3 mb-3">ou</h1>
+                            <div class="text-center">
+                                <a class="p-2 mt-2 bg-warning text-dark text-center" id="btn_reinitialiser" href="#" style="font-size: 20px; width:100%;">Renvoyez un nouveau rapport final</a>
+                            </div>
+
+                        {% endif %}
+                    {%  elseif(dernier_analyse.fichier and not dernier_analyse.fichierRecommande)  %}
+                        <h2 class="mt-2 p-2" style="background: #075a25; color: white;">Aucune recommendation disponible</h2>
+                      {% else%}
+                        {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+
+
+                        {% if (analyse.fichier) %}
+                            <h2 class="mt-2 p-2" style="background: #075a25; color: white;">Aucune recommendation disponible</h2>
+                        {% else %}
+                            <div class="">{{ form_row(form.fichier) }}</div>
+                            <button type="submit"   class="btn btn-primary mt-2" style="width: 100%;font-size: 20px;" id="btn_valider">Envoyer le rapport</button>
+                        {% endif %}
+
+                        {{ form_end(form) }}
+                    {% endif %}
+
+                </div>
+                <div class="col-md-8 p-3"  style="border: lightgrey solid 1px;background: #f6f8fb;">
+                    <table class="table" id="tbl_analyse" style="border: lightgrey solid 1px;background: white">
+                        <thead>
+                        <tr style="background: #2e5b66;color: #ffffff">
+                            <th>{% trans %}N°{% endtrans %}</th>
+                            <th>{% trans %}Décision{% endtrans %}</th>
+                            <th>{% trans %}Status{% endtrans %}</th>
+                            <th>{% trans %}Date {% endtrans %}</th>
+                            <th>{% trans %}Recommendation{% endtrans %}</th>
+                            <th>{% trans %}Date {% endtrans %}</th>
+                            <th>{% trans %}fichier{% endtrans %}</th>
+                        </tr>
+                        </thead>
+                        <tbody id="contenu_body">
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <hr>
+            {% if (analyse.codeRapport.statut == "REJETTE") %}
+            <div class="alert-danger">
+                    <div class="container">
+                        <h2 class="text-white p-1 font-weight-light text-center text-white" style="background-color: #d60817">Rapport soumis - <span class="badge p-1 bg-white text-danger rounded-5" style="font-size: 18px;">REJETTE</span></h2>
+                        <iframe style="background-color: #e49696" src="{{ asset('images/uploads/reports/') }}{{ analyse.codeRapport.fichier }}" height="800" width="100%"></iframe>
+                    </div>
+                </div>
+            {% else  %}
+                <div class="bg-secondary">
+                    <div class="container">
+                        {% if (analyse.codeRapport.statut == "Publication") %}
+                            <h2 class="text-white p-1 font-weight-light text-center" style="background-color: #036b85">Rapport final</h2>
+                            <iframe src="{{ asset('images/uploads/reports/') }}{{ dernier_analyse.fichier }}" height="800" width="100%"></iframe>
+                        {% elseif (dernier_analyse.fichierRecommande)%}
+                            <h4 class="text-white p-1 font-weight-light text-center" style="background-color: #036b85">Dernière recommendation CAROI</h4>
+                            <iframe src="{{ asset('images/uploads/reports/caroi/') }}{{ dernier_analyse.fichierRecommande }}" height="800" width="100%"></iframe>
+                            {% else %}
+                                <div class="p-3 m-1 text-center" style="border: lightgrey solid 1px;background-color: #fc7b03;">
+                                    <span class="text-white  mx-auto my-auto" style="font-size: 32px;">En attente de la décision du CAROI</span>
+                                </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+
+    <script>
+
+        let count_analyse = 0;
+        count_analyse = {{ analyse.codeRapport.analyseRapports.count }} + 1;
+
+        //Dernier numero Analyse
+        //$('#numero_ligne').val("{#{{ analyse.codeRapport.id }}#}-" + count_analyse)
+
+        //Liste des analyse sur le rapport
+        charge_lignes({{ analyse.codeRapport.id }})
+
+        $('#btn_reinitialiser').on('click', function (){
+            reinitialiser_fichier({{ analyse.codeRapport.id }})
+        })
+
+        /*---------------------- Fonctions -----------------------------*/
+
+
+        function reinitialiser_fichier(id_rapport){
+            let contenu = ""
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/analyse/oi/init/'  + id_rapport ,
+                'type': 'POST',
+                success: function(response) {
+                    document.location.reload();
+                }
+            })
+        }
+
+
+        function charge_lignes(id_rapport){
+            let contenu = ""
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/analyse/caroi/list/'  + id_rapport ,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    for (var i = 0; i < retour.length; i++){
+                        contenu = contenu + '<tr><td>' + retour[i].numero + '</td>' +
+                            '<td>' + retour[i].resume + '</td>' +
+                            '<td>' + retour[i].statut.replaceAll('-', '\\') + '</td>' ;
+
+                        if(retour[i].recommendation){
+                            contenu = contenu +'<td class="text-center"><a target="_blank" href="{{ asset('images/uploads/reports/caroi/') }}' + retour[i].recommendation + '"><img src="{{ asset('assets/images/export64.png') }}" style="height:24px;width:24px;"></a></td>';
+                        }else {
+                            contenu = contenu +'<td class="text-center">-</td>';
+                        }
+
+                        if(retour[i].fichier){
+                            contenu = contenu +'<td class="text-center"><a target="_blank" href="{{ asset('images/uploads/reports/') }}' + retour[i].fichier + '"><img src="{{ asset('assets/icons/acrobat.png') }}" style="height:24px;width:24px;"></a></td></tr>';
+                        }else {
+                            contenu = contenu +'<td class="text-center">-</td></tr>';
+                        }
+
+
+
+                    }
+                    document.querySelector('#contenu_body').innerHTML = contenu;
+                }
+            })
+        }
+    </script>
+{% endblock %}

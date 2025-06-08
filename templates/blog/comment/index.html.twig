@@ -1,0 +1,11 @@
+{% set username = comment.utilisateur %}
+<div class="single-comment-body"  id="comment-{{ comment.id }}">
+    <div class="comment-user-avater">
+<img src="{{ asset('uploads/abonnes/') }}{{ comment.utilisateur.avatar }}" alt="">
+</div>
+<div class="comment-text-body">
+    <h4>{{ comment.utilisateur.pseudo }} <span class="comment-date">{{ comment.createdAt | date('d M Y à H:i:s')  }}</span> <a href="#">repondre</a></h4>
+    <p>{{ comment.content }}</p>
+</div>
+</div>
+

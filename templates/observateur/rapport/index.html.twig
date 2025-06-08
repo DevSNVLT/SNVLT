@@ -1,0 +1,112 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Rapports{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Publication de rapports{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-warning text-dark font-weight-light p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('add_rapport') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Ajouter un rapport{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <span>Cliquez sur le rapport pour afficher l'avancement</span>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="oi">
+                    <thead>
+                    <tr style="background: linear-gradient(#b2f0ea,#d0eaf2);color: #323030">
+                        <th>{% trans %}N°{% endtrans %}</th>
+                        <th>{% trans %}Sujet{% endtrans %}</th>
+                        <th class="text-center">{% trans %}Nb recommendations{% endtrans %}</th>
+                        <th class="text-center">{% trans %}Recipiendaires{% endtrans %}</th>
+                        <th class="text-center">{% trans %}Status{% endtrans %}</th>
+                        <th class="text-center">{% trans %}File{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for rp in mes_rapports %}
+                            <tr>
+                                <td class="font-weight-bold text-danger" style="font-size: 18px;">{{ rp.id }}</td>
+                                <td><a class="alert-light p-1" style="font-size: 16px;" href="{{ path('infos_admin_analyse_fiche_oi_respond', {'id_rapport': rp.id })}}">
+                                        {% if (rp.libelle | length > 99 ) %}
+                                        {{ rp.libelle | slice(0,100)}}...
+                                        {% else %}
+                                         {{ rp.libelle }}
+                                        {% endif %}
+                                    </a>
+                                </td>
+                                <td class="text-center">{{ rp.analyseRapports.count -1 }}</td>
+                                <td style="border: 1px solid lightgrey;background: #fbfcf4;width: 300px;">
+                                    {% for dr_rec in rp.codeDirection %}
+                                        <span class="badge bg-primary p-1 font-weight-light m-1 text-white" style="font-size: 13px;">{{ dr_rec.sigle }}</span>
+                                    {% endfor %}
+                                    {% for dr_rec in rp.codeServiceMinef %}
+                                        <span class="badge bg-success p-1 font-weight-light m-1 text-white" style="font-size: 13px;">{{ dr_rec.sigle }}</span>
+                                    {% endfor %}
+                                    {% for dr_rec in rp.codeDr %}
+                                        <span class="badge bg-warning p-1 font-weight-light m-1 text-dark" style="font-size: 13px;">{{ dr_rec.denomination }}</span>
+                                    {% endfor %}
+                                    {% for dr_rec in rp.codeCef %}
+                                        <span class="badge bg-secondary p-1 font-weight-light m-1 text-white" style="font-size: 13px;">{{ dr_rec.nomCantonnement }}</span>
+                                    {% endfor %}
+
+                                        {% for fc in rp.codeforet %}
+                                            {% if (fc.codeUgf) %}
+                                                <span class="badge alert-danger p-1 font-weight-light m-1" style="font-size: 13px;">UGF - {{ fc.codeUgf.denomination }}</span>
+                                                <span class="badge p-1 font-weight-light m-1 text-white" style="font-size: 13px;background: darkgreen">CG - {{ fc.codeUgf.codeDcg.denomination }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                </td>
+                                <td class="text-center">
+                                      {% if (rp.statut == "PROPOSITION") %}
+                                    <span class="bg-warning p-2" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "EN COURS") %}
+                                    <span class="alert-success p-2" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "REJETTE") %}
+                                    <span class="bg-danger p-2 text-white" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "A CONCLURE") %}
+                                    <span class="bg-info p-2 text-white" style="border-radius: 10px;">
+                                      {% elseif (rp.statut == "PUBLIE") %}
+                                    <span class="bg-success p-2 text-white" style="border-radius: 10px;">
+                                      {% endif %}
+                                        {{ rp.statut }}
+                                    </span>
+                                </td>
+                                <td><a href="{{ asset('images/uploads/reports/') }}{{ rp.fichier }}" target="_blank"><img src="{{ asset('assets/icons/pdf_download.png') }}" alt="ficher"></a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#oi');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+{% endblock %}

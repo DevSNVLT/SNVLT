@@ -1,0 +1,199 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Forest Prospection{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/foret.png') }}" alt="forest">  {% trans %}Forest Prospection{% endtrans %}
+    </h2>
+    <div class="mb-2 mt-2">
+        <span id="lbl_exploitant" class="h5 text-danger font-weight-bold"></span>
+        <select name="exploitant" id="exploitant" data-placeholder="exploitant" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+            <option value="0">Exploitants forestiers</option>
+            {% for exploitant in exploitants %}
+                {% if (exploitant.sigle) %}
+                    <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                {% else %}
+                    <option>{{ exploitant.raisonSocialeExploitant }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <select name="foret" id="foret" data-placeholder="foret" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+
+        </select>
+
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <!-- Latest compiled and minified CSS -->
+
+    <section class="section bg-white p-3">
+        <div class="div_contenu alert-light"><h1 class="text-center">Merci de Sélectionner la forêt</h1></div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                <div class="modal-content">
+                    <div class="p-1 alert-success"><h3 class="modal-title" id="staticBackdropLabel"><img src="{{ asset('assets/images/webapp/foret.png') }}" alt="forest" height="32"> Charger votre inventaire</h3></div>
+                    <div class="modal-header" style="border-bottom: 3px solid gray">
+
+                        {#<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
+                        {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                        <div class="row bg-white m-1">
+                            <div class="col-md-3">
+                                {{ form_row(form.date_inventaire) }}
+                            </div>
+                            <div class="col-md-9">
+                                {{ form_row(form.fichier) }}
+                            </div>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                    <div class="modal-body alert-light">
+                        <div class="valeurs_chargees sticky-top"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary btn_verif">Charger</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    {#Liens Javascript#}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="{{ asset('assets/assets/js/papaparse.min.js') }}"></script>
+    <script>
+        let file_content = '';
+
+        $('#exploitant').on('change', function(){
+            charge_attributions(this.value)
+        })
+        $('#foret').on('change', function(){
+            let valeur = this.value;
+            if (valeur > 0){
+                charger_controles()
+            } else {
+                document.querySelector('.div_contenu').innerHTML  = '<h1 class="text-center">Merci de Sélectionner la forêt</h1>'
+            }
+        })
+        $('body').on('click', '.btn_charger', function(e){
+            e.preventDefault();
+            if ($('#foret').val() === "0"){
+                alert("Merci de sélectionner une forêt SVP !");
+                $('#staticBackdrop .btn-close').click();
+            } else {
+
+            }
+
+        })
+
+        function charge_attributions(id_exploitant){
+            let contenu = '';
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/search_att/exp/' + id_exploitant,
+                type : 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        contenu = '<option value="0">Sélectionnez une forêt</option>';
+                        for (var i = 0; i < reponse.length; i++){
+                            contenu = contenu + '<option value="' + reponse[i].id + '">'+ reponse[i].foret +'</option>'
+                        }
+
+                        document.querySelector('#foret').innerHTML = contenu;
+                        //charger_controles();
+
+                    } else {
+                        document.querySelector('#foret').innerHTML = '<option  class="bg-danger text-dark" value="0">Aucune forêt disponible</option>';
+                        document.querySelector('.div_contenu').innerHTML  = '<h1 class="text-center">Merci de Sélectionner la forêt</h1>'
+                    }
+                }
+            })
+        }
+
+        function charger_controles(){
+            let contenu_div = '<div class="text-center"><a class="btn btn-primary btn-sm btn_charger mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop" href="#" style="font-size: 16px;">Chargez un inventaire</a></div>' +
+                '<table class="table" id="table_inventaire" style="border:1px solid lightgrey; height: 300px;overflow-y: scroll;">' +
+                '<thead class="text-white text-dark font-weight-bold" style="background: #d0cdcd;">' +
+                '<th class="text-center">Forêt</th>' +
+            '<th class="text-center">N° Fiche</th>' +
+            '<th>Exploitant</th>' +
+            '<th>Cantonnement</th>'+
+            '<th class="text-center">Date Chargement</th>' +
+            '<th class="text-center">Status</th>' +
+            '</thead>' +
+               '<tbody class = "body_inv">' +
+                '</tbody>' +
+            '</table>';
+
+            document.querySelector('.div_contenu').innerHTML = contenu_div;
+        }
+
+        document.querySelector('.monfichier').addEventListener('change', function(event) {
+
+            const file = event.target.files[0];
+
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    // console.log(results.data);  // Afficher les données CSV traitées
+                    // document.getElementById('fileContent').textContent = JSON.stringify(results.data, null, 2);
+                    let contenu ='';
+                    document.querySelector('.valeurs_chargees').innerHTML = '<h2 class="text-danger text-center">Patientez SVP...</h2>'
+                    file_content = JSON.stringify(results.data, null, 2);
+                    contenu  = '<table class="table" id="table_inventaire" style="border:1px solid lightgrey">' +
+                        '<thead class="text-white text-dark font-weight-bold" style="background: #d0cdcd;">' +
+                        '<th class="text-center">Forêt</th>' +
+                        '<th class="text-center">N°</th>' +
+                        '<th>Code essence</th>' +
+                        '<th>X</th>'+
+                        '<th class="text-center">Y</th>' +
+                        '<th class="text-center">Lng</th>' +
+                        '<th class="text-center">Dm</th>' +
+                        '<th class="text-center">Vol</th>' +
+                        '</thead>' +
+                        '<tbody class = "check_inv">' ;
+                    let contentfile = JSON.parse(file_content)
+
+                    for (var i =0 ; i < contentfile.length - 1; i++){
+                        contenu = contenu + '<tr class="bg-white">' ;
+                        contenu = contenu + '<td>' + contentfile[i].foret + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].numero + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].code_essence + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].x + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].y + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].lng + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].dm + '</td>' ;
+                        contenu = contenu + '<td>' + contentfile[i].lac + '</td>' ;
+                        contenu = contenu + '</tr>';
+                    }
+                    contenu = contenu + '</tbody></table>';
+                    document.querySelector('.valeurs_chargees').innerHTML = contenu;
+                }
+            });
+        });
+    </script>
+{% endblock %}

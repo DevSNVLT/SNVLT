@@ -1,0 +1,122 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Validation LAAC{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/valid.png') }}" alt="forest">  {% trans %}Validation LAAC{% endtrans %}
+    </h2>
+    <div class="mb-2 mt-2">
+        <span id="lbl_exploitant" class="h5 text-danger font-weight-bold"></span>
+        <select name="parc_usine" id="foret" data-placeholder="foret" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+            {#{% for usine in usines %}
+            <option value="{{ usine.id }}">{{ usine.sigle }}</option>
+        {% endfor %}#}
+        </select>
+
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+
+    <!-- Latest compiled and minified CSS -->
+
+    <section class="section bg-white p-1">
+        <div class="p-2" style="border: orange; min-height: 500px;" id="liste_arbres">
+            <table class="table" id="table_inventaire" style="border:1px solid lightgrey">
+                <thead class="text-white bg-dark font-weight-bold">
+                    <th class="text-center">Forêt</th>
+                    <th class="text-center">N° Fiche</th>
+                    <th>Exploitant</th>
+                    <th>Cantonnement</th>
+                    <th class="text-center">Date Chargement</th>
+                    <th class="text-center">Status</th>
+                </thead>
+                <tbody>
+                {% for fiche in liste_fiches %}
+                    {% if not (fiche.valide) %}
+                        <tr class="font-weight-bold text-danger" style="border-bottom: 1px solid lightgrey;font-size: 18px;">
+                    {% else %}
+                        <tr class="alert-success" style="border-bottom: 1px solid lightgrey;font-size: 18px;">
+                    {% endif%}
+                        <td class="text-center"><a style="font-size: 18px;background: #0f3a0f;" class="btn p-1 text-white" href="{{ path('app_valid_fiche_lac_idfiche', {'id_fiche': fiche.id}) }}">{{ fiche.codeAttribution.codeForet.denomination }}</td>
+                        <td class="font-weight-bold text-dark text-center">{{ fiche.id }}</td>
+
+                        {% if (fiche.codeAttribution.codeExploitant) %}
+                            <td>{{ fiche.codeAttribution.codeExploitant.sigle }}</td>
+                        {% else %}
+                            <td>-</td>
+                        {% endif %}
+
+                        {% if(fiche.codeAttribution.codeForet.codeCantonnement) %}
+                            <td>{{ fiche.codeAttribution.codeForet.codeCantonnement.nomCantonnement }}</td>
+                        {% else %}
+                            <td>-</td>
+                        {% endif %}
+
+                        <td class="text-center">{{ fiche.createdAt | date('d/m/Y') }}</td>
+                        <td class="text-center">
+                            {% if (fiche.valide) %}
+                                <img src="{{ asset('assets/icons/checkmark.png') }}" alt="valide">
+                            {% else %}
+                                <i class="mdi mdi-stop-circle text-danger" style="font-size: 24px;"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+
+    <script>
+        {% set url_lng = "" %}
+
+        {% if (app.locale == "fr") %}
+        {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/fr-FR.json' %}
+        {% else %}
+        {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/en-EN.json' %}
+        {% endif %}
+
+        new DataTable('#table_inventaire', {
+            language: {
+                url: '{{ url_lng }}',
+            }
+        });
+    </script>
+{% endblock %}

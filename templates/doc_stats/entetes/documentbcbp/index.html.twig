@@ -1,0 +1,116 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeexploitant) %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}My BCBP{% endtrans %}
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}BCBP{% endtrans %}
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeexploitant) %}
+            {% trans %}My BCBP{% endtrans %}
+        {% else %}
+            {% trans %}DOCUMENTS BCBP{% endtrans %}
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_bcbps" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #4d7304;color: #fffefe; font-weight: bold;">
+                        <th>{% trans %}BCBP No{% endtrans %}</th>
+                        <th>{% trans %}Log{% endtrans %}</th>
+                        <th>{% trans %}Owner{% endtrans %}</th>
+                        <th>{% trans %}Cantonment{% endtrans %}</th>
+                        <th>{% trans %}Regional Direction{% endtrans %}</th>
+                        <th>{% trans %}Delivery date{% endtrans %}</th>
+                        {% if not app.user.codeexploitant %}
+                            <th>{% trans %}Logger{% endtrans %}</th>
+                            <th>{% trans %}Code Logger{% endtrans %}</th>
+                        {% endif %}
+                        <th>{% trans %}Volume{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu">';
+                    <tr><td><h2 class="text-danger">{{ 'Loading BCBP ' | trans }}</h2></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+        //Chargement de la liste des BCBP pour l'opérateur
+        mes_bcbp();
+
+        function mes_bcbp(){
+
+            $.ajax({
+                url: '{{ path('app_docs_bcbp_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let docbcbp_liste = JSON.parse(response);
+                    let contenu = "";
+                    let table = document.querySelector("#my_bcbps");
+
+                    for(var i = 0; i < docbcbp_liste.length ; i++){
+                        if(docbcbp_liste[i].etat === false){
+                            contenu = contenu +'<tr class="alert-danger">';
+                        } else if(docbcbp_liste[i].volume_bcbp > 0) {
+                            contenu = contenu +'<tr class="text-dark" style="background: #f0f054">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="{{path('app_portail')}}snvlt/docbcbp/op/pages/' + docbcbp_liste[i].id_document_bcbp + '" id="' + docbcbp_liste[i].id_document_bcbp + '">' + docbcbp_liste[i].numero_docbcbp + '</a></td>' +
+                            '<td><span class="badge p-1 bg-info text-white font-weight-bold text-center" style="font-size: 16px;text-align: center;"> ' + docbcbp_liste[i].parcelle  + '</span></td>'+
+                            '<td><span>' + docbcbp_liste[i].attributaire  + '</span></td>'+
+                            '<td><span>' + docbcbp_liste[i].cantonnement  + '</span></td>'+
+                            '<td><span>' + docbcbp_liste[i].dr  + '</span></td>'+
+                            '<td><span>' + docbcbp_liste[i].date_delivrance  + '</span></td>';
+                        {% if not app.user.codeexploitant %}
+                        contenu = contenu +'<td><span>' + docbcbp_liste[i].exploitant  + '</span></td>'+
+                            '<td><span>' + docbcbp_liste[i].code_exploitant  + '</span></td>';
+                        {% endif %}
+                        contenu = contenu +'<td>'+ docbcbp_liste[i].volume_bcbp + '</td></tr>';
+                    }
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_bcbps');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

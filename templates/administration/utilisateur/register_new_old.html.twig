@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% trans %}SNVLT{% endtrans%} - {% trans %} Register Please{% endtrans %}</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}/">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/loading.css') }}" />
+    <style>
+        input {
+            font-size: 16px;
+            background-color: white;
+            color: #138c2e;
+            border: 0;
+            border-bottom: solid 1px orange
+        }
+     select {
+                font-size: 16px;
+                background-color: white;
+                color: #138c2e;
+                border: solid 1px white;
+
+                border-bottom: solid 1px orange
+            }
+
+        input:focus {
+            background-color: #d3fb8a;
+            border-bottom: solid 2px green;
+        }
+    select:focus {
+            background-color: #d3fb8a;
+            border-bottom: solid 2px green;
+        }
+        .etoile{
+            color: red;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-scroller bg-success">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="content-wrapper d-flex align-items-center auth" style="background-image: path('{{ asset('assets/images/fond_login - Copie.jpg') }}'); background-size: cover; background-repeat: no-repeat;">
+            <div class="row flex-grow">
+                <div class="col-lg-4 mx-auto">
+                    <div class="text-left p-5" style="background-color: rgba(190,254,116,0.3)">
+                        <div class="brand-logo row">
+                            <img class="text-center ms-3" style="height: 96px; width: 96px;" src="{{ asset('assets/images/logo_snvlt.png') }}"   alt="snvlt">
+                            <h3 class="text-danger col-7 justify-content-md-start my-auto" style="text-shadow:#a8e980 10px 10px 10px;">{% trans %}National System for Verification of wood Tracking and Legacy {% endtrans %}</h3>
+                        </div>
+
+                        <div class="mb-3  shadow-lg p-2 w-100">
+                            <span class="text-dark font-weight-bold" style="font-size: 24px;" >{% trans %}Register Please.{% endtrans %}</span>
+                            <a href="{{ path('changeLocaleRegister') }}" style="float: right; "><img class="text-center rounded-circle"  src="{{ asset('assets/images/fr.png') }}" height="24" width="24"  alt="fr"></a>
+                            <a href="{{ path('changeLocaleRegister') }}" style="float: right;margin-right: 10px;margin-left: 10px;"><img class="text-center rounded-circle"  src="{{ asset('assets/images/en.png') }}"  height="24" width="24"  alt="en"></a>
+                        </div>
+                        <form class="form bg-white p-3" style="border-radius: 10px;border: 1px solid lightgrey" method="post">
+                            <div class="row mb-2" style="">
+                                <span class="text-dark col-5 font-weight-bold">{{ 'Firstname'| trans }}<span class="etoile">*</span></span><input class="text-uppercase font-weight-bold input col-7" type="text" name="nom_utilisateur" id="nom_utilisateur" placeholder="" >
+                            </div>
+                            <div class="row mb-2 font-weight-bold" style="">
+                                <span class="text-dark col-5">{{ 'Lastname'| trans }}<span class="etoile">*</span></span><input class="text-uppercase col-7" type="text" name="prenoms_utilisateur" id="prenoms_utilisateur" placeholder="">
+                            </div>
+
+                            <div class="row mb-2" style="">
+                                <span class="text-dark col-5 font-weight-bold">{{ 'email'| trans }}<span class="etoile">*</span></span><input class="text-lowercase  col-7" type="email" name="email_utilisateur" id="email_utilisateur" placeholder="">
+                            </div>
+                            <div class="row mb-2 font-weight-bold" style="">
+                                <span class="text-dark col-5">{{ 'Phone No'| trans }}<span class="etoile">*</span></span><input class="col-7" type="text" name="mobile" id="mobile" placeholder="">
+                            </div>
+                            <hr>
+                            <div class="row mb-2 font-weight-bold" style="">
+                                <span class="text-dark col-5">{{ 'Password'| trans }}<span class="etoile">*</span></span><input class="col-7" type="password" name="mpd" id="mpd" placeholder="">
+                            </div>
+                            <div class="row mb-2 font-weight-bold" style="">
+                                <span class="text-dark col-5">{{ 'Confirm'| trans }}<span class="etoile">*</span></span><input class="col-7" type="password" name="c_mpd" id="c_mpd" placeholder="">
+                            </div>
+
+                            <div class="row mb-2 font-weight-bold langue" style="">
+                                <span class="text-dark col-5">{{ 'Locale'| trans }}<span class="etoile">*</span></span>
+                                <select class="col-7"  name="langue" id="langue" style="">
+                                    <option value="fr">Français</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                </select>
+                            </div>
+                            <hr>
+                            <div class="row mb-2 font-weight-bold operateur" style="">
+                                <select class="col-12"  name="operateur" id="operateur" style="font-size: 16px;background-color: #dcf7b4; border: 1px solid lightgrey;">
+                                    <option value="0">-- {{ 'Select an operator type' | trans}} ---</option>
+                                    {% for operateur in operateurs %}
+                                        <option value="{{ operateur.id }}">{{ operateur.libelleOperateur }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold exploitant" style="">
+                                <span class="text-dark col-5">{{ 'Logger'| trans }}</span>
+                                <select class=""  name="exploitant" id="exploitant" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a logger' | trans}}---</option>
+                                    {% for exploitant in exploitants %}
+                                        <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold usine" style="">
+                                <span class="text-dark col-5">{{ 'Factory'| trans }}</span>
+                                <select class=""  name="usine" id="usine" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a factory' | trans}}---</option>
+                                    {% for usine in usines %}
+                                        {% if(usine.sigle) %}
+                                        <option value="{{ usine.id }}">{{ usine.sigle }}</option>
+                                        {% else %}
+                                            <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold exportateur" style="">
+                                <span class="text-dark col-5">{{ 'Exporter'| trans }}</span>
+                                <select class=""  name="exportateur" id="exportateur" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select an exporter' | trans}}---</option>
+                                    {% for exportateur in exportateurs %}
+                                        <option value="{{ exportateur.id }}">{{ exportateur.raisonSocialeExportateur }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold dr" style="">
+                                <span class="text-dark col-5">{{ 'Regional Direction'| trans }}</span>
+                                <select class=""  name="dr" id="dr" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a Regional Direction' | trans}}---</option>
+                                    {% for dr in drs %}
+                                        <option value="{{ dr.id }}">{{ dr.denomination }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold cef" style="">
+                                <span class="text-dark col-5">{{ 'Cantonment'| trans }}</span>
+                                <select class=""  name="cef" id="cef" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a cantonment' | trans}}---</option>
+                                    {% for cef in cefs %}
+                                        <option value="{{ cef.id }}">{{ cef.nomCantonnement }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold dd" style="">
+                                <span class="text-dark col-5">{{ 'Departemental Direction'| trans }}</span>
+                                <select class=""  name="dd" id="dd" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a DD' | trans}}---</option>
+                                    {% for ddef in ddefs %}
+                                        <option value="{{ ddef.id }}">{{ ddef.nomDdef }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold pf" style="">
+                                <span class="text-dark col-5">{{ 'Forester Checkpoint'| trans }}</span>
+                                <select class=""  name="pf" id="pf" onFocus="expand(this)" onChange="unexpand(this)"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a checkpoint' | trans}}---</option>
+                                    {% for pf in pfs %}
+                                        <option value="{{ pf.id }}">{{ pf.denomination }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="row mb-2 font-weight-bold select_minef" style="">
+                                <span class="text-dark col-5">{{ 'Type of Service'| trans }}</span>
+                                <select class=""  name="select_minef" id="select_minef" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                    <option value="1">Direction</option>
+                                    <option value="2">Service</option>
+                                </select>
+                            </div>
+                            <br>
+                            <div class="row mb-2 font-weight-bold direction" style="">
+                                <span class="text-dark col-5">{{ 'Ministry Directions'| trans }}</span>
+                                <select class=""  name="direction" id="direction"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a direction' | trans}}---</option>
+                                    {% for direction in directions %}
+                                        <option value="{{ direction.id }}">{{ direction.sigle }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mb-2 font-weight-bold service_minef" style="">
+                                <span class="text-dark col-5">{{ 'Services'| trans }}</span>
+                                <select class=""  name="service_minef" id="service_minef"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100%;">
+                                    <option value="0">-- {{ 'Select a service' | trans}}---</option>
+                                </select>
+                            </div>
+                            <div class="row mt-2 mb-2 mt-3 font-weight-bold" style="">
+                                <a href="#" id="btn_send" style="font-size: 18px;" class="col-md-12 btn btn-primary mt-3">{{ 'I send my request'| trans }}</a>
+                            </div>
+                            <div class="text-center mt-4 my-auto font-weight-light row">
+                                <img class="text-center" src="{{ asset('assets/images/armoirieci.png') }}" height="96"   alt="armoirie">
+                                <img class="mt-3" src="{{ asset('assets/images/RCI.png') }}" height="50%" alt="RCI">
+{#                                <div id="roller" style="display: none" class="p-2"><div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>#}
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- content-wrapper ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+</div>
+<!-- container-scroller -->
+<!-- plugins:js -->
+<script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<script>
+    let exploitant = document.querySelector(".exploitant");
+    let service_minef = document.querySelector(".service_minef");
+    let usine = document.querySelector(".usine");
+    let direction = document.querySelector(".direction");
+    let select_minef = document.querySelector(".select_minef");
+    let dr = document.querySelector(".dr");
+    let cef = document.querySelector(".cef");
+    let dd = document.querySelector(".dd");
+    let pf = document.querySelector(".pf");
+    let exportateur = document.querySelector(".exportateur");
+    //let roller = document.querySelector("#roller");
+
+    let CHECK_EMAIL = "";
+    let CHECK_PHONE = "";
+
+    //roller.style = "display:none"
+
+    $(document).ready(function() {
+        $('#operateur').val(0).trigger('change');
+        initialise();
+    });
+
+    $("#operateur").on('change', function () {
+        var me = this.value;
+
+        initialise();
+
+        $('#exploitant').val(null).trigger('change');
+        $('#usine').val(null).trigger('change');
+        $('#dr').val(null).trigger('change');
+        $('#cef').val(null).trigger('change');
+        $('#dd').val(null).trigger('change');
+        $('#pf').val(null).trigger('change');
+        $('#service_minef').val(null).trigger('change');
+        $('#select_minef').val(null).trigger('change');
+        $('#direction').val(null).trigger('change');
+        service_minef.style = 'display:none';
+        direction.style = 'display:none';
+        switch(me) {
+            case "1":
+                select_minef.style = 'display:inline';
+               /* $('#select_minef').selectedIndex = -1;
+                $('#select_minef').focus();*/
+                direction.style = "display:none"
+                service_minef.style = "display:none"
+                break;
+            case "2":
+                exploitant.style = 'display:inline';
+                break;
+            case "3":
+                usine.style = 'display:inline';
+                break;
+
+            case "4":
+                exportateur.style = 'display:inline';
+                break;
+
+            case "5":
+                dr.style = 'display:inline';
+                break;
+
+            case "7":
+                cef.style = 'display:inline';
+                break;
+
+            case "6":
+                dd.style = 'display:inline';
+                break;
+
+            case "10":
+                pf.style = 'display:inline';
+                $('.pf').select2('open');;
+                break;
+
+        }
+    });
+
+    $("#btn_send").on('click', function (){
+	
+	
+        let nom = $('#nom_utilisateur').val();
+        let prenoms = $('#prenoms_utilisateur').val();
+        let email = $('#email_utilisateur').val();
+        let tel = $('#mobile').val();
+        let mpd = $('#mpd').val();
+        let c_mpd = $('#c_mpd').val();
+
+        let operateur = $('#operateur').val();
+
+        let exploitant = $('#exploitant').val();
+        let exportateur = $('#exportateur').val();
+        let usine = $('#usine').val();
+        let dr = $('#dr').val();
+        let dd = $('#dd').val();
+        let cef = $('#cef').val();
+        let pf = $('#pf').val();
+        let direct = $('#direction').val();
+        let servicem = $('#service_minef').val();
+        let selectminef = $('#select_minef').val();
+
+
+
+        if (nom === "" ||
+            prenoms === "" ||
+            email === "" ||
+            tel === "" ||
+            mpd === "" ||
+            c_mpd === "" ){
+            /*Swal.fire({
+                toast: true,
+                background: '#f8e9e9',
+                icon: "error",
+                allowEscapeKey: false,
+                title: '{% trans %}SNVLT NEW MEMBERSHIP{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                padding: '1em'
+            });*/
+            alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+        } else if (mpd !== c_mpd){
+            /*Swal.fire({
+                toast: true,
+                background: '#f8e9e9',
+                icon: "error",
+                allowEscapeKey: false,
+                title: '{% trans %}SNVLT NEW MEMBERSHIP{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Sorry, Confirm your password please{% endtrans %}</h4>",
+                padding: '1em'
+            });*/
+            alert("{% trans %}Sorry, Confirm your password please{% endtrans %}")
+            $('#mpd').val("");
+            $('#c_mpd').val("");
+            $('#mpd').focus();
+        } else if (operateur === "0" || operateur === null){
+            alert("{% trans %}Please, Select an operator{% endtrans %}")
+        } else {
+            switch(operateur) {
+                case "1":
+                    if (direct === "0" || direct === null){
+                        alert("{% trans %}Sélectionnez une direction SVP{% endtrans %}")
+                    } else {
+                        send_request();
+                    }
+                    break;
+
+                case "2":
+                    if (exploitant === "0" || exploitant === null){
+                        alert("{% trans %}Please, Select a logger{% endtrans %}")
+                    } else {
+                        send_request();
+                    }
+                    break;
+                case "3":
+                    if (usine === "0" || usine === null){
+                        alert("{% trans %}Please, Select a factory{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+                case "4":
+                    if (exportateur === "0" || exportateur === null){
+                        alert("{% trans %}Please, Select an exporter{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+                case "5":
+                    if (dr === "0" || dr === null){
+                        alert("{% trans %}Please, Select a Regional Direction{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+                case "7":
+                    if (cef === "0" || cef === null){
+                        alert("{% trans %}Please, Select a Cantonment{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+                case "6":
+                    if (dd === "0" || dd === null){
+                        alert("{% trans %}Please, Select a Departmental Direction{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+                case "10":
+                    if (pf === "0" || pf === null){
+                        alert("{% trans %}Please, Select a Forester Checkpoint{% endtrans %}")
+                    }else {
+                        send_request();
+                    }
+                    break;
+
+
+                default:
+                // code block
+            }
+        }
+
+    })
+
+    $("#select_minef").on('change', function (){
+		//initialise le combo
+		$('#service_minef').val(null).trigger('change');
+        $('#direction').val(null).trigger('change');
+		
+        direction.style = "display:none"
+        service_minef.style = "display:none"
+        direction.selectedIndex = -1
+        service_minef.selectedIndex = -1
+        select_minef.selectecIndex = -1
+        if (this.value === "1") {
+            direction.style = "display:inline"
+            service_minef.style = "display:none"
+        } else {
+            direction.style = "display:inline"
+            service_minef.style = "display:inline"
+        }
+    })
+
+     $("#direction").on('change', function (){
+
+        if ($("#select_minef").val() === "2") {
+            charger_service(this.value)
+        }
+    })
+
+
+
+    function check_email(value)
+    {
+        $.ajax({
+            url: '{{path('app_portail')}}snvlt/check_email/' + value,
+            type : 'POST',
+            success: function (response){
+                let reponse = JSON.parse(response);
+                if (response[0].valeur === "true"){
+                    CHECK_EMAIL = "true"
+                    return CHECK_EMAIL;
+                } else if(response[0].valeur === "false") {
+                    CHECK_EMAIL = "false"
+                    return  CHECK_EMAIL;
+                } else {
+                    CHECK_EMAIL = "BAD_REQUEST";
+                    return  CHECK_EMAIL;
+                }
+            }
+        })
+    }
+
+    function charger_service(id_dir){
+        $.ajax({
+            url: '{{path('app_portail')}}snvlt/serviceminef/directions/' + id_dir,
+            type : 'POST',
+            success: function (response){
+                let reponse = JSON.parse(response);
+
+                var contenu = "";
+                for (let i = 0; i < reponse.length ; i++){
+                    contenu = contenu + '<option value="' + reponse[i].id + '">' + reponse[i].libelle_service + '</option>'
+                }
+                document.querySelector('#service_minef').innerHTML = contenu;
+            }
+        })
+    }
+    function check_password(value){
+        if(value.length < 8){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    function send_request(){
+
+
+        let email_utilisateur = $('#email_utilisateur').val();
+        let tel = $('#mobile').val();
+        let mpd = $('#mpd').val();
+        let c_mpd = $('#c_mpd').val();
+        let nom = $('#nom_utilisateur').val();
+        let prenoms = $('#prenoms_utilisateur').val();
+        let langue = $('#langue').val();
+
+
+        let operateur = $('#operateur').val();
+
+        let exploitant = $('#exploitant').val();
+        let exportateur = $('#exportateur').val();
+        let usine = $('#usine').val();
+        let dr = $('#dr').val();
+        let dd = $('#dd').val();
+        let cef = $('#cef').val();
+        let pf = $('#pf').val();
+        let direction = $('#direction').val();
+        let service_minef = $('#service_minef').val();
+        let select_minef = $('#select_minef').val();
+
+        //roller.style = "display:inline"
+        if (check_password(mpd) === false || check_password(c_mpd)===false){
+            alert("{{ 'Password length must be greater than 8 characters ' | trans}}")
+            //roller.style = "display:none"
+        } else {
+            /*Vérifie si l'email est existant dans la base de données*/
+
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/check_email/' + email_utilisateur,
+                type : 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    //alert(reponse[0].valeur);
+                    if (reponse[0].valeur === true){
+                        alert("{{ 'This email is already in use by an existing user in the system' | trans}}");
+
+                    } else if(reponse[0].valeur === "BAD_REQUEST") {
+                        alert("{{ 'BAD REQUEST SENT. CHECK VALUES SUBMITTED' | trans}}");
+                    } else {
+                        /*Vérifie si le téléphone mobile est existant dans la base de données*/
+                        $.ajax({
+                            url: '{{path('app_portail')}}snvlt/check_phone/' + tel,
+                            type : 'POST',
+                            success: function (response){
+                                let reponse = JSON.parse(response);
+                                if (reponse[0].valeur === true){
+                                    alert("{{ 'This Phone No is already in use by an existing user in the system' | trans}}");
+                                    //.style = "display:none"
+                                } else if(reponse[0].valeur === "BAD_REQUEST") {
+                                    alert("{{ 'BAD REQUEST SENT. CHECK VALUES SUBMITTED' | trans}}");
+                                    //roller.style = "display:none"
+                                } else {
+                                    //Envoi des données vers le serveur
+                                    let obj = {};
+                                    obj.nom = nom;
+                                    obj.prenoms = prenoms;
+                                    obj.mobile = tel;
+                                    obj.langue = langue;
+                                    obj.mpd = mpd;
+                                    obj.email = email_utilisateur;
+                                    obj.operateur = operateur;
+                                    obj.exploitant = exploitant;
+                                    obj.exportateur = exportateur;
+                                    obj.usine = usine;
+                                    obj.dr = dr;
+                                    obj.cef = cef;
+                                    obj.dd = dd;
+                                    obj.pf = pf;
+                                    obj.direction = direction;
+                                    obj.service_minef = service_minef;
+                                    obj.select_minef = select_minef;
+
+                                    var data = JSON.stringify(obj);
+
+                                    $.ajax({
+                                        'url': '{{path('app_portail')}}snvlt/user/op/save_member/data/' + data,
+                                        'type': 'POST',
+
+                                        success: function(response) {
+                                            let reponse = JSON.parse(response)
+                                            document.location.href = '{{ path('request_submitted')}}'
+                                           /* Swal.fire({
+                                                toast: true,
+                                                position: "top-end",
+                                                background: '#dffbdd',
+                                                timer : 3000,
+                                                icon: "success",
+                                                title: '{% trans %}Page header saved !{% endtrans %}',
+                                                showConfirmButton: false
+                                            });*/
+
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                    }
+                }
+            })
+        }
+
+    }
+
+    function initialise(){
+        exploitant.style = 'display:none';
+        service_minef.style = 'display:none';
+        direction.style = 'display:none';
+        usine.style = 'display:none';
+        dr.style = 'display:none';
+        cef.style = 'display:none';
+        dd.style = 'display:none';
+        pf.style = 'display:none';
+        exportateur.style = 'display:none';
+        select_minef.style = 'display:none';
+    }
+    function expand(obj)
+    {
+        obj.size = 10;
+    }
+
+    function unexpand(obj)
+    {
+        obj.size = 1;
+    }
+</script>
+</body>
+</html>

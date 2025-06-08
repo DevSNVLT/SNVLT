@@ -1,0 +1,23 @@
+{% extends 'base/email_template.html.twig' %}
+
+{% block salutation %}
+    Bonjour,
+{% endblock %}
+
+{% block titre %}
+    Vous avez demandé la réinitialisation de votre mot de passe
+{% endblock %}
+
+{% block boutton_url %}
+    <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#562d2b;border-radius:0px;width:auto;border-top:0px solid transparent;font-weight:400;border-right:0px solid transparent;border-bottom:0px solid transparent;border-left:0px solid transparent;padding-top:10px;padding-bottom:10px;font-family:Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:35px;padding-right:35px;font-size:15px;display:inline-block;letter-spacing:1px;"><span style="word-break: break-word; line-height: 30px;">Clicquez ici pour changer votre mot de passe</span></span></a>
+    <div class="text-center font-weight-bold mt-3 mb-3" style="font-size: 16px;margin-top: 15px;margin-bottom: 15px;">ou copier le lien ci-dessous</div>
+    <span class="alert-warning text-center" style="background-color: #e2f7e2;padding: 10px;">{{ url('app_reset_password', {token: resetToken.token}) }}</span>
+{% endblock %}
+
+{% block contenu %}
+    <p class="text-danger">{% trans %}This link will expire in {% endtrans %}{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
+{% endblock %}
+
+{% block pied %}
+    {% trans %}Cheers!{% endtrans %}
+{% endblock %}

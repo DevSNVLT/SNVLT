@@ -1,0 +1,241 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Wood packages{% endtrans %} N° {{ mon_colis.reference }}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/package.png') }}" alt="{% trans %}Colis{% endtrans %}">  {% trans %}Wood packages{% endtrans %} N° {{ mon_colis.reference }}
+        - [<span class="text-info">{{ mon_colis.codeEssence.nomVernaculaire }}</span> - <span class="font-weight-bold text-dark" style="margin-right: 25px; font-size: 20px;">{{ 'Number of elements' | trans}} :
+            {% set nb = 0 %}
+            {% for element in mon_colis.elementsColis %}
+                {% set nb = nb + element.nombre %}
+            {% endfor %}
+            <span class="font-weight-bold text-danger" style="font-size: 20px;">{{ nb }}</span>
+            </span>
+
+            <span class="font-weight-bold text-dark" style="font-size: 20px;">{{ 'Volume' | trans}} :
+            {% set vol = 0 %}
+            {% for element in mon_colis.elementsColis %}
+                {% set vol = vol + element.volume %}
+            {% endfor %}
+                <span class="font-weight-bold text-danger" style="font-size: 20px;">{{ vol }} m<sup>3</sup></span>
+            </span> ]
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-danger" data-bs-target="#cloturer_colis" data-bs-toggle="modal"><h6><i class="mdi mdi-close-circle" style="margin-right: 5px; font-size: 24px;"></i></i> {{ 'Complete the package' }}</h6></a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/loading.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body p-3" id="liste_colis">
+                <div class="p-2 mb-2" style="border: 1px solid lightgrey">
+                    <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                        <div class="col-md-4 " style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Package Ref.' | trans }}</span>
+                                <input type="text" value="{{ mon_colis.reference }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Contract' | trans }}</span>
+                                <input type="text" value="{{ mon_colis.codeContrat.numeroContrat }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Transformation' | trans }}</span>
+                                <input type="text" value="{{ mon_colis.codeContrat.typeTransfo.libelle }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Species' | trans }}</span>
+                                <input type="text" value="{{ mon_colis.codeEssence.nomVernaculaire }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="width: 100%;">
+                            <div class="row mb-2">
+                                <span class="col-6">{{ 'Package date' | trans }}</span>
+                                <input type="text" value="{{ mon_colis.dateConfection | date('d/m/Y') }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="row justify-content-end">
+                                <a href="#" class="btn btn-sm  text-white font-weight-light col-md-6" id="btn_print" style="background: #178701; font-size: 16px;"><i class="mdi mdi-printer text-white" style="font-size: 18px; margin-right: 5px;height: 30px;"></i>{{ 'Print' | trans }}</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="p-2" id="colis" style="border: 1px solid lightgrey">
+                    <table class="table" id="elements" style="border: 1px solid lightgrey">
+                        <thead>
+                        {#<tr style="background: #8ff0b4">#}
+                        <tr style="background: #e2e3e2;color: black;">
+                            <th>{{ 'Length' | trans}}</th>
+                            <th>{{ 'Width' | trans}}</th>
+                            <th>{{ 'Thickness' | trans}}</th>
+                            <th>{{ 'Number' | trans}}</th>
+                            <th>{{ 'Volume' | trans}}</th>
+                            <th>{{ 'Reference' | trans}}</th>
+                            <th>{{ 'Arbre' | trans}}</th>
+                            <th>{{ 'Document' | trans}}</th>
+                            <th>{{ 'Forest' | trans}}</th>
+                            <th>{{ 'Logger' | trans}}</th>
+                        </tr>
+
+                        </thead>
+                        <tbody>
+                        {% for element in mon_colis.elementsColis %}
+
+                            <tr style="background-color: #f5f5f5; width: 100%;">
+                                <td>{{ element.lng }}</td>
+                                <td>{{ element.lrg }}</td>
+                                <td>{{ element.ep }}</td>
+                                <td>{{ element.nombre }}</td>
+                                <td>{{ element.volume }}</td>
+                                {% if (element.codeColis.codeContrat.typeTransfo.id == 1 or element.codeColis.codeContrat.typeTransfo.id == 3) %}
+                                    <td>{{ element.codeElements.codeBillon.numeroBillon }}</td>
+                                    <td>{{ element.codeElements.codeBillon.codeLignepagelje.numeroArbre }}</td>
+                                    <td>{{ options_service.find_foret( element.codeElements.codeBillon.codeLignepagelje.numeroArbre,  element.codeElements.codeBillon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.numeroDocbrh }}</td>
+                                    <td>{{ options_service.find_foret( element.codeElements.codeBillon.codeLignepagelje.numeroArbre,  element.codeElements.codeBillon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</td>
+                                    {% if (options_service.find_foret( element.codeElements.codeBillon.codeLignepagelje.numeroArbre,  element.codeElements.codeBillon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.sigle) %}
+                                        <td>{{ options_service.find_foret( element.codeElements.codeBillon.codeLignepagelje.numeroArbre,  element.codeElements.codeBillon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.sigle }}</td>
+                                    {% else %}
+                                        <td>{{ options_service.find_foret( element.codeElements.codeBillon.codeLignepagelje.numeroArbre,  element.codeElements.codeBillon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if (element.codeFicheLotProd) %}
+                                    <td>
+                                            {% for billon in element.codeFicheLotProd.codeFicheLot.billons %}
+                                                <span class="badge">{{ billon.numeroBillon }}</span><br>
+                                            {% endfor %}
+                                    </td>
+                                    <td>
+                                            {% for billon in element.codeFicheLotProd.codeFicheLot.billons %}
+                                                <span class="badge">{{ billon.codeLignepagelje.numeroArbre }}</span><br>
+                                            {% endfor %}
+                                    </td>
+                                    <td>
+                                            {% for billon in element.codeFicheLotProd.codeFicheLot.billons %}
+                                                <span class="badge">{{ options_service.find_foret(billon.codeLignepagelje.numeroArbre, billon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.numeroDocbrh }}</span><br>
+                                            {% endfor %}
+                                    </td>
+                                    <td>
+                                            {% for billon in element.codeFicheLotProd.codeFicheLot.billons %}
+                                                <span class="badge">{{ options_service.find_foret(billon.codeLignepagelje.numeroArbre, billon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</span><br>
+                                            {% endfor %}
+                                    </td>
+                                        <td>
+                                            {% for billon in element.codeFicheLotProd.codeFicheLot.billons %}
+                                                {% if (options_service.find_foret(billon.codeLignepagelje.numeroArbre, billon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.sigle) %}
+                                                    <span class="badge">{{ options_service.find_foret(billon.codeLignepagelje.numeroArbre, billon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.sigle }}</span><br>
+                                                {% else %}
+                                                    <span class="badge">{{ options_service.find_foret(billon.codeLignepagelje.numeroArbre, billon.codeLignepagelje.codeFeuillet).codePagebrh.codeDocbrh.codeReprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</span><br>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    {% endif %}
+                                {% endif %}
+
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloturer le colis-->
+        <div class="modal fade" id="cloturer_colis" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/package.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Wood Package' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation ' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to complete this package ? ' |trans}}</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success accepter font-weight-light  terminate" id="terminate" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Terminate'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        /* Btn Cloturer le billon*/
+        document.querySelector('#terminate').addEventListener('click', function (){
+
+
+                cloturer_colis({{ mon_colis.id }});
+
+        })
+
+        //Function cloturer le billon
+        function cloturer_colis(id_colis){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/colis/clp/' +  id_colis ,
+                'type': 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    document.location.href = "{{ path('app_transformation_colis') }}";
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                }
+            })
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                background: '#dffbdd',
+                timer : 3000,
+                icon: "success",
+                title: '{% trans %}Billon validated!{% endtrans %}',
+                showConfirmButton: false
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,752 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}
+    BoisLégal - {% trans %} Préservons notre couvert forestier{% endtrans %}
+{% endblock %}
+
+{% block banniere %}
+    <!-- Carousel Start -->
+    <div class="container-fluid p-0 mb-5">
+        <div id="header-carousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% if articles_blog %}
+                    <div class="carousel-item">
+                        {% if last_articles %}
+                            <a href="{{ path('article_blog_show',{'slug': last_articles.slug} ) }}" class="link-primary">
+                                <img class="rounded-3 img-fluid w-100" src="/uploads/media/{{last_articles.featuredImage.filename}}" alt="{{ last_articles.featuredImage.altText }}" loading="lazy"  >
+                            </a>
+                        {% endif %}
+                        <div class="carousel-caption">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col-lg-7 pt-5">
+                                        <h3 class="display-4 text-white mb-4 animated slideInDown">{{ last_articles.title }}</h3>
+                                        <a href="{{ path('article_blog_show',{'slug': last_articles.slug} ) }}" class="btn btn-primary py-3 px-5 animated slideInDown">Lire l'article</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="carousel-item active">
+                    <img class="w-100" src="{{ asset('assets/images/SNVLT_APPS_2.png') }}" alt="SNVLT_APPS">
+                    <div class="carousel-caption">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-7 pt-0">
+                                    <h1 class="display-4 text-white mb-4 animated slideInDown">SNVLT, un outil d'aide décisionnel pour la forêt</h1>
+                                    <a href="{{path('app_portail')}}snvlt/" target="_blank" class="btn btn-primary py-3 px-5 animated slideInDown"><i class='fas fa-laptop me-2' style='color:#ffffff'></i>Accéder à l'application</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carousel-item">
+                    <img class="w-100" src="{{ asset('assets/images/transformation.png') }}" alt="Image">
+                    <div class="carousel-caption">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-7 pt-5">
+                                    <h1 class="display-4 text-white mb-4 animated slideInDown">SNVLT 2 - <br> Implémentation des 2è et 3è transformation</h1>
+                                    <a href="" class="btn btn-primary py-3 px-5 animated slideInDown">En savoir plus</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#header-carousel"
+                    data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Précédent</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#header-carousel"
+                    data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Suivant</span>
+            </button>
+        </div>
+    </div>
+    <!-- Carousel End -->
+
+{% endblock %}
+
+{% block defilement %}
+    <div>
+        {% for rp in  oi_rapports%}
+        <a href="{{ path('affiche_oi_rapport_portail', {'id_rapport': rp.id}) }}" style="color: #f9f3f1">Nouveau rapport de l'observation indépendante (OI) <span class="badge bg-danger text-white">{{ rp.codeOi.sigle }}</span> | {{ rp.libelle }}</a>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block Contenu %}
+    <body class="">
+
+    {#<link rel="stylesheet" href="{{ asset('bundles/apexcharts/dist/apexcharts.css') }}">#}
+    {#<script src="{{ asset('assets/template/js/canvasjs.min.js') }}"></script>#}
+    {#{% include 'blog/produit/list.html.twig' with { articles } %}#}
+
+    <div class="row">
+        <div class="col-md-2">
+
+            <div class="position-sticky" style="top:2rem;">
+                <h4 class="text-secondary alert-warning text-center p-2" style='font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif'>l'essentiel</h4>
+                <div class="">
+                    {% if (infos_ministre.photoMinistre) %}
+                        <div class="text-center">
+                            <a href="#" class="text-dark fw-bold fs-5">le mot du ministre<br>
+                                <img class="img-thumbnail-content rounded-4" src="/uploads/media/{{ infos_ministre.photoMinistre }}" alt="le_ministre" height="256" style="border-radius: 10px;"></a><br>
+                            <h5 class="text-danger fw-bold*">{{ infos_ministre.nomPrenoms }}</h5>
+                            <p>{{ infos_ministre.motMinistre  | raw  | striptags | slice(0, 130) }} </p>
+                        </div>
+                    {% endif %}
+                    <hr>
+                    <br>
+                    <center>
+                        <a href="{{path('liste_reprises')}}"   class=" text-align-left  alert-danger p-2 text-danger mb-5" style="color: #062e69"><img src="{{ asset('assets/images/new.gif') }}" alt="new" height="32">Reprise d'activités {{ exercice_en_cours.annee }}</a>
+                    </center>
+                    <div>
+                        <center>
+                            <a href="{#{{ asset('assets/docs/Le_code_forestier.pdf') }}#}#" class="btn p-2 fs-7 text-dark alert-warning mt-2 mb-2" target="_blank">{% trans %}Télecharger le Code forestier{% endtrans %}</a>
+                        </center>
+                    </div>
+                    <a href="#" class="fst-italic text-align-left ms-2 fs-7" style="color: #062e69"><img class="img-fluid me-3" src="{{ asset('assets/icons/16x16/pdf.png') }}" alt="pdf_icon">volumes exploités 2023</a><br>
+                    <a href="#" class="fst-italic text-left ms-2" style="color: #062e69"><img class="img-fluid me-3" src="{{ asset('assets/icons/16x16/pdf.png') }}" alt="pdf_icon">Quotas d'exploitation 2023</a><br>
+                    <a href="#" class="fst-italic text-left ms-2" style="color: #062e69"><img class="img-fluid me-3" src="{{ asset('assets/icons/16x16/pdf.png') }}" alt="pdf_icon">Liste des opérateurs forestiers</a><br>
+                    <a href="#" class="fst-italic text-left ms-2" style="color: #062e69"><img class="img-fluid me-3" src="{{ asset('assets/icons/16x16/pdf.png') }}" alt="pdf_icon">Exportations au 1er semestre 2023</a><br>
+                </div>
+
+                <div class="mt-2">
+                    <center>
+                        <a href="{{ path('app_login') }}" class="btn p-2 fs-7 text-dark bg-success m-2 w-75 text-white" target="_blank">{% trans %}Accéder à SNVLT{% endtrans %}</a>
+                    </center>
+                </div>
+            </div>
+        </div>
+
+        <div class="container col-md-10">
+            <h4 class="text-secondary alert-success text-center p-2" style='font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif'><span style="font-size: 22px;"></span>SNVLT en chiffres</h4>
+            <div class="col border d-flex align-items-center justify-content-center border-0">
+
+            </div>
+            <div class="">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-6 align-content-lg-start">
+                        <div class="">
+                            <div class="justify-content-center">
+                                <h5 class="alert-info mx-auto p-2">Le Top 10 des essences exploitées</h5>
+                                <div id="chartpie"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {# <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div id="chartBar" style="height: 370px; width: 100%;"></div>
+                    </div>
+                </div>#}
+                    <div class="col-lg-6 align-content-lg-start">
+                        <div class="">
+                            <div class="justify-content-center">
+                                <h5 class="alert-info mx-auto p-2">Volumes mensuels 1<sup>ère</sup> transformation</h5>
+                                <div id="chart_transfo"></div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="col-lg-6">
+                        <table class="table table-responsive" style="border: 1px lightgrey solid;">
+                            <thead>
+                            <tr class="bg-light fw-bold">
+                                <td>Essence</td>
+                                <td>Volume (m<sup>3</sup>)</td>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for essence in liste_essences %}
+                                <tr>
+
+                                    <td>
+                                        {{ essence.nomVernaculaire}}
+                                    </td>
+                                    <td>
+                                        {{ essence.cubage|number_format(0, ',', ' ') }}
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-6 align-content-lg-start mt-2">
+                        <div class="">
+                            <div class="justify-content-center">
+                                <h5 class="alert-info mx-auto p-2 ">Documents délivrés</h5>
+                                <div id="chart_docs"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="container-fluid facts my-5 py-1 bg-white shadow-lg   overflow-x-scroll" style="overflow-x: scroll" {#data-parallax="scroll" data-image-src="{{ asset('assets/images/foretci.jpg') }}"#}>
+                        <div class="container py-5">
+                            <div class="row g-5">
+                                <div class="col-sm-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">
+                                    <a href="{{ path('listeexploitants') }}">
+                                        <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].nbExploitants }}</h3>
+                                        <span class="text-secondary">{% trans %}Exploitants forestiers{% endtrans %}</span>
+                                    </a>
+                                </div>
+                                <div class="col-sm-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">
+                                    <a href="{{ path('liste_usines') }}">
+                                        <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].nbUsines }}</h3>
+                                        <span class="text-secondary">{% trans %}Unités de transformation{% endtrans %}</span>
+                                    </a>
+                                </div>
+                                <div class="col-sm-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">
+                                    <a href="{{ path('liste_reprises') }}">
+                                        <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].reprises }}</h3>
+                                        <span class="text-secondary">{% trans %}Reprises d'activités{% endtrans %}</span>
+                                    </a>
+                                </div>
+                                <div class="col-sm-6 col-lg-2 wow fadeIn" data-wow-delay="0.1s">
+                                    <a href="{{ path('liste_essence') }}">
+                                        <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].nbEssence }}</h3>
+                                        <span class="text-secondary">{% trans %}essences{% endtrans %}</span>
+                                    </a>
+                                </div>
+                                
+                                <div class="col-sm-6 col-lg-2 wow fadeIn" data-wow-delay="0.1s">
+                                    <a href="{{ path('app_references_abres_abattu') }}">
+                                        <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].nbArbres }}</h3>
+                                        <span class="text-secondary">{% trans %}arbres abattus{% endtrans %}</span>
+                                    </a>
+                                </div>
+
+                                <div class="col-sm-6 col-lg-2 wow fadeIn" data-wow-delay="0.1s">
+                                    <h3 class="display-4 text-success" data-toggle="counter-up">{{ stats[0].volumeArbres}}</h3>
+                                    <span class="text-secondary">{% trans %}volume exploités (m<sup>3</sup>){% endtrans %}</span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                <div class="col d-flex align-items-center justify-content-center">
+                    <a href="{#{{ path('app_chirres') }}#}" class="btn btn-primary animated slideInDown py-3 px-5 m-5 mx-auto ">{% trans %}Allez aux statistiques{% endtrans %}</a>
+                </div>
+
+            </div>
+            <h4 class="text-secondary alert-success text-center text-primary fw-light p-2" ><span class="orange-text">Dernieres </span> infos</h4>
+            <div class="">
+
+                <!-- infos section -->
+                <div class="mt-150 mb-150">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-8 offset-lg-2 text-center">
+                                <div class="section-title">
+                                    <p><a href="#">Abonnez-vous à la newsletter</a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <article class="mx-auto">
+                            <div class="single-latest-news row mb-100 p-2">
+                                <div class="col-md-6">
+                                    <img class="rounded-3 img-fluid" src="/uploads/media/{{last_articles.featuredImage.filename}}" alt="{{ last_articles.featuredImage.altText }}" loading="lazy"  >
+                                </div>
+                                <div class="news-text-box col-md-6">
+                                    <h3 style="font-family: Cursif;color: orangered">A la une</h3>
+                                    <h3 class="text-danger"><a href="{{ path('article_blog_show',{'slug': last_articles.slug} ) }}">{{ last_articles.title }}</a></h3>
+                                    <p class="blog-meta">
+                                        <span class="author"><i class="fas fa-user"></i>SNVLT</span>
+                                        <span class="date"><i class="fas fa-calendar"></i>{{ last_articles.createdAt|date('d m Y') }}</span>
+                                    </p>
+                                    <p class="excerpt">{{ last_articles.featuredText ?: last_articles.content | striptags|slice(0, 130) - '...' }}</p>
+                                    <a href="{{ path('article_blog_show',{'slug': last_articles.slug} ) }}" class="read-more-btn">Lire l'article <i class="fas fa-angle-right"></i></a>
+                                </div>
+                            </div>
+                        </article>
+
+                        {#{% include 'blog/produit/list.html.twig' with { articles } %}#}
+                        <div class="latest-news">
+                            <div class="container mx-auto">
+                                <div class="row">
+                                    {% for article in articles_blog %}
+
+                                        <div class="col-lg-4 col-md-6 mx-auto">
+                                            <div class="single-latest-news">
+                                                <a href="#">
+                                                    {% if article.featuredImage %}
+                                                        <a href="{{ path('article_blog_show',{'slug': article.slug} ) }}" class="link-primary">
+                                                            <img src="/uploads/media/{{article.featuredImage.filename}}" alt="{{ article.featuredImage.altText }}" loading="lazy" width="350" height="200">
+                                                        </a>
+                                                    {% endif %}
+                                                </a>
+                                                <div class="news-text-box">
+                                                    <h3><a href="{{ path('article_blog_show',{'slug': article.slug} ) }}">{{ article.title }}</a></h3>
+                                                    <p class="blog-meta">
+                                                        <span class="author"><i class="fas fa-user"></i>SNVLT</span>
+                                                        <span class="date"><i class="fas fa-calendar"></i>{{ article.createdAt|date('d m Y') }}</span>
+                                                    </p>
+                                                    <p class="excerpt">{{ article.featuredText ?: article.content | striptags|slice(0, 130) - '...' }}</p>
+                                                    <a href="{{ path('article_blog_show',{'slug': article.slug} ) }}" class="read-more-btn">Lire l'article <i class="fas fa-angle-right"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div></div></div>
+                        <div class="row">
+                            <div class="col-lg-12 text-center">
+                                <a href="{{ path('articles_blog_show') }}" class="boxed-btn">Plus d'actualités</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <h4 class="text-secondary alert-success text-center text-primary fw-light p-2"><span class="orange-text">Liens </span> Utiles</h4>
+
+
+            <div class="container-xxl py-5">
+                <div class="container">
+                    <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
+                        <h1 class="display-6 mb-5 text-primary">Les services affiliés</h1>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                            <div class="team-item">
+                                <div class="team-img position-relative overflow-hidden">
+                                    <img class="img-fluid" src="{{ asset('assets/table/dist/extensions/print/logo_eaux_forets_ci.png') }}" alt="">
+                                    <div class="team-social">
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://eauxetforets.gouv.ci/" target="_blank"><i class="fa fa-globe"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://www.facebook.com/minefrci" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://twitter.com/Minefrci" target="_blank"><i class="fab fa-twitter"></i></a>
+                                    </div>
+                                </div>
+                                <div class="bg-white text-center p-4">
+                                    <h5>Ministère des Eaux et Forêts CI</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                            <div class="team-item">
+                                <div class="team-img position-relative overflow-hidden">
+                                    <img class="img-fluid" src="{{ asset('assets/images/apv.png') }}" alt="">
+                                    <div class="team-social">
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href=""><i class="fa fa-globe"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://www.facebook.com/profile.php?id=100068982677223" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://twitter.com/APV_FLEGT_CI"  target="_blank"><i class="fab fa-twitter"></i></a>
+                                    </div>
+                                </div>
+                                <div class="bg-white text-center p-4">
+                                    <h5>APV-FLEGT CI</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
+                            <div class="team-item">
+                                <div class="team-img position-relative overflow-hidden">
+                                    <img class="img-fluid" src="{{ asset('assets/images/SODEFOR.png') }}" alt="">
+                                    <div class="team-social">
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="http://www.sodefor.ci/" target="_blank"><i class="fa fa-globe"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://www.facebook.com/sodefor55ans" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href="https://twitter.com/SODEFOR22" target="_blank"><i class="fab fa-twitter"></i></a>
+                                    </div>
+                                </div>
+                                <div class="bg-white text-center p-4">
+                                    <h5>SODEFOR</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.7s">
+                            <div class="team-item">
+                                <div class="team-img position-relative overflow-hidden">
+                                    <img class="img-fluid" src="{{ asset('assets/images/jbb.jpeg') }}" alt="">
+                                    <div class="team-social">
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href=""><i class="fab fa-facebook-f"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href=""><i class="fab fa-twitter"></i></a>
+                                        <a class="btn btn-square btn-primary rounded-circle m-1" href=""><i class="fab fa-instagram"></i></a>
+                                    </div>
+                                </div>
+                                <div class="bg-white text-center p-4">
+                                    <h5>Jardin Botanique de Bingerville</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <style type="text/css">
+
+        .modal .modal-dialog-aside{
+            width: 350px;
+            max-width:80%; height: 100%; margin:0;
+            transform: translate(0); transition: transform .2s;
+        }
+
+
+        .modal .modal-dialog-aside .modal-content{  height: inherit; border:0; border-radius: 0;}
+        .modal .modal-dialog-aside .modal-content .modal-body{ overflow-y: auto }
+        .modal.fixed-left .modal-dialog-aside{ margin-left:auto;  transform: translateX(100%); }
+        .modal.fixed-right .modal-dialog-aside{ margin-right:auto; transform: translateX(-100%); }
+
+        .modal.show .modal-dialog-aside{ transform: translateX(0);  }
+
+    </style>
+
+    {#Modal pour l'affichage des essences#}
+
+    {#<div class="modal fade" id="arbres_abattus" tabindex="-1" aria-labelledby="arbres_abattus" aria-hidden="true">
+        <div class="modal-dialog modal-xl alert-success">
+            <div class="modal-content alert-success" style="padding:25px 25px 25px 25px;">
+                <div class="modal-header alert-success">
+                    <h5 style="color:rgba(243,91,9,0.92)">Liste des arbres abattus par essence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+
+                <link rel="stylesheet" href="{{ asset('assets/table/dist/bootstrap-table.min.css') }}">
+                <link rel="stylesheet" href="{{ asset('assets/table/assets/all.css') }}">
+
+                <div class="container mx-auto">
+                    <div class="container">
+                        <table
+                                class="table p-3"
+                                data-toggle="table"
+                                id="tableessencenbarbres"
+                                data-pagination="true"
+                                data-language="Fr-fr"
+                                data-search="true"
+                                data-pagination-pre-text= "Précédent"
+                                data-pagination-next-text= "Suivant"
+                                data-pagination-detail-h-align= "right"
+                                data-page-list= "[5, 10, 20, 30, 40, 50, All]"
+                                data-page-value= "5"
+                                data-show-export="true" >
+
+                            <thead>
+                            <tr class="bg-white" >
+                                <th class="fw-bold" data-field="nomEssencecp" data-sortable="true">
+                                    Essence
+                                </th>
+                                <th class="fw-bold" data-field="nbArbres" data-sortable="true">
+                                    Nombre Arbres
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for nb in nb_arbres %}
+                                <tr>
+                                    <td class="fw-light">
+                                        {{ nb.nomEssencecp }}
+                                    </td>
+                                    <td class="fw-light">
+                                        {{ nb.nbArbres }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>#}
+    {#<div class="modal fade" id="pef_autorises" tabindex="-1" aria-labelledby="pef_autorises" aria-hidden="true">
+        <div class="modal-dialog modal-xl alert-success">
+            <div class="modal-content alert-success" style="padding:25px 25px 25px 25px;">
+                <div class="modal-header alert-success">
+                    <h5 style="color:rgba(243,91,9,0.92)">Liste des arbres abattus par essence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+
+                <link rel="stylesheet" href="{{ asset('assets/table/dist/bootstrap-table.min.css') }}">
+                <link rel="stylesheet" href="{{ asset('assets/table/assets/all.css') }}">
+
+                <div class="container mx-auto">
+                    <div class="container">
+
+                    </div>
+
+                </div>
+            </div>
+    </div>
+   </div>#}
+
+
+
+
+
+    {#<div id="pef_autorises" class="modal modal-lg fixed-right fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg modal-dialog-aside " role="document">
+            <div class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title">Titres forestiers autorisés</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table
+                            class="table p-3"
+                            data-toggle="table"
+                            id="reprises"
+                            data-pagination="true"
+                            data-search="true"
+                            data-language="Fr-fr"
+                            data-pagination-pre-text= "Précédent"
+                            data-pagination-next-text= "Suivant"
+                            data-pagination-detail-h-align= "right"
+                            data-page-list= "[5, 10, 20, 30, 40, 50, All]"
+                            data-page-value= "5"
+                            data-show-export="true" >
+
+                        <thead>
+                        <tr class="bg-white" >
+                            <th class="fw-bold" data-field="numeroPerimetre" data-sortable="true">
+                                N° Titre
+                            </th>
+                            <th class="fw-bold" data-field="numeroAutorisation" data-sortable="true">
+                                N° Autorisation
+                            </th>
+                            <th class="fw-bold" data-field="raisonSocialeExploitant" data-sortable="true">
+                                Exploitant Forestier
+                            </th>
+                            <th class="fw-bold" data-field="numeroExploitant" data-sortable="true">
+                                Code Exploitant
+                            </th>
+                            <th class="fw-bold" data-field="marteauExploitant" data-sortable="true">
+                                Marteau
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for autorisation in pef_autorises %}
+                            <tr>
+                                <td class="fw-light">
+                                    {{ autorisation.numeroPerimetre }}
+                                </td>
+                                <td class="fw-light">
+                                    {{ autorisation.numeroAutorisation }} du {{ autorisation.dateAutorisation }}
+                                </td>
+
+                                <td class="fw-light">
+                                    {{ autorisation.raisonSocialeExploitant }}
+                                </td>
+                                <td class="fw-light">
+                                    {{ autorisation.numeroExploitant }}
+                                </td>
+                                <td class="fw-light">
+                                    {{ autorisation.marteauExploitant }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+                #}{#<div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>#}{#
+            </div>
+        </div> <!-- modal-bialog .// -->
+    </div>#}
+
+
+    <script>
+        window.onload = function () {
+
+
+
+            // Graphique en PIE pour les 10 essencess
+
+            var chartpie = document.querySelector("#chartpie");
+            var optionsessence = {
+                series: [
+                    {% for essence in liste_essences %}
+                        Math.round({{essence.cubage}}),
+                    {% endfor %}
+                ],
+                chart: {
+                    /*width: 450,*/
+                    height: 250,
+                    type: 'pie',
+                },
+                labels: [
+                    {% for essence in liste_essences %}
+                    '{{ essence.nomVernaculaire}}',
+                    {% endfor %}
+                ],
+                responsive: [{
+                    breakpoint: 300,
+                    options: {
+                        chart: {
+                            width: 200
+                        },
+                        title:'Essences',
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
+            };
+
+            var chartEssence = new ApexCharts(chartpie, optionsessence);
+            chartEssence.render();
+
+
+            var options_transfo = {
+                series: [{
+                    name: 'Sciage',
+                    data: [
+                        {% for transfo in donnees_transformation %}
+                            {{ transfo.sciage}},
+                        {% endfor %}
+                    ]
+                }, {
+                    name: 'Déroulage',
+                    data: [
+                        {% for transfo in donnees_transformation %}
+                            {{ transfo.deroulage}},
+                        {% endfor %}
+                    ]
+                }, {
+                    name: 'Tranchage',
+                    data: [
+                        {% for transfo in donnees_transformation %}
+                            {{ transfo.tranchage}},
+                        {% endfor %}
+                    ]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 250
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    },
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'],
+                },
+                yaxis: {
+                    title: {
+                        text: '(m3)'
+                    }
+                },
+                fill: {
+                    opacity: 1
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return  val + "m<sup>3</sup>"
+                        }
+                    }
+                }
+            };
+
+            var chart_transfo = new ApexCharts(document.querySelector("#chart_transfo"), options_transfo);
+            chart_transfo.render();
+
+
+
+        // Chart Documents
+
+            var options_docs = {
+                series: [{
+                    data: [
+                        {% for doc in docs_delivres %}
+                            {{ doc.nb_doc}},
+                        {% endfor %}
+                    ]
+                }],
+                chart: {
+                    type: 'bar'
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: [
+                        {% for doc in docs_delivres %}
+                            '{{ doc.docname}}',
+                        {% endfor %}
+                    ],
+                }
+            };
+
+            var chart_docs = new ApexCharts(document.querySelector("#chart_docs"), options_docs);
+            chart_docs.render();
+        }
+
+        function explodePie (e) {
+            if(typeof (e.dataSeries.dataPoints[e.dataPointIndex].exploded) === "undefined" || !e.dataSeries.dataPoints[e.dataPointIndex].exploded) {
+                e.dataSeries.dataPoints[e.dataPointIndex].exploded = true;
+            } else {
+                e.dataSeries.dataPoints[e.dataPointIndex].exploded = false;
+            }
+            e.chart.render();
+
+        }
+
+        function toolTipFormatter(e) {
+            var str = "";
+            var total = 0 ;
+            var str3;
+            var str2 ;
+            for (var i = 0; i < e.entries.length; i++){
+                var str1 = "<span style= \"color:"+e.entries[i].dataSeries.color + "\">" + e.entries[i].dataSeries.name + "</span>: <strong>"+  e.entries[i].dataPoint.y + "</strong> <br/>" ;
+                total = e.entries[i].dataPoint.y + total;
+                str = str.concat(str1);
+            }
+            str2 = "<strong>" + e.entries[0].dataPoint.label + "</strong> <br/>";
+            str3 = "<span style = \"color:Tomato\">Total: </span><strong>" + total + "</strong><br/>";
+            return (str2.concat(str)).concat(str3);
+        }
+
+        function toggleDataSeries(e) {
+            if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            }
+            else {
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    </body>
+{% endblock %}

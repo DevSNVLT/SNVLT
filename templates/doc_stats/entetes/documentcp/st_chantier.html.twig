@@ -1,0 +1,351 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} -
+    {% if (app.user.codeexploitant) %}
+        Mes Carnets de Chantiers
+    {% else %}
+        Carnets de Chantiers
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/stock_wood.png') }}" alt="{% trans %}stock{% endtrans %}">
+
+         {% trans %}Forest Site Stock{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <section class="section">
+        <div class="alert-primary" style="height: 40px;">
+            <select name="exploitants" id="exploitants" style="margin: 5px;background-color: #ffffff; ">
+
+            </select>
+            <select name="forets" id="forets" style="margin: 5px;background-color: #ffffff; ">
+
+            </select>
+
+                <select name="critere" id="critere" style="margin: 5px;background-color: #ffffff;">
+                    <option value="0">Tous les arbres</option>
+                    <option value="1" style="color:#8a7908">Billes sur Site</option>
+                    <option value="2" style="color:red">Billes abandonnées</option>
+                    <option value="3" style="color:darkgreen">Billes utilisées</option>
+                </select>
+
+            <label id="lbl_infos"></label>
+        </div>
+        <div class="card">
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="text-dark font-weight-bold p-2 m-2">{{ 'Legend' | trans }}</span> :
+                    <span class="alert-success p-2 mb-2">{{ 'This log has been already used' | trans }}</span>
+                    <span class="alert-warning p-2 mb-2">{{ 'This log is on site' | trans }}</span>
+                    <span class="alert-danger p-2 mb-2">{{ 'This log is abandoned' | trans }}</span>
+                </div>
+                <div class="p-2 div_resultats text-center"></div>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script>
+
+
+        //Chargement de la liste des CC pour l'opérateur
+        //mes_cp();
+        /*liste_attributions();*/
+
+        $('#forets').on('change', function (){
+            let critere = $('#critere').val();
+                liste_arbres(this.value, critere)
+        })
+        $('#critere').on('change', function (){
+            let foret = $('#forets').val();
+            if (foret !== null || foret !=="0"){
+                    liste_arbres(foret, this.value)
+            }
+
+        })
+
+        $('#exploitants').on('change', function (){
+            // document.querySelector('#lbl_infos').innerHTML ="";
+            liste_attributions(this.value)
+        })
+        liste_exploitants();
+
+
+        function liste_attributions(id_exploitant){
+            let contenu = '<option value="0">Sélectionnez la forêt SVP</option>';
+            $.ajax({
+                url :'{{ path('app_portail') }}snvlt/liste_forets/lst/' + id_exploitant,
+                type : 'POST',
+                success : function (response){
+                    let lignes = JSON.parse(response);
+                    for(var i = 0; i < lignes.length ; i++){
+                        contenu = contenu + '<option value="' + lignes[i].id_foret + '">' + lignes[i].numero_foret + '</option>'
+                    }
+                    document.querySelector('#forets').innerHTML = contenu;
+                }
+            })
+        }
+        function liste_exploitants(){
+
+            let contenu = '<option value="0">-- Exploitant Forestier --</option>';
+            $.ajax({
+                url :'{{ path('json_exploitants') }}',
+                type : 'POST',
+                success : function (response){
+                    let lignes = JSON.parse(response);
+                    for(var i = 0; i < lignes.length ; i++){
+                        contenu = contenu + '<option value="' + lignes[i].id + '">' + lignes[i].rs + '</option>'
+                    }
+                   document.querySelector('#exploitants').innerHTML = contenu;
+
+                }
+            })
+        }
+        function liste_arbres(id_foret, critere){
+            var contenu = '';
+            var nb_elts = 0;
+            var volume = 0;
+            document.querySelector('.div_resultats').innerHTML = '<img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="250" style="margin-top: -8px;">';
+            if (critere === "0"){
+                contenu = '<h3 class="titre_resultat" style="border: solid 1px lightgrey"></h3><table class="table table-responsive mt-2" id="data_cp" style="max-height: 800px; border: 1px solid lightgrey;">';
+                contenu = contenu + '<thead>' ;
+                contenu = contenu + '<tr class="alert-light sticky-top">' ;
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Tree No' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'species' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Zone' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'X' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Y' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Day' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Tree Length' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Tree Diameter' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;border-right: 2px solid black;">{{ 'Tree Volume' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Lng Bille A' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Diameter Bille A' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;border-right: 2px solid black;">{{ 'Volume Bille A' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Lng Bille B' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Diameter Bille B' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;border-right: 2px solid black;">{{ 'Volume Bille B' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Lng Bille C' |trans}}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">{{ 'Diameter Bille C' |trans }}</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;border-right: 2px solid black;">{{ 'Volume Bille C' |trans }}</th>'
+                contenu = contenu + '</tr>'
+                contenu = contenu + '</thead>'
+                contenu = contenu + '<tbody id="body_contenu" class="bg-white">';
+
+                    $.ajax({
+                        url: '{{path('app_portail')}}snvlt/stock/chantier/f/' +id_foret + '/' + critere,
+                        type: 'POST',
+                        success: function(response) {
+                            let lignes = JSON.parse(response);
+                            if(lignes.length === 0){
+                                document.querySelector('.div_resultats').innerHTML = '<h3 class="text-danger font-weight-bold text-center mt-5">Aucune donnée disponible</h3>';
+                            } else{
+                                document.querySelector('.div_resultats').innerHTML = '<img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="250" style="margin-top: -8px;">';
+                                for(var i = 0; i < lignes.length ; i++){
+                                    if(lignes[i].fut_abandon === true){
+                                        contenu = contenu +'<tr class="bg-danger text-white">';
+                                    }else if(lignes[i].a_utilise === true && lignes[i].b_utilise === true && lignes[i].c_utilise === true){
+                                        contenu = contenu +'<tr class="alert-success">';
+                                    }  else {
+                                        contenu = contenu +'<tr class="bg-white">';
+                                    }
+
+                                    contenu = contenu + '<td><a class="text-dark font-weight-light" style="font-size: 18px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                        '<td><span class="badge alert-light font-weight-light text-dark p-1"style="font-size: 16px;">' + lignes[i].essence  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].zh_arbre  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].x_arbre  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].y_arbre  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].jour  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].lng_arbre  + '</span></td>'+
+                                        '<td><span class="font-weight-light">' + lignes[i].dm_arbre  + '</span></td>'+
+                                        '<td style="border-right: 2px solid black"><span>' + lignes[i].cubage_arbre  + '</span></td>';
+
+                                    if (lignes[i].a_utilise){
+                                        contenu = contenu + '<td class="alert-success font-weight-light"><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                            '<td class="alert-success font-weight-light"><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                            '<td class="alert-success font-weight-light"  style="border-right: 2px solid black"><span>' + lignes[i].cubage_billea  + '</span></td>';
+
+                                    } else if (lignes[i].a_abandon){
+                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                            '<td class="alert-danger"><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                            '<td class="alert-danger"  style="border-right: 2px solid black"><span>' + lignes[i].cubage_billea  + '</span></td>';
+
+                                    } else {
+                                        contenu = contenu + '<td class="alert-warning"><span>' + lignes[i].lng_billea  + '</span></td>'+
+                                            '<td class="alert-warning"><span>' + lignes[i].dm_billea  + '</span></td>'+
+                                            '<td class="alert-warning"  style="border-right: 2px solid black"><span>' + lignes[i].cubage_billea  + '</span></td>';
+                                    }
+
+                                    //Conditions sur la bille B
+                                    if (lignes[i].b_utilise && lignes[i].lng_billeb){
+                                        contenu = contenu + '<td class="alert-success"><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                            '<td class="alert-success"><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                            '<td class="alert-success"  style="border-right: 2px solid black"><span>' + lignes[i].cubage_billeb  + '</span></td>';
+
+                                    }else if (lignes[i].lng_billeb  === 0){
+                                        contenu = contenu + '<td class=""><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                            '<td class=""><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                            '<td class=""  style="border-right: 2px solid black"><span>' + lignes[i].cubage_billeb  + '</span></td>';
+
+                                    } else if (lignes[i].b_abandon){
+                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                            '<td class="alert-danger"><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                            '<td class="alert-danger" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billeb  + '</span></td>';
+
+                                    } else {
+                                        contenu = contenu + '<td class="alert-warning"><span>' + lignes[i].lng_billeb  + '</span></td>'+
+                                            '<td class="alert-warning"><span>' + lignes[i].dm_billeb  + '</span></td>'+
+                                            '<td class="alert-warning" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billeb  + '</span></td>';
+                                    }
+
+
+                                    //Conditions sur la bille C
+                                    if (lignes[i].c_utilise){
+                                        contenu = contenu + '<td class="alert-success"><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                            '<td class="alert-success"><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                            '<td class="alert-success" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billec  + '</span></td>';
+
+                                    } else if (lignes[i].lng_billec === 0) {
+                                        contenu = contenu + '<td class=""><span>' + lignes[i].lng_billec + '</span></td>' +
+                                            '<td class=""><span>' + lignes[i].dm_billec + '</span></td>' +
+                                            '<td class="" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billec + '</span></td>';
+                                    }else if (lignes[i].c_abandon){
+                                        contenu = contenu + '<td class="alert-danger"><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                            '<td class="alert-danger"><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                            '<td class="alert-danger" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billec  + '</span></td>';
+
+                                    } else {
+                                        contenu = contenu + '<td class="alert-warning"><span>' + lignes[i].lng_billec  + '</span></td>'+
+                                            '<td class="alert-warning"><span>' + lignes[i].dm_billec  + '</span></td>'+
+                                            '<td class="alert-warning" style="border-right: 2px solid black"><span>' + lignes[i].cubage_billec  + '</span></td>';
+                                    }
+
+                                    contenu = contenu +'</tr>';
+                                    nb_elts = nb_elts + 1;
+                                    volume = volume + lignes[i].cubage_arbre;
+
+                                }
+                                contenu = contenu + '</tbody></table>';
+                                document.querySelector('.div_resultats').innerHTML = contenu;
+                                document.querySelector('.titre_resultat').innerHTML = 'Liste des arbres abattus [nb : <span class="text-danger">' + nb_elts.toLocaleString() + '</span>   volume :<span class="text-danger">' + Math.round(volume).toLocaleString() + ' m<sup>3</sup>]</span>';
+
+                                dataTableSnvlt("#data_cp", "Parc Chantier", 10)
+                            }
+
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    })
+            } else {
+                let titre = ""
+                if (critere === "1") {
+                    titre = "Billes sur site "
+                } else if (critere === "2") {
+                    titre = "Billes abandonnées "
+                } else if (critere === "3") {
+                    titre = "Billes utilisées "
+                }
+
+                contenu = '<h3 class="titre_resultat" style="border: solid 1px lightgrey"></h3><table class="table mt-2" id="data_cp" style="max-height: 800px;border: 1px solid lightgrey">';
+                contenu = contenu + '<thead>' ;
+                contenu = contenu + '<tr class="alert-light sticky-top" >' ;
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">N° Arbre</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Bille</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Essence</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Zone H.</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">X</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Y</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Jour</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Longueur</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;">Diamètre</th>'
+                contenu = contenu + '<th class="text-center font-weight-bold" style="font-size: 14px;font-weight:bold;border-right: 2px solid black;">Volume</th>'
+                contenu = contenu + '</tr>'
+                contenu = contenu + '</thead>'
+                contenu = contenu + '<tbody id="body_contenu" class="bg-white">';
+
+                $.ajax({
+                    url: '{{ path('app_portail') }}snvlt/stock/chantier/f/' + id_foret + '/' + critere,
+                    type: 'POST',
+                    success: function (response) {
+                        let lignes = JSON.parse(response);
+                        if (lignes.length === 0) {
+                            document.querySelector('.div_resultats').innerHTML = '<h3 class="text-danger font-weight-bold text-center mt-5">Aucune donnée disponible</h3>';
+                        } else {
+                            document.querySelector('.div_resultats').innerHTML = '<img class="spinload my-auto" src="{{ asset('assets/icons/spinner3.gif') }}" alt="spinner" height="250" style="margin-top: -8px;">';
+                            for (var i = 0; i < lignes.length; i++) {
+                                contenu = contenu + '<tr>';
+                                contenu = contenu + '<td>' + lignes[i].numero_ligne + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].bille + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].essence + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].zh_arbre + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].x_arbre + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].y_arbre + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].jour + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].lng + '</td>';
+                                contenu = contenu + '<td>' + lignes[i].dm + '</td>';
+                                if (lignes[i].volume > 0){
+                                contenu = contenu + '<td>' + lignes[i].volume + '</td>';
+                                    volume = volume + lignes[i].volume;
+                                } else {
+                                contenu = contenu + '<td>0</td>';
+                                }
+
+                                contenu = contenu +'</tr>';
+                                nb_elts = nb_elts + 1;
+
+                            }
+
+                            contenu = contenu + '</tbody></table>';
+
+                            document.querySelector('.div_resultats').innerHTML = contenu;
+                            document.querySelector('.titre_resultat').innerHTML = titre + '[nb : <span class="text-danger">' + nb_elts.toLocaleString() + '   volume : <span class="text-danger">' + volume.toLocaleString() + ' m<sup>3</sup></span>]</span>';
+
+                            dataTableSnvlt("#data_cp", titre, 10)
+
+
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+
+            }
+
+        }
+    </script>
+{% endblock %}

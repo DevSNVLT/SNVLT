@@ -1,0 +1,90 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Gestion N° Arbres
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/numbers_tree.png') }}" alt="arbre"> Gestion N° Arbres du Carnet de Périmètres
+    </h2>
+
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <div class="">
+
+                    {% if (app.user.codeOperateur.id == 2 and app.user.isIsResponsable == true) or app.user.codeGroupe.id == 1 or app.user.codeOperateur.id == 1 %}
+
+					<p class="text-danger">Rechercher la forêt puis renseigner dans la case correspondate au numéro trouvé, le dernier numéro d'arbre.</p>
+                    <span class="font-weight-bold" style="font-size: 20px;">rechercher <input class="text-center p-2" type="text" id="txt_recherche"  style="background: #c0eaf6;border:0;width: 200px;"> <button class="btn btn-sm btn-info text-center p-2" id="btn_rechercher" style="border:0;width: 200px;font-size: 20px;">Rechercher</button></span>
+                    <div class="mt-2 p-2 div_forets" style="overflow-y: scroll;max-height: 500px;border: 2px solid darkgreen;border-radius: 10px;">
+                        {% for foret in forets %}
+                            <div class="alert-light p-2 m-2">
+{#                                <div class="card-title alert-primary">#}
+{#                                    <h3>{{ foret.denomination }}</h3>#}
+{#                                </div>#}
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <h2>{{ foret.denomination }}</h2>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <input class="input-sm text-center inp{{ foret.id }}" type="text" style="font-size: 21px;width: 150px;"  value="{{ foret.dernier_numero }}">
+                                        <a class="btn btn-sm btn-danger font-weight-light text-white edit_numero" id="{{ foret.id }}" href="#" style="font-size: 20px;"><i class="mdi mdi-pen me-2"></i> Modifier</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                    {% else %}
+                        <h1 class="text-danger">Désolé! Vous n'êtes pas le responsable</h1>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+        $('body').on('click', '.edit_numero', function(){
+            let valeur = $(".inp" + this.id).val()
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/maj/numero_arbre/' + this.id + '/' + valeur,
+                type : 'POST',
+                success: function(response){
+                    console.log(response);
+                    let resultat = JSON.parse(response);
+                    if (resultat[0].code === "SUCCESS"){
+                        alert("MISE A JOUR DUN NUMERO ARBRE REUSSI")
+                    }
+                }
+            })
+        })
+        $('#btn_rechercher').on('click', function (){
+            window.find($('#txt_recherche').val())
+        })
+
+
+    </script>
+
+
+
+{% endblock %}

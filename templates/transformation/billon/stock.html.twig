@@ -1,0 +1,220 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Stock Billons{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/billons.png') }}" height="92" alt="{% trans %}Direction{% endtrans %}">  {% trans %}Stock Billons{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <h5 class="mt-2">Période : </h5><input type="date" id="date_debut" style="background-color: lightyellow; margin-right: 5px;">
+            <input type="date" id="date_fin" style="background-color: lightyellow; margin-right: 25px;">
+            <a href="#" style="font-size: 16px; font-weight: bold" id="export_data"><img src="{{ asset('assets/icons/export.png') }}" alt="export" style="margin-right: 10px;">{{ 'Export data' | trans }}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+
+    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body" id="body_contenu">
+
+
+            </div>
+        </div>
+
+    </section>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+
+        let liste = [];
+        const date = new Date();
+        const lastWeekDate = new Date(new Date(). getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        document.querySelector("#date_debut").value = formatDate(lastWeekDate)
+        document.querySelector("#date_fin").value = formatDate(date)
+        document.querySelector("#body_contenu").innerHTML = '<h1 class="text-danger">{{ 'Loading billons' | trans }} ...</h1>';
+        liste_billons();
+
+        document.querySelector("#date_debut").addEventListener('change', function (){
+            liste_billons();
+        });
+
+        document.querySelector("#export_data").addEventListener('click', function (){
+            convert_to_csv();
+        });
+        document.querySelector("#date_fin").addEventListener('change', function (){
+            liste_billons();
+        });
+        // Functions
+
+        //Liste des billons
+        function liste_billons(){
+            let contenu = "";
+            let date_debut = document.querySelector('#date_debut').value;
+            let date_fin = document.querySelector('#date_fin').value;
+
+            contenu = contenu +'<table  id="billons">'
+            contenu = contenu +'<thead>'
+            contenu = contenu +'<tr style="background: #febd7f;color: black">'
+            contenu = contenu +'<th>{% trans %}Billon No{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Species{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Cutting Date{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Logger{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Length{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Dm{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Volume{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Number of elements{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Elements Volume{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Material yield{% endtrans %}</th>'
+            contenu = contenu +'<th>{% trans %}Transformation Type{% endtrans %}</th>'
+            contenu = contenu +'</tr>'
+            contenu = contenu +'</thead>'
+            contenu = contenu +'<tbody>';
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/trans/allbillon/stock/' + date_debut + '/' + date_fin,
+                type : 'POST',
+                success: function(response){
+                    let reponse = JSON.parse(response);
+
+                    liste = response;
+                    for (let i = 0; i < reponse.length; i++){
+                        if(reponse[i].cloture === true){
+                            contenu = contenu + '<tr class="alert-success">';
+                        } else {
+                            contenu = contenu + '<tr>';
+                        }
+
+                        contenu = contenu + '<td id="' + reponse[i].id_billon + '">' + reponse[i].numero_billon + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].essence + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].date_billonage + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].exploitant + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].lng + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].dm + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].volume + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].nb_elt + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].vol_elt + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].rendement + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].type_transfo + '</td>';
+                        contenu = contenu + '</tr>';
+                    }
+                    contenu = contenu + '</tbody>'
+                    contenu = contenu + '</table>'
+                    document.querySelector("#body_contenu").innerHTML = contenu;
+
+                    {% set url_lng = "" %}
+
+                    {% if (app.locale == "fr") %}
+                    {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/fr-FR.json' %}
+                    {% else %}
+                    {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/en-EN.json' %}
+                    {% endif %}
+
+                    new DataTable('#billons', {
+                        layout: {
+                            topStart: {
+                                buttons: [/*'copy', 'csv', */'excel', 'pdf', 'print']
+                            }
+                        },
+                        language: {
+                            url: '{{ url_lng }}',
+                        }
+                    });
+
+                }
+            })
+        }
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
+        function convert_to_csv(){
+
+            let ourData = json2array(liste)
+
+            const titleKeys = Object.keys(ourData[0])
+
+            const refinedData = []
+
+            refinedData.push(titleKeys)
+
+            ourData.forEach(item => {
+                refinedData.push(Object.values(item))
+            })
+
+
+            let csvContent = ''
+
+            refinedData.forEach(row => {
+                csvContent += row.join(',') + '\n'
+            })
+
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8,' })
+            const objUrl = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.setAttribute('href', objUrl)
+            link.setAttribute('download', 'File.csv')
+            link.textContent = 'Click to Download'
+
+            document.querySelector('body').append(link)
+        }
+
+        function json2array(json){
+            var result = [];
+            var keys = Object.keys(json);
+            keys.forEach(function(key){
+                result.push(json[key]);
+            });
+            return result;
+        }
+    </script>
+
+
+
+{% endblock %}

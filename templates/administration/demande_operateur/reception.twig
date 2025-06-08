@@ -1,0 +1,349 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Assignment of statistical documents{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/generate.png') }}" alt="{% trans %}documents_requests{% endtrans %}">  {% trans %}Assignment of statistical documents{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                <table class="table table-responsive" id="document_operateurs">
+                    <thead>
+                    <tr style="background: #0408f5;color: #fcf8f8">
+                <th>{% trans %}Operator{% endtrans %}</th>
+                <th>{% trans %}Document{% endtrans %}</th>
+                <th>{% trans %}Created at{% endtrans %}</th>
+                <th class="text-center">{% trans %}Quantity Requested{% endtrans %}</th>
+                <th class="text-center">{% trans %}Quantity allowed{% endtrans %}</th>
+                <th class="text-center">{% trans %}In Stock{% endtrans %}</th>
+                <th>{% trans %}Generate{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for demande in mes_demandes %}
+            <tr class="alert-warning text-dark">
+
+                <td class="font-weight-bold font-medium">
+                    {% if (demande.demandeur.codeOperateur.id == 2) %}
+                        {{ demande.demandeur.codeexploitant.raisonSocialeExploitant }}
+                    {% elseif (demande.demandeur.codeOperateur.id == 3) %}
+                        {{ demande.demandeur.codeindustriel.raisonSocialeUsine}}
+                    {% elseif (demande.demandeur.codeOperateur.id == 4) %}
+                        {{ demande.demandeur.codeExportateur.raisonSocialeExportateur}}
+                    {% elseif (demande.demandeur.codeOperateur.id == 8) %}
+                        {{ demande.demandeur.codeCommercant.prenoms}} {{ demande.demandeur.codeCommercant.nom}}
+                    {% endif %}
+                </td>
+                <td class="font-weight-bold font-medium">{{ demande.docStat.abv}}</td>
+                <td>{{ demande.createdAt  | date('d-m-Y') }}</td>
+                <td class="text-center">
+                    <span class="p-2 bg-dark text-white font-weight-bold text-center font-medium" style="border-radius: 5px;">{{ demande.qte}}</span>
+                </td>
+                <td class="text-center">
+                    <span class="p-2 bg-dark text-white font-weight-bold text-center font-medium" style="border-radius: 5px;">{{ demande.qteValidee}}</span>
+                </td>
+                <td class="text-center">
+                    {% if (utils.stateStock(demande.docStat)) %}
+                        <span class="p-2 bg-danger text-white font-weight-bold text-center font-medium enstock" id="{{ utils.docsRestants(demande.docStat) }}" style="border-radius: 5px;">{{ utils.docsRestants(demande.docStat) }}</span>
+                    {% else %}
+                        <span class="p-2 text-white font-weight-bold text-center font-medium enstock" id="{{ utils.docsRestants(demande.docStat) }}" style="border-radius: 5px;background-color: #048549">{{ utils.docsRestants(demande.docStat) }}</span>
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    <a href="#"
+                       id="{{ demande.id }}"
+                       class="chargerBtn text-danger"
+                       name="{{ utils.docsRestants(demande.docStat) }}"
+                       data-bs-toggle="modal"
+                       data-bs-target="#generateDoc"><i class="mdi mdi-settings" style="font-size: xx-large"></i></a>
+                </td>
+
+            {% endfor %}
+            </tbody>
+        </table>
+            </div>
+        </div>
+
+
+        {#Modal pour la génération des documents utilisateurs#}
+
+        <div class="col-lg-4 col-md-3">
+            <small class="text-light fw-semibold">{{ 'Generate Operator Document' |trans }}</small>
+            <div class="mt-3">
+
+                <!-- Modal -->
+                <div class="modal fade" id="generateDoc" data-bs-backdrop="static" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form class="modal-content">
+                            <div class="modal-header">
+                                <img src="{{ asset('assets/icons/16x16/demande.png') }}" style="margin-right: 5px;"><h5 class="modal-title text-dark " id="backDropModalTitle">{{ 'Generate Operator Document' | trans}}</h5>
+                                <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                ></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text_stock mb-3" style="width: 100%;font-size: medium"></div>
+                                        <table class="table table-responsive bg-white table_docs" style="height: 300px;width: 100%"  id="liste_documents">
+                                            <tbody id="body_contenu">
+                                                <tr>
+                                                    <td class="text-danger font-weight-bold">Chargement des documents...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    {{ 'Close'|trans }}
+                                </button>
+                                <button type="button" class="btn btn-primary" id="GenerateBtn">{{ 'Generate'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+    <script src="{{ asset('assets/assets_other/js/ui-modals.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#document_operateurs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+        let qte_demandee = 0;
+
+        let tableau = "";
+        let id_demande = 0;
+        let id_doc_stat = 0;
+        let id_autorisation_parcelle = 0;
+
+        let reprise =  0;
+        let id_usine =  0;
+        let id_exportateur =  0;
+        let type_doc_stat = 0;
+        let type_operateur = 0;
+        document.querySelector('.modal-footer').style= "display:none"
+
+            $('body').on('click', '.chargerBtn', function (){
+
+            id_demande = this.id
+            let enstock = document.getElementsByName('chargerBtn');
+            let valeur = this.name
+
+                    document.querySelector('#body_contenu').innerHTML="";
+                    stock_disponible(id_demande);
+
+        });
+
+        $('body').on('click', '#btn_display', function (){
+
+            let nb_definitif = document.querySelector('.nb_definitif').value
+
+
+            if(nb_definitif <= 0 || nb_definitif > qte_demandee ){
+                alert('{{ 'PLease, enter a number less or equal to quantity requested' |trans }}')
+                contenu='<tr>'+
+                    '<td class="text-danger font-weight-bold"><h3>{{ 'BAD NUMBER' }}...</h3></td>'+
+                    '</tr>';
+                document.querySelector('#body_contenu').innerHTML = contenu;
+            } else{
+                contenu='<tr>'+
+                    '<td class="text-danger font-weight-bold"><h3>Chargement des documents...</h3></td>'+
+                    '</tr>';
+                document.querySelector('#body_contenu').innerHTML = contenu;
+                selectionne_documents(Number(nb_definitif) +1, id_demande );
+            }
+
+        })
+
+        function selectionne_documents(nb, id_demande_user){
+            var table = document.querySelector("#liste_documents");
+
+            document.querySelector('.modal-footer').style= "display:none"
+
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/demop/stock/'+ id_demande_user,
+                type: 'POST',
+                data: {'id_demande':id_demande_user},
+                success: function(response) {
+
+                    let stock = JSON.parse(response);
+
+                        let contenu = '<div class="overflow-y-scroll" >';
+                        tableau = JSON.parse(response);;
+                        for(var i = 0; i < nb - 1; i++){
+                            contenu = contenu + '<tr>' +
+                                '<td id="' + stock[i].id_doc  + '"><a class="text-dark font-weight-bold" style="font-size: 18px;" href="#" id="' + stock[i].id_doc + '">' + stock[i].numero_doc + '</a></td>' +
+                                '<td style="color: white;"><span id="' + stock[i].code_reprise + '">' + stock[i].code_reprise  + '</span></td>'+
+                                '<td style="color: white;"><h6 id="' + stock[i].type_doc + '">' + stock[i].type_doc  + '</h6></td>'+
+                                '<td style="color: white;"><h4 id="' + stock[i].code_usine + '">' + stock[i].code_usine  + '</h4></td>'+
+                                '<td style="color: white;"><h3 id="' + stock[i].code_exportateur + '">' + stock[i].code_exportateur  + '</h3></td>'+
+                                '<tr>';
+                        }
+                        contenu = contenu + '</div>'
+
+
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+                    document.querySelector('.modal-footer').style= "display:inline"
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+
+        function stock_disponible(id_demande_user){
+
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/demop/stock/'+ id_demande_user,
+                type: 'POST',
+                data: {'id_demande':id_demande_user},
+                success: function(response) {
+
+                    let stock = JSON.parse(response);
+
+                    //console.log(stock);
+                    let contenu = '<div class="overflow-y-scroll" >';
+                    qte_demandee = stock[0].qte_demandee
+                    if(stock[0].nb < stock[0].qte_livree){
+                        document.querySelector('.text_stock').innerHTML = '<span class="alert-danger p-2 mb-2" style="width:100%;" > {{ "Document Stock" | trans}} :' + stock[0].nb + '</span>';
+
+                    }else{
+                        document.querySelector('.text_stock').innerHTML = '<span class="text-danger">{{ 'Enter number of items to generate' | trans }}</span><div class="row"><label class="alert-primary p-2 mb-2 col-5" style="width:100%;" > {{ 'Document Stock' | trans}} :' + stock[0].nb + '</label><input class="form-control p-2 mb-2 text-center col-2 nb_definitif" style="font-size:24px;width:50px; margin-left:10px;font-weight:bold" type="number" value="' +  stock[0].qte_demandee  + '"><a class="btn btn-success btn-sm mb-2" id="btn_display" style="margin-left:10px;" href="#"> {{ 'Display documents' | trans }} </a></div><hr>';
+                    }
+
+                    //Charge le tableau de documents
+                    var nb_definitif = document.querySelector('.nb_definitif').value
+
+
+                    if(nb_definitif <= 0 || nb_definitif > qte_demandee ){
+                        alert('{{ 'PLease, enter a number less or equal to quantity requested' |trans }}')
+                    } else{
+                        selectionne_documents(Number(nb_definitif) +1, id_demande );
+                    }
+
+
+                },
+                error: function(error) {
+                    console.log(error);
+
+                }
+            })
+        }
+
+        $('body').on('click','#GenerateBtn', function (e){
+            let table = document.querySelector("#liste_documents");
+            /*var checkBoxes = table.getElementsByTagName("input");*/
+            let id_doc = table.getElementsByTagName("a");
+            let code_reprise = table.getElementsByTagName("span");
+            let type_doc = table.getElementsByTagName("h6");
+
+            let erreurs = 0;
+            let nb_definitif = document.querySelector('.nb_definitif').value
+
+
+            if(nb_definitif <= 0 || nb_definitif > qte_demandee ){
+                alert('{{ 'PLease, enter a number less or equal to quantity requested' |trans }}')
+            } else{
+               // alert(tableau.length)
+                for (let i = 0; i < nb_definitif ; i++) {
+
+                        id_doc_stat = tableau[i].id_doc;
+
+                        reprise =  tableau[i].code_reprise;
+                        type_doc_stat =  tableau[i].type_doc;
+                        id_usine =  tableau[i].code_usine;
+                        id_auto_export=  tableau[i].code_exportateur;
+                        id_autorisation_parcelle = tableau[i].code_auto_pv;
+                        id_autorisation_ps = tableau[i].code_auto_ps;
+                        id_commercant = tableau[i].code_commercant;
+                   /*{id_auto_ps?0}/{id_commercant?0}*/
+                            $.ajax({
+                                url: '{{path('app_portail')}}snvlt/demop_cp/gen_from_stock/'+ id_doc_stat + '/' + reprise + '/' + id_autorisation_parcelle + '/' + id_usine + '/' + id_auto_export + '/'+ id_autorisation_ps + '/'+ id_commercant + '/' + id_demande + '/' + nb_definitif,
+                                type: 'POST',
+                                data: {
+                                    'id_stock_doc':id_doc_stat,
+                                    'id_reprise': reprise ,
+                                    'id_autorisation_parcelle': id_autorisation_parcelle,
+                                    'id_usine':id_usine,
+                                    'id_auto_export': id_auto_export ,
+                                    'id_auto_ps': id_autorisation_ps,
+                                    'id_commercant': id_commercant,
+                                    'nb_definitif': nb_definitif,
+                                },
+                                success: function(response) {
+
+                                    let reponse = JSON.parse(response);
+
+
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                    erreurs =  erreurs + 1
+                                }
+                            })
+                            let timerInterval;
+                            Swal.fire({
+                                title: "Génération des documents!",
+                                html: "<b>Documents en cours de Génération</b> <br> Patientez.",
+                                timer: 10000,
+                                didOpen: () => {
+                                    /*Swal.showLoading();*/
+                                    const timer = Swal.getPopup().querySelector("b");
+                                    timerInterval = setInterval(() => {
+                                        timer.textContent = `${Swal.getTimerLeft()}`;
+                                    }, 100);
+                                },
+                                willClose: () => {
+                                    clearInterval(timerInterval);
+                                }
+                            }).then((result) => {
+                                /* Read more about handling dismissals below */
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    console.log("I was closed by the timer");
+                                }
+                            });
+
+                    const t = setTimeout(() => {
+                        document.location.reload();
+                    }, 4000)
+                    //document.location.reload();
+                }
+            }
+
+        })
+    </script>
+{% endblock %}

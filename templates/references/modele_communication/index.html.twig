@@ -1,0 +1,85 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT -  {% trans %}Model for Documents Validation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/grille_legalite.png') }}"  alt="attribution">  {% trans %}Model for Documents Validation{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-success p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('app_modele_com.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+   {# <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />#}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
+
+    <section class="section">
+        <div class="card">
+            {# <div class="card-header">
+                <span class="fw-bold fs-4 p-2 mb-5" style="color: #3f5a70">Interface de gestion des Grilles de Légalites</span> <p class="alert-secondary p-2 text-dark text-end rounded-4 text-danger"> cliquez sur le document dans la liste pour le modifier</p>
+            </div>#}
+            <div class="card-body">
+
+                <table class="table table-responsive-sm w-100 p-2" id="grille_legalites">
+                    <thead>
+                    <tr style="background: #46a46a; color: #f0fcf0;">
+                        <th style="font-size: x-large;">{% trans %}Modele Name{% endtrans %}</th>
+                        <th style="font-size: x-large;">{% trans %}Model Type{% endtrans %}</th>
+                        <th style="font-size: x-large;">{% trans %}Status{% endtrans %}</th>
+                        <th style="font-size: x-large;">{% trans %}Actions{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for modele in mes_modeles %}
+                        {% if (modele.statut is same as "ACTIF") %}
+                            <tr class="fw-bold alert-success">
+                        {% else %}
+                            <tr class="fw-bold ">
+                        {% endif %}
+                        <td class="" style="font-size: 18px;font-weight: bold;"><a class="text-dark editBtn" href="{{ path('app_modele_com.edit', {'id_modele': modele.id })}}" id="{{ modele.id }}">{{ modele.libelleModele }}</a></td>
+
+                            {% if(modele.codeTypeModeleCommunication) %}
+                                {% if(modele.codeTypeModeleCommunication.id == 1) %}
+                                        <td><span class="badge alert-primary text-dark p-2 fw-bold" style="font-weight: bold;font-size: 16px;">{{ modele.codeTypeModeleCommunication.libelle }}</span></td>
+                                    {% elseif (modele.codeTypeModeleCommunication.id == 2)%}
+                                        <td><span class="badge alert-info text-dark p-2 fw-bold" style="font-weight: bold;font-size: 16px;">{{ modele.codeTypeModeleCommunication.libelle }}</span></td>
+                                    {% else %}
+                                        <td><span class="badge alert-warning text-dark p-2 fw-bold" style="font-weight: bold;font-size: 16px;">{{ modele.codeTypeModeleCommunication.libelle }}</span></td>
+                                    {% endif %}
+                            {% else %}
+                                <td><span class="badge alert-danger text-dark p-2 fw-bold" style="font-weight: bold;font-size: 16px;">-</span></td>
+                            {% endif %}
+
+                            <td><span class="badge bg-success text-white p-2 fw-bold" style="font-weight: bold;font-size: 18px;">{{ modele.statut }}</span></td>
+                        <td><a href="{{ path('app_modele_com.change_status', {id_modele: modele.id , id_type_modele: modele.codeTypeModeleCommunication.id}) }}" ><img src="{{ asset('assets/icons/security.png') }}" height="24" alt="security_profile" title="{% trans %}Change Status{% endtrans %}"></a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+    <script>
+       /* var table = new DataTable('#grille_legalites', {
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json',
+            }
+        });*/
+    </script>
+{% endblock %}

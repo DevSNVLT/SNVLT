@@ -1,0 +1,224 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Attributions{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="attribution">  {% trans %}Attributions{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+           <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('attribution.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>Ajouter</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive-sm w-100 p-2 bg-white" id="attributions">
+                    <thead>
+                    <tr style="background: #46a46a; color: #f0fcf0;">
+                        <th style="font-size: 20px;">{% trans %}N° Décision{% endtrans %}</th>
+                        <th style="font-size: 20px;">{% trans %}Forêt{% endtrans %}</th>
+                        <th style="font-size: 20px;">{% trans %}Attributaire{% endtrans %}</th>
+                        <th style="font-size: 20px;" class="text-center">{% trans %}Statut{% endtrans %}</th>
+                        <th style="font-size: 20px;">{% trans %}Actions{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for attribution in attributions %}
+                        {% if(attribution.statut) %}
+                        <tr class="h3" style="font-size: 20px;">
+                        {% else %}
+                        <tr class="h3 bg-danger text-white" style="font-size: 20px;">
+                        {% endif %}
+                            {% if(attribution.statut) %}
+                                <td class="text-dark fw-bold"><a class=" editBtn text-dark" style="font-size: 20px; font-weight: bold;" href="#" id="{{ attribution.id }}">{{ attribution.numeroDecision }} du {{ attribution.dateDecision | date('d/m/Y') }}</a></td>
+                                <td class="text-dark fw-bold"><a href="#" class="badge p-1 text-white" style="background: #0a430c;font-size: 20px;">{{ attribution.codeForet.denomination }}</a></td>
+                                <td class="text-dark fw-bold" style="font-size: 20px;">
+                            {% else %}
+                                <td class="text-white fw-bold"><a class=" editBtn text-white" style="font-size: 20px; font-weight: bold;" href="#" id="{{ attribution.id }}">{{ attribution.numeroDecision }} du {{ attribution.dateDecision | date('d/m/Y') }}</a></td>
+                                <td class="text-dark fw-bold"><a href="#" class="badge p-1 text-white" style="background: #0a430c;font-size: 20px;">{{ attribution.codeForet.denomination }}</a></td>
+                                <td class="text-white fw-bold" style="font-size: 20px;">
+                            {% endif %}
+                            {{ attribution.codeExploitant.raisonSocialeExploitant }}
+                        </a></td>
+                            <td class="text-dark fw-bold text-center">
+
+                                {% if(attribution.statut) %}
+                                    <span class="badge p-2 bg-secondary text-white" style="font-weight: bold;font-size: 20px;">ATTRIBUE</span>
+                                {% else %}
+                                    {% if(attribution.abandonne) %}
+                                        <span class="badge p-2 bg-danger text-white" style="font-weight: bold;font-size: 20px;">ABANDONNE</span>
+                                    {% else %}
+                                        <span class="badge p-2 alert-danger text-dark" style="font-weight: bold;font-size: 20px;">RETIRE</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td class="text-dark text-center fw-bold">
+                                {% if(attribution.statut) %}
+
+                                    <a class="btn btn-sm text-white btn_att" id="{{ attribution.id }}" style="background: red;font-size: 20px;" data-bs-toggle="modal" data-bs-target="#confirm_retrait">Retirer / Abandonner</a>
+                                {% else %}
+                                    <a class="btn btn-sm text-danger bg-white btn_restore" id="{{ attribution.id }}" style="border: #0a430c solid 4px;border-radius: 10px;font-size: 20px;" data-bs-toggle="modal" data-bs-target="#confirm_restore">Restaurer</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    {#    Retirer ou abandonner une attribution#}
+    <div class="modal fade" id="confirm_retrait" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Retirer / Abandonner PEF</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <select class="form-control mb-2 alert-warning font-weight-bold text-danger" name="select_retrait" id="select_retrait">
+                        <option value="1">RETIRER</option>
+                        <option value="2">ABANDONNER</option>
+                    </select>
+                    <label for="motif">Motif</label><textarea class="form-control" name="motif" value="" id="motif" placeholder="Renseigner le motif">
+                    </textarea>
+
+                </div>
+                <div class="modal-footer alert-secondary">
+                    <button type="button" class="btn btn-success mt-3" style="font-size: 20px;" id="retour">Annuler</button>
+                    <button type="button" class="btn btn-danger mt-3" style="font-size: 20px;" id="btn_retirer" >Effectuer l'opération</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#    Restaurer l'attribution#}
+    <div class="modal fade" id="confirm_restore" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Restaurer l'attribution</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Voulez-vous restaurer cette attribution ?</label>
+                            <h4  class="text-danger mt-2">L'opérateur pourra rétablir sa reprise</h4>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+                    <button type="button" class="btn btn-success mt-3 h3" style="font-size: 20px;" id="retour" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger mt-3 h3" style="font-size: 20px;" id="btn_restaurer" >Restaurer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+    <script>
+        let url = "";
+        let id_attribution = 0;
+        {% if(app.locale == 'fr') %}
+            url = '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json';
+        {% elseif(app.locale == 'en') %}
+            url = '//cdn.datatables.net/plug-ins/1.13.7/i18n/en-US.json';
+        {% elseif(app.locale == 'en') %}
+            url = '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json';
+        {% endif %}
+        var table = new DataTable('#attributions', {
+            language: {
+                url: url,
+            },
+            theme:'bootstrap'
+        });
+
+        $('.btn_att').on('click', function (){
+            id_attribution = this.id;
+            $('#motif').val("");
+        })
+        $('.btn_restore').on('click', function (){
+            id_attribution = this.id;
+        })
+
+        $('body').on('click','#btn_retirer', function (){
+            let motif = $('#motif').val();
+            let select_retrait = $('#select_retrait').val();
+            if (motif === ""){
+                alert("RENSEIGNEZ SVP LE MOTIF")
+            } else {
+                $.ajax({
+                    url: '{{ path('app_portail') }}snvlt/att/remove/' +id_attribution + '/' + select_retrait + '/' + motif,
+                    type: 'POST',
+                    success: function(response) {
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+                            alert("OPERATION EFFECTUEE AVEC SUCCES")
+                            document.location.reload()
+                        }else {
+                            alert("ERREUR LORS DE L'OPERATION")
+                        }
+                    }
+                })
+            }
+        })
+
+        $('body').on('click','#btn_restaurer', function (){
+
+                $.ajax({
+                    url: '{{ path('app_portail') }}snvlt/att/restaure/' +id_attribution,
+                    type: 'POST',
+                    success: function(response) {
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+                            alert("RESTAURATION EFFECTUEE AVEC SUCCES")
+                            document.location.reload()
+                        }else {
+                            alert("ERREUR LORS DE LA TENTATIVE DE RESTAURATION")
+                        }
+                    }
+                })
+        })
+    </script>
+
+{% endblock %}
+

@@ -1,0 +1,243 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Exercices SNVLT
+{% endblock %}
+
+{% block titre_page %}
+
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/new-folder.png') }}" alt="">  Nouvel exercice SNVLT
+    </h2>
+    {% if not (av_der_exo == 0) %}
+        <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+            <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+                <a class="btn text-dark p-2 font-weight-bold " style="border: 0px; font-size: 16px;background: linear-gradient(white,#eee4e0, #f3c3c3);margin: 10px;border-bottom: orangered 2px solid;" href="#" data-bs-toggle="modal" data-bs-target="#btn_rallonger"> <i class="mdi mdi-clock text-danger" style="font-size: 24px;margin-right: 10px;"></i>Rallonger l'exercice {{av_der_exo}}</a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="#" id="create_exo" class="btn btn-primary mt-3 mb-3 font-weight-lighter" style="font-size:32px;">Créer un nouvel exercice</a>
+                </div>
+                <table class="table" id="exercices" style="font-size:32px;">
+                    <thead>
+                    <tr>
+                        <th class="text-center h1"style="font-size:32px;">Années d'exercice</th>
+                    </tr>
+                    </thead>
+                    <tbody class="body_contenu" style="font-size:32px;">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </section>
+    {#    Modal Rallonge Exercice#}
+    <div class="modal fade" id="btn_rallonger" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/new-folder.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Exercices SNVLT</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                            style="display: none;"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="w-100">
+                            <label for="motif" class="text-dark font-weight-bold">Vous allez rallonger l'exercice 2024</label>
+                            <div class="input-group input-group-sm">
+                                <select class="alert-info form-control input-sm" name="mois_select" id="mois_select">
+                                    <option value="0">Nombre de mois</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                        </a>
+                        <a type="button" class="btn btn-success rallonger font-weight-light"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Ralonger
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        load_exercice();
+        $('.rallonger').on('click', function (){
+            let valeur = $('#mois_select').val();
+            if (valeur === "0"){
+                alert('Merci de sélectionner le nombre de mois');
+            } else {
+                rallonge(valeur)
+            }
+
+        })
+
+        function rallonge(valeur){
+            $.ajax({
+
+                url:'{{ path('app_portail') }}snvlt/admin/exercice/rall/av_exo/' + valeur ,
+                type : 'POST',
+                success: function(response){
+                    let reponse = JSON.parse(response);
+                    $("#btn_rallonger .btn-close").click();
+                    if (reponse[0].code === "SUCCESS"){
+                        Swal.fire({
+                            title: '<h1 class="text-center text-white bg-danger p-2" style="border-radius:8px;">SNVLT</h1>',
+                            html: "<h2 class='text-dark text-center'>Vous bénéficiez d'une rallonge pour l'exercice précédent</h2>",
+                            confirmButtonColor: '#3933dd',
+                            background: '#f8ecdf',
+                            confirmButtonText: 'OK',
+                            padding: '3em',
+                            width: '700px'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                document.location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '<h1 class="text-center text-white bg-danger p-2" style="border-radius:8px;">SNVLT</h1>',
+                            html: "<h2 class='text-dark text-center'>Désolé! la rallonge n'a pas pu être enregistrée</h2>",
+                            confirmButtonColor: '#c1bfef',
+                            background: '#fd2032',
+                            color: '#ffffff',
+                            confirmButtonText: 'OK',
+                            padding: '3em',
+                            width: '700px'
+                        });
+                        //alert("Désolé! la rallonge n'a pas pu être enregistrée")
+                    }
+
+                }
+
+            })
+        }
+        function load_exercice(){
+            let contenu = '<h1 class="text-primary">Chargement...</h1>';
+            $.ajax({
+
+                url:'{{ path('app_load_exercices') }}' ,
+                type : 'POST',
+                success: function(response){
+                    console.log(response);
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        let contenu = '';
+                        for (var i =0; i< reponse.length;i++){
+                            if (reponse[i].actif === true){
+                                if (reponse[i].rallonge === true){
+                                    contenu = contenu + '<tr class="text-primary" style="font-size:24px;">'
+                                    contenu = contenu + '<td class="text-center" style="font-size:24px;">'+ reponse[i].exo+' <span class="badge alert-primary" style="font-size:16px;">(Rallonge ' + reponse[i].nb_mois + ' mois)</span><span class="text-danger font-weight-bold+' +
+                                        '" style="font-size:12px;margin-left: 10px;">' + reponse[i].nb_jours_restants + ' jours restants</span></td>'
+                                } else {
+                                    contenu = contenu + '<tr class="text-primary" style="font-size:24px;">'
+                                    contenu = contenu + '<td class="text-center" style="font-size:24px;">'+ reponse[i].exo+'</td>'
+                                }
+                            }else {
+                                contenu = contenu + '<tr class="text-danger font-weight-bold" style="font-size:24px;">'
+                                contenu = contenu + '<td class="text-center" style="font-size:24px;">'+ reponse[i].exo+' <span style="font-size:16px;">(en cours)</span></td>'
+                            }
+
+                            contenu = contenu + '</tr>'
+                        }
+
+
+                        document.querySelector('.body_contenu').innerHTML = contenu
+                    } else {
+                        document.querySelector('.body_contenu').innerHTML = '<h1 class="text-danger">Aucun exercice</h1>';
+                    }
+
+
+                }
+
+            })
+        }
+
+        $('#create_exo').on('click', function (){
+            Swal.fire({
+                title: '<h1 class="text-center text-white bg-danger p-2" style="border-radius:8px;">{% trans %}SNVLT SECURITY{% endtrans %}</h1>',
+                html: "<h2 class='text-dark text-center'>Voulez-vous vraiment créer un nouvel exercice?</h2><h5 class='text-danger text-center'>Attention cette action est irréversible!!! <br>Ceci va clôturer l'exercice en cours et réinitialiser les tables de mouvements</h5>",
+                imageUrl: '{{ asset('assets/images/webapp/warning.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8ecdf',
+                confirmButtonText: 'Oui, Créer l\'exercice',
+                cancelButtonText: 'Non, merci',
+                toast: true,
+                padding: '3em',
+                width: '700px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('app_create_new_exercice') }}',
+                        type : 'POST',
+                        success: function(response){
+                            console.log(response);
+                            let reponse = JSON.parse(response);
+                            if (reponse[0].code === "SUCCESS"){
+                                Swal.fire(
+                                    '{% trans %}SNVLT SECURITY{% endtrans %}',
+                                    'Exercice créé avec succès !',
+                                    '{% trans %}Succès{% endtrans %}' )
+                                    .then((result) => {
+                                        if (result.isConfirmed) {
+                                            load_exercice();
+                                        }
+                                    });
+                            } else {
+                                Swal.fire(
+                                    '{% trans %}SNVLT SECURITY{% endtrans %}',
+                                    'ERREUR dans la création du nouvel Exercice!',
+                                    '{% trans %}Erreur{% endtrans %}' )
+                                    .then((result) => {
+                                        if (result.isConfirmed) {
+                                            load_exercice();
+                                        }
+                                    });
+                            }
+                        }
+                    });
+
+                }
+            });
+        })
+    </script>
+
+
+
+{% endblock %}

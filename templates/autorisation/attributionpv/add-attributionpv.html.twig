@@ -1,0 +1,144 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Plantation Wood Authorisation{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="attribution_pv">  {% trans %}Plantation Wood Authorisation{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    {% set options = option_service.findAll %}
+    <link href="{{ asset('assets/dselect-main/dist/css/dselect.css') }}" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <style>
+        #dt{
+            text-indent: -500px;height:25px; width:200px;
+        }
+    </style>
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-2">
+                    <h3 class="alert-primary">Nouvelle attribution</h3>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="my-auto p-2 font-weight-bold" style="width: 200px;">Parcelle </span><span class="text-danger my-auto" style="min-width: 10px;">*</span>
+                        <select class="form-control custom-select-sm" name="parcelle" id="parcelle" style="max-width: 250px;" >
+                                <option value="0">Sélectionnez la parcelle</option>
+                                {% for parcelle in parcelles %}
+                                        <option value="{{ parcelle.id }}">{{ parcelle.numeroForet }}</option>
+                                {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="my-auto p-2 font-weight-bold" style="width: 200px;text-transform: uppercase;">Attributaire</span><span class="text-danger my-auto" style="min-width: 10px;">*</span>
+                        <input class="form-control" name="attributaire" id="attributaire" style="max-width: 250px;text-transform: uppercase;" >
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="my-auto p-2 font-weight-bold" style="width: 200px;">N° Mobile / Téléphone</span><span class="text-danger my-auto" style="min-width: 10px;"></span>
+                        <input class="form-control" name="tel" id="tel" style="max-width: 250px;" >
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="my-auto p-2 font-weight-bold" style="width: 200px;">N° de la décision</span><span class="text-danger my-auto" style="min-width: 10px;">*</span>
+                        <input class="form-control" name="decision" id="decision" style="max-width: 250px;" >
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="my-auto p-2 font-weight-bold" style="width: 200px;">Date</span><span class="text-danger my-auto" style="min-width: 10px;">*</span>
+                        <input class="form-control" type="date" id="date_att"  style="max-width: 250px;" />
+                    </div>
+                    <a href="{{ path('app_attributionpv') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                    <a href="#"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter" id="btn_enr"><i class="mdi mdi-content-save" style="font-size: 18px;margin-right: 10px;"></i>Enregistrer l'attribution</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/dselect-main/dist/js/dselect.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/litepicker/2.0.11/litepicker.js"></script>#}
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+    <script>
+        $('#parcelle').select2({
+            theme: "classic",
+            color: 'blue'
+        });
+
+        $(function(){
+
+            let datePicker = document.getElementById('date');
+            let picker = new Litepicker({
+                element: datePicker,
+                format: 'DD-MM-YYYY'
+            });
+
+            let dateRangePicker = document.getElementById('dateRangePicker');
+            let pickerRange = new Litepicker({
+                element: dateRangePicker,
+                format: 'dd-mm-YYYY',
+                singleMode: false,
+            });
+        });
+
+        $('#btn_enr').on('click', function (){
+            if ($('#parcelle').val() === "0" ||
+                $('#attributaire').val() === "" ||
+                $('#decision').val() === "" ||
+                $('#date_att').val() === "" ||
+                $('#parcelle').val() === "")
+            {
+                alert('Merci de saisir tous les champs étoilés avant de continuer')
+            } else {
+                enregistrer_att()
+            }
+        })
+
+        function enregistrer_att(){
+            var obj = {};
+
+            obj.parcelle =  $("#parcelle").val();
+            obj.numero_decision =  $("#decision").val();
+            obj.date_decision =  $("#date_att").val();
+            obj.numero_mobile =  $("#tel").val();
+            obj.attributaire =  $("#attributaire").val();
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/add-new/attpv/' + data,
+                type : 'POST',
+                success: function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "SUCCESS"){
+                        render_toast_value("ATTRIBUTION PARCELLE VILLAGEOISE CREE", 1)
+                        document.location.href = "{{ path('app_attributionpv') }}"
+                    } else if (reponse[0].code === "PARCELLE_ATTRIBUEE"){
+                        render_toast_value("PARCELLE DEJA ATTRIBUEE", 3)
+                    } else {
+                        render_toast_value("ERREUR LORS DE L'ENREGISTREMENT DE L'ATTRIBUTION PV", 0)
+                    }
+                }
+            })
+        }
+    </script>
+
+
+
+
+{% endblock %}

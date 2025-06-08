@@ -1,0 +1,110 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% if (app.user.codeexploitant) %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}My BREPF{% endtrans %}
+    {% else %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}BREPF{% endtrans %}
+    {% endif %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Direction{% endtrans %}">
+        {% if (app.user.codeexploitant) %}
+            {% trans %}My BREPF{% endtrans %}
+        {% else %}
+            {% trans %}DOCUMENTS BREPF{% endtrans %}
+        {% endif %}
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="alert-success" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_brepfs" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #4d7304;color: #fffefe; font-weight: bold;">
+                        <th>{% trans %}BREPF No{% endtrans %}</th>
+                        <th>{% trans %}Cantonment{% endtrans %}</th>
+                        <th>{% trans %}DD{% endtrans %}</th>
+                        <th>{% trans %}Regional Direction{% endtrans %}</th>
+                        <th>{% trans %}Delivery date{% endtrans %}</th>
+                        {% if not app.user.codeExportateur %}
+                            <th>{% trans %}Exporter{% endtrans %}</th>
+                            <th>{% trans %}Exporter Code{% endtrans %}</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+                    <tbody  id="body_contenu">';
+                    <tr><td><h2 class="text-danger">{{ 'Loading BREPF ' | trans }}</h2></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+
+        //Chargement de la liste des BREPF pour l'opérateur
+        mes_brepf();
+
+        function mes_brepf(){
+
+            $.ajax({
+                url: '{{ path('app_docs_brepf_json') }}',
+                type: 'POST',
+                success: function(response) {
+
+                    let docbrepf_liste = JSON.parse(response);
+                    let contenu = "";
+                    let table = document.querySelector("#my_brepfs");
+
+                    for(var i = 0; i < docbrepf_liste.length ; i++){
+                        if(docbrepf_liste[i].etat === false){
+                            contenu = contenu +'<tr class="alert-danger">';
+                        }else  {
+                            contenu = contenu +'<tr>';
+                        }
+
+                        contenu = contenu + '<td><a class="badge p-2 text-white font-weight-bold text-center" style="background:orangered;font-size:16px;" href="{{path('app_portail')}}snvlt/docbrepf/op/pages/' + docbrepf_liste[i].id_doc_brepf + '" id="' + docbrepf_liste[i].id_doc_brepf + '">' + docbrepf_liste[i].numero_docbrepf + '</a></td>' +
+                            '<td><span>' + docbrepf_liste[i].cantonnement  + '</span></td>'+
+                            '<td><span>' + docbrepf_liste[i].ddef  + '</span></td>'+
+                            '<td><span>' + docbrepf_liste[i].dr  + '</span></td>'+
+                            '<td><span>' + docbrepf_liste[i].date_delivrance  + '</span></td>';
+                        {% if not app.user.codeExportateur %}
+                        contenu = contenu +'<td><span>' + docbrepf_liste[i].exportateur  + '</span></td>'+
+                            '<td><span>' + docbrepf_liste[i].code_exportateur  + '</span></td>';
+                        {% endif %}
+                    }
+                    document.querySelector('#body_contenu').innerHTML = contenu;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#my_brepfs');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

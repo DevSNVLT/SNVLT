@@ -1,0 +1,305 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+        {% trans %}SNVLT{% endtrans %} - {% trans %}Loading of logs to my factory{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="log_accept">
+            {% trans %}Loading of logs to my factory{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a href="#" class="btn bg-facebook text-white" style="font-size: 16px;"  data-bs-toggle="modal" data-bs-target="#accept_loading"><i class="mdi mdi-check-all" style="margin-right: 10px;font-weight: bold;font-size: 24px;"></i> {{ 'Accept all loadings' | trans }}</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <section class="section">
+        <div class="alert-warning" style="height: 40px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive" id="my_loadings" style="width: 100%;">
+                    <thead>
+                    <tr style="background: #dbd9dc;color: #1c1b1b; font-weight: bold;">
+
+                            <th>{% trans %}Loading No{% endtrans %}</th>
+                            <th>{% trans %}Document Type{% endtrans %}</th>
+                            <th>{% trans %}Forest{% endtrans %}</th>
+                            <th>{% trans %}Cantonment{% endtrans %}</th>
+                            <th>{% trans %}Sender{% endtrans %}</th>
+                            <th>{% trans %}Log Date{% endtrans %}</th>
+                            <th>{% trans %}Details{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>';
+                        {% for chargement in chargements %}
+                            <tr>
+                               <td class="font-weight-bold link"><a href="#" id="{{ chargement.id }}" data-bs-toggle="modal" data-bs-target="#details_chargement" class="chr_usine">{{ chargement.numeroPagebrh }}</a></td>
+                                <td class="font-weight-bold">{{ chargement.codeDocbrh.typeDocument.abv }}</td>
+                                <td class="font-weight-bold">{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</td>
+                                <td class="font-weight-bold">{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeForet.codeCantonnement.nomCantonnement }}</td>
+                                <td class="font-weight-bold">{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeExploitant.sigle }}</td>
+                                <td class="font-weight-bold">{{ chargement.dateChargementbrh | date('d/m/Y') }}</td>
+
+                                <td class="font-weight-bold">
+                                    {% set nb = 0 %}
+                                    {% set vol =0 %}
+                                    {%  for ligne in chargement.lignepagebrhs %}
+                                        {% set nb = nb +  1 %}
+                                        {% set vol = vol +  ligne.cubageLignepagebrh %}
+                                    {% endfor %}
+                                   <span class="alert-success p-1 m-1 font-weight-bold">{{ nb }} {% if (nb > 1) %} grumes {% else %} grumes {% endif %}</span>
+                                   <span class="alert-danger p-1 m-1 font-weight-bold">{{ 'volume' | trans }} : {{ vol }} m<sup>3</sup></span>
+                                    <a href="#" data-bs-target="#loading_details" data-bs-toggle="modal" title="{{ 'Click here to show details' | trans }}"><i class="text-dark mdi mdi-eye" style="font-size: 24px;float: right;"></i></a>
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- Accepter tous les chargements -->
+        <div class="modal fade" id="accept_loading" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'loading of logs to my factory' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation ' |trans}}</label>
+                                <h6  class="text-danger ">{{ 'Do you want to accept all loadings? ' |trans}}</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="#"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a href="{{ path('accept_loadings') }}" class="btn btn-success accepter font-weight-light  terminate" id="terminate" style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Accept'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        <!-- Détails chargement -->
+        <div class="modal fade" id="details_chargement" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" height="32" alt="truck">{{ 'Loadinng details' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">    {% set volumeTotal = 0 %}
+
+
+                        <section class="section p-2" style="background:radial-gradient(#f3fbda, #e4fafe); border: 1px lightgrey solid">
+
+                            <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+
+                                <div class="card-body p-2" style="background: #f4f2f2">
+
+                                    <div class="alert-warning mb-3">
+                                        <div class="row alert-secondary ">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'Logger' }}</span>
+                                            <span class="text-dark font-weight-bold col-md-9 lbl_exploitant" style="font-size: 16px;"></span>
+                                        </div>
+                                        <div class="row alert-secondary ">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'Forest' }}</span>
+                                            <span class="text-dark font-weight-bold badge alert-dark p-1 lbl_foret" style="font-size: 16px;margin-left: 10px;"></span>
+                                        </div>
+                                        <div class="row alert-secondary ">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'Document' }}</span>
+                                            <span class="text-dark font-weight-bold badge alert-dark p-1 lbl_document" style="font-size: 16px;margin-left: 10px;"></span>
+                                        </div>
+                                        <div class="row alert-secondary ">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'loading date' }}</span>
+                                            <span class="text-dark font-weight-bold col-md-9 lbl_datechrh" style="font-size: 16px;"></span>
+                                        </div>
+                                        <div class="row alert-secondary ">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'Destination' }}</span>
+                                            <span class="text-dark font-weight-bold col-md-9 lbl_rsu" style="font-size: 16px;"></span>
+                                        </div>
+                                        <div class="row alert-secondary mb-2">
+                                            <span class="col-md-2" style="font-size: 16px;">{{ 'Total volume' }}</span>
+                                            <span class="text-white font-weight-bold badge p-2 bg-danger lbl_volume" style="font-size: 16px;margin-left: 10px;"></span>
+                                        </div>
+                                    </div>
+                                    <table class="table table-responsive" id="data_brh">
+                                        <thead>
+                                        <tr class="alert-primary">
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
+                                            <th class="font-weight-bold" style="font-size: 20px;width: 15%;">{{ 'species' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody class="bg-white text-center body_contenu">
+
+                                        </tbody>
+                                    </table>
+
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequest" class="btn btn-sm bg-primary p-2 me-2 ms-5 text-white font-weight-light btn_a_valider" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-check-circle" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Validate the loading{% endtrans %}</a>
+                                        <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-message-alert" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Report loading{% endtrans %}</a>
+
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                       {# <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>#}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal ACCEPT-->
+        <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header alert-success">
+                        <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Loading validation' | trans}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation' |trans}}</label>
+                                <h6  class="text-danger ">Voulez-vous accepter ce déchargement ?</h6>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                            </a>
+                            <a type="button" class="btn btn-success btn_accepter font-weight-light  accept_loading"  style="font-size: 16px;margin-left: 15px;">
+                                <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#my_loadings');
+        let dataTable = new simpleDatatables.DataTable(table1);
+        let index_page = 0;
+
+        $('.chr_usine').on('click', function (){
+            index_page = this.id;
+            recherche_chr(this.id);
+        })
+        function recherche_chr(index_page){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbrh/validate_chargement/page/' + index_page,
+                type: 'POST',
+                success: function(response) {
+                    let info_chr = JSON.parse(response);
+                    let contenu = "";
+
+
+                    for(var i = 0; i < info_chr.length ; i++){
+                        contenu = contenu +'<tr class="alert-success">';
+
+                        contenu = contenu + '<td><a class="text-dark font-weight-bold" style="font-size: 14px;" href="#" id="' + info_chr[i].id_arbre + '">' + info_chr[i].numero_arbre + '</a></td>' +
+                            '<td><span>' + info_chr[i].lettre_arbre  + '</span></td>'+
+                            '<td><span>' + info_chr[i].essence  + '</span></td>'+
+                            '<td><span>' + info_chr[i].zone  + '</span></td>'+
+                            '<td><span>' + info_chr[i].x  + '</span></td>'+
+                            '<td><span>' + info_chr[i].y  + '</span></td>'+
+                            '<td><span>' + info_chr[i].lng  + '</span></td>'+
+                            '<td><span>' + info_chr[i].dm  + '</span></td>'+
+                            '<td><span>' + info_chr[i].vol  + '</span></td>';
+                    }
+                    document.querySelector('.lbl_exploitant').innerText = info_chr[0].exploitant;
+                    document.querySelector('.lbl_foret').innerText = info_chr[0].foret;
+                    document.querySelector('.lbl_document').innerText = info_chr[0].numero_doc;
+                    document.querySelector('.lbl_datechrh').innerText = info_chr[0].date_chargement;
+                    document.querySelector('.lbl_rsu').innerText = info_chr[0].parc_usine;
+                    document.querySelector('.lbl_volume').innerHTML = info_chr[0].vol + 'm<sup>3</sup>';
+
+                    document.querySelector('.body_contenu').innerHTML = contenu;
+
+                }
+            })
+        }
+        $('.btn_accepter').on('click', function (){
+            validate_pagebrh()
+        })
+
+        function validate_pagebrh()
+        {
+            $.ajax({
+                url:'{{ path('app_portail') }}snvlt/brh/validate_usine/' + index_page ,
+                type : 'POST',
+                success: function(response) {
+                    console.log(response);
+                    let valeur = JSON.parse(response);
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer: 3000,
+                        icon: "success",
+                        title: '{% trans %}The loading is validate!{% endtrans %}',
+                        showConfirmButton: false
+                    });
+                    alert("CHARGEMENT ACCEPTE");
+                    document.location.reload();
+                    }
+                });
+        }
+    </script>
+{% endblock %}
+

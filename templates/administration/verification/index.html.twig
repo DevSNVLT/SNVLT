@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('assets/login/style_login.css') }}">
+
+    <title>{% trans %}SNVLT - Connexion{% endtrans %}</title>
+</head>
+<body class="d-flex text-center" style="background-image: path('{{ asset('assets/images/fond_login.jpg') }}'); background-size: cover; background-repeat: no-repeat;">
+<form method="post" class="form-login">
+
+    <img src="{{ asset('assets/images/logo_snvlt.png') }}" height="190" alt="SNVLT">
+
+    <h1 class="h3 mb-3 font-weight-normal">{% trans %}Enter Validation Code{% endtrans %}</h1>
+    <!-- 'sr-only' will hide the text : 'Email Address'. So, 'Email Address' will be invisible -->
+
+    {#<label for="inputEmail">Email</label>#}
+    <div class="row">
+        <div class="col-3 align-items-center verif1"><input type="text" name="verif1" id="verif1" class="form-control mb-3" style="font-weight: bold;font-size: 32px;text-align: center;"></div>
+        <div class="col-3 align-items-center verif2"><input type="text" name="verif2" id="verif2" class="form-control mb-3" style="font-weight: bold;font-size: 32px;text-align: center;"></div>
+        <div class="col-3 align-items-center verif3"><input type="text" name="verif3" id="verif3" class="form-control mb-3" style="font-weight: bold;font-size: 32px;text-align: center;"></div>
+        <div class="col-3 align-items-center verif4"><input type="text" name="verif4" id="verif4" class="form-control mb-3" style="font-weight: bold;font-size: 32px;text-align: center;"></div>
+    </div>
+
+    {#<label for="inputPassword">Mot de passe</label>#}
+
+
+    <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">
+        {% trans %}Enter{% endtrans %}
+    </button>
+    <hr>
+
+
+</form>
+
+<!-- Optional JavaScript -->
+<!-- Popper.js first, then Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+
+
+<script>
+    window.onload = () =>{
+        $('#verif1').focus();
+    }
+    $('.verif1').focus(function (){
+
+        $('#verif1').val(null);
+    })
+    $('.verif1').keyup(function (){
+        $('#verif2').focus();
+    })
+    $('.verif2').keyup(function (){
+        $('#verif3').focus();
+    })
+    $('.verif3').keyup(function (){
+        $('#verif4').focus();
+    })
+</script>
+</body>
+</html>

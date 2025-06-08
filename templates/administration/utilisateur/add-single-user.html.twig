@@ -1,0 +1,330 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - Enregistrer un utilisateur
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/user_profile.png') }}"  alt="{% trans %}users{% endtrans %}">  Ajouter un utilisateur
+    </h2>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+
+{% block page_content %}
+
+
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+
+
+    <section class="section">
+        <div class="card" style="background: linear-gradient(#457551,#2f4d52);">
+            <div class=" p-1 d-inline-flex" style="background: #0C9A9A;border: 1px solid #0C9A9A;float: right;">
+            <a href="{{ path('app_utilisateur') }}" class="bg-danger p-2 me-2 text-white font-weight-light"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+            <button type="submit"  class="btn btn-sm bg-primary text-white p-2 font-weight-light enr_user" style="margin-left: 10px;">
+                <i class="mdi mdi-bag-personal" style="font-size: 18px;margin-right: 10px;"></i>Ajouter un utilisateur
+            </button>
+            </div>
+            <div class="container sticky-top" style="background: linear-gradient(#d2fcdd,#f0fbfd);border: 1px solid #0C9A9A">
+
+                <div class="input-group mb-2 mt-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Nom Utilisateur</span>
+                    <input type="text" class="form-control h4 border-0 fit-width" required style="font-size: large;text-transform: uppercase;" id="txt_nom"  aria-label="Nom utilisateur" aria-describedby="Nom utilisateur">
+                </div>
+
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Prénom(s)</span>
+                    <input type="text" class="form-control h4 border-0" required style="font-size: large;text-transform: uppercase;" id="txt_prenom"  aria-label="Prenoms utilisateur" aria-describedby="Prenoms utilisateur">
+                </div>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Email</span>
+                    <input type="text" class="form-control h4 border-0" required style="font-size: large" id="txt_email"  aria-label="Email utilisateur" aria-describedby="Email utilisateur">
+                </div>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Mobile</span>
+                    <input type="text" class="form-control h4 border-0" required style="font-size: large;width: fit-content" id="txt_mobile"  aria-label="Mobile utilisateur" aria-describedby="Mobile utilisateur">
+                </div>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Fonction</span>
+                    <input type="text" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="txt_fonction"  aria-label="Fonction utilisateur" aria-describedby="Fonction utilisateur">
+                </div>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Titre</span>
+                    <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="select_titre"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                        <option value="0">Sélectionnez le titre de l'utilisateur</option>
+                        {% for titre in titres %}
+                            <option value="{{ titre.id }}">{{ titre.libelle }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Langue</span>
+                    <select type="text" class="form-control h4 border-0 select_langue" required style="font-size: large" id="select_langue"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                            <option value="0">Sélectionnez la langue</option>
+                            <option value="fr">Français</option>
+                            <option value="en">Anglais</option>
+                    </select>
+                </div>
+
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Vous êtes</span>
+                    <select type="text" class="form-control h4 border-0 select_op" required style="font-size: large" id="select_op"  aria-label="Type Operateur" aria-describedby="Operateur">
+                        <option value="0">Sélectionnez le type Opérateur</option>
+                        {% for op in type_op %}
+                            <option value="{{ op.id }}">{{ op.libelleOperateur }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <select type="text" class="form-control h4 border-0 select_rattachement" style="font-size: large;background: #ccde96;display:none" id="select_rattachement" aria-label="Type Operateur" aria-describedby="Operateur">
+                    <option value="0">Sélectionnez votre ratachement</option>
+                    <option value="1">DIRECTION</option>
+                    <option value="2">SERVICE</option>
+                </select>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Votre structure</span>
+                    <select type="text" class="form-control h4 border-0 select_entite" style="font-size: large" id="select_entite"  aria-label="Type Operateur" aria-describedby="Operateur">
+                        <option value="0">Sélectionnez la structure</option>
+                    </select>
+                </div>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light"  style="min-width: 200px;">Votre groupe</span>
+                    <select type="text" class="form-control h4 border-0 select_groupe" required style="font-size: large" id="select_groupe"  aria-label="groupe" aria-describedby="groupe">
+                        <option value="0">Sélectionnez le groupe</option>
+                        {% for groupe in groupes %}
+                            <option value="{{ groupe.id }}">{{ groupe.nomGroupe }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                </div>
+            </div>
+
+
+        <div class="modal fade" id="code_user" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-header">
+                <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                >
+
+                </button>
+            </div>
+            <div class="modal-dialog">
+                <span class="code_utilisateur" style="font-size: 72px;width:100%">
+
+                </span>
+            </div>
+        </div>
+
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="{{ asset('assets/select_btn/js/hierarchy-select.min.js') }}"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha256-CjSoeELFOcH0/uxWu6mC/Vlrc1AARqbm/jiiImDGV3s=" crossorigin="anonymous"></script>
+    <!-- Hierarchy Select Js -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+
+
+    <script>
+
+
+        $(document).ready(function(){
+            $('#txt_mobile').val('+225')
+            const phoneInputField = document.querySelector("#txt_mobile");
+            const phoneInput = window.intlTelInput(phoneInputField, {
+                utilsScript:
+                    "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            });
+            initialise();
+            //document.querySelector('.select_rattachement').style = "display:none";
+        });
+        $('.select_op').on('change', function (){
+            let url = '';
+            let valeur = this.value;
+            let contenu = '<option value="0">Sélectionnez l\'entité</option>';
+            document.querySelector('.select_rattachement').style = "display:none;";
+            if (valeur === "1"){
+                $('.select_rattachement').addClass("input-group mb-2");
+                document.querySelector('.select_rattachement').style = "font-size: large;background: #ccde96;";
+
+            } else if (valeur === "2"){
+                url = "{{ path('json_exploitants') }}"
+            } else if (valeur === "3"){
+                url = "{{ path('json_usines_all') }}"
+            } else if (valeur === "4"){
+                url = "{{ path('json_exportateurs') }}"
+            } else if (valeur === "5"){
+                url = "{{ path('json_dr') }}"
+            } else if (valeur === "6"){
+                url = "{{ path('json_ddef_all') }}"
+            } else if (valeur === "7"){
+                url = "{{ path('json_cantonnement') }}"
+
+            } else if (valeur === "9"){
+                url = "{{ path('json_ois') }}"
+            } else if (valeur === "10"){
+                url = "{{ path('json_pf') }}"
+            } else if (valeur === "11"){
+                url = "{{ path('json_sodefor') }}"
+            }
+
+           $.ajax({
+               url: url,
+               type: 'POST',
+               success: function (response){
+                   let reponse = JSON.parse(response);
+                   for(var i=0; i < reponse.length; i++){
+                           contenu = contenu + '<option value="' + reponse[i].id + '">' + reponse[i].rs + '</option>'
+                   }
+                   document.querySelector('.select_entite').innerHTML = contenu
+               }
+           })
+
+        });
+        $('.enr_user').on('click', function (){
+            if ($('#txt_nom').val() === ''){
+                affiche_popup("Le nom est obligatoire")
+            } else if ($('#txt_prenom').val() === ''){
+                affiche_popup("Le prénom est obligatoire")
+            } else if ($('#txt_contact').val() === ''){
+                affiche_popup("Le contact est obligatoire")
+            } else if ($('#txt_mobile').val() === '' || $('#txt_mobile').val().length < 12){
+                affiche_popup("Le contact est obligatoire")
+            } else if ($('#select_titre').val() === '0'){
+                affiche_popup("Le titre est obligatoire")
+            } else if ($('#select_op').val() === '0'){
+                affiche_popup("Le Type Opérateur est obligatoire")
+            } else if ($('#select_entite').val() === '0'){
+                affiche_popup("La structure est obligatoire")
+            } else if ($('#select_groupe').val() === '0'){
+                affiche_popup("Le groupe est obligatoire")
+            } else if ($('#select_langue').val() === '0'){
+                affiche_popup("La langue est obligatoire")
+            }  else {
+                var obj = {};
+                obj.nom =  $("#txt_nom").val();
+                obj.prenoms =  $("#txt_prenom").val();
+                obj.email =  $("#txt_email").val();
+                obj.mobile =  $("#txt_mobile").val();
+                obj.titre =  $("#select_titre").val();
+                obj.groupe =  $("#select_groupe").val();
+                obj.langue =  $("#select_langue").val();
+                obj.op =  $("#select_op").val();
+                obj.entite =  $("#select_entite").val();
+                obj.fonction =  $("#txt_fonction").val();
+                obj.rattachement =  $(".select_rattachement").val();
+
+
+                var data = JSON.stringify(obj);
+
+                $.ajax({
+                    'url': '{{ path('app_portail') }}snvlt/users/create-single-user/'+ data,
+                    'type': 'POST',
+                    success: function(response) {
+                        let Reponse = JSON.parse(response);
+                        if (Reponse[0].code ==="SUCCESS"){
+                            Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                background: '#dffbdd',
+                                timer : 3000,
+                                icon: "success",
+                                title: 'Utilisateur créé avec succes',
+                                showConfirmButton: false
+                            });
+                            initialise();
+                            //$('.code_user').modal('show');
+                            let code_user =Reponse[0].mot_passe;
+                            Swal.fire("VOTRE CODE UTILISATEUR EST " + code_user.toUpperCase());
+                            //document.querySelector('.code_utilisateur').innerText = code_user.toUpperCase();
+                        } else if (Reponse[0].code ==="EMAIL_EXIST"){
+                            affiche_popup('DESOLE! CET EMAIL EXISTE DEJA.')
+                        }
+                    }
+                })
+            }
+
+
+
+        })
+        $('.select_rattachement').on('change', function (){
+            let url = '';
+            let contenu  = '<option value="0">Sélectionnez la structure</option>';
+            if (this.value === "1"){
+                url = "{{ path('json_directions_minef') }}"
+            } else if (this.value === "2"){
+                url = "{{ path('json_services_minef') }}"
+            }
+            $.ajax({
+                url: url,
+                type: 'POST',
+                success: function (response){
+                    let value = JSON.parse(response);
+                    for(var i=0; i < value.length; i++){
+                        contenu = contenu + '<option value="' + value[i].id + '">' + value[i].rs + '</option>'
+                    }
+                    document.querySelector('.select_entite').innerHTML = contenu
+                }
+            })
+        });
+
+    function affiche_popup(texte){
+        Swal.fire({
+            title: texte,
+            background: '#f8b8c0',
+            showClass: {
+                popup: `
+                      animate__animated
+                      animate__fadeInUp
+                      animate__faster
+                    `
+            },
+            hideClass: {
+                popup: `
+                      animate__animated
+                      animate__fadeOutDown
+                      animate__faster
+                    `
+            }
+        });
+    }
+
+        // Initialise les valeurs à VIDE
+        function initialise(){
+            $('#txt_nom').val('');
+            $('#txt_prenom').val('');
+            $('#txt_email').val('');
+            $('#txt_mobile').val('+225');
+            $('#txt_fonction').val('');
+            $('#select_titre').val('0');
+            $('#select_langue').val('0');
+            $('#select_op').val('0');
+            $('#select_entite').val('0');
+            $('#select_groupe').val('0');
+            $('.select_rattachement').val('0');
+            $('.select_d').val('0');
+            $('#txt_nom').focus();
+        }
+    </script>
+
+{% endblock %}

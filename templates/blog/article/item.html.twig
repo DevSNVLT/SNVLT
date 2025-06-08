@@ -1,0 +1,20 @@
+{% set article_show = path('article_blog_show',{'slug': article.slug} ) %}
+
+    <div class="single-latest-news"{# style="max-height: 400px;"#}>
+        <a href="#">
+            {% if article.featuredImage %}
+                <a href="{{ path('article_blog_show',{'slug': article.slug} ) }}" class="link-primary">
+                    <img src="/uploads/media/{{article.featuredImage.filename}}" alt="{{ article.featuredImage.altText }}" loading="lazy" width="350" height="200">
+                </a>
+            {% endif %}
+        </a>
+        <div class="news-text-box">
+            <h3><a href="{{ path('article_blog_show',{'slug': article.slug} ) }}">{{ article.title }}</a></h3>
+            <p class="blog-meta">
+                <span class="author"><i class="fas fa-user"></i>agridevaf</span>
+                <span class="date"><i class="fas fa-calendar"></i>{{ article.createdAt|date('d m Y') }}</span>
+            </p>
+            <p class="excerpt">{{ article.featuredText}}</p>
+            <a href="{{ path('article_blog_show',{'slug': article.slug} ) }}" class="read-more-btn">Lire l'article <i class="fas fa-angle-right"></i></a>
+        </div>
+    </div>

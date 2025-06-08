@@ -1,0 +1,95 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Ajouter une essence
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/essences.png') }}" alt="">  Essences Forestières - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section" style="border: 1px green solid;">
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.numero_essence) }}</div>
+                        <div class="">{{ form_row(form.nom_vernaculaire) }}</div>
+                        <div class="">{{ form_row(form.nom_scientifique) }}</div>
+                        <div class="">{{ form_row(form.categorie_essence) }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.famille_essence) }}</div>
+                        <div class="">{{ form_row(form.dm_minima) }}</div>
+                        <div class="">{{ form_row(form.taxe_abattage) }}</div>
+                        <div class="">{{ form_row(form.taxe_preservation) }}</div>
+                    </div>
+                    <div class="">{{ form_row(form.autorisation) }}</div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+
+                    {% if (titre == "Ajouter") %}
+                        <i class="bi bi-asterisk"></i>
+                        <span class="d-none d-sm-block">Ajouter une essence</span>
+                    {% else %}
+                    <i class="bi bi-pencil"></i>
+                    <span class="d-none d-sm-block">Modifier l'essence</span>
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'essence -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#essences');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+        $('body').on('click', '.editBtn', function(e){
+            e.preventDefault();
+            $.ajax({
+                url:'{{ path('edit-essence') }}/' + this.id,
+                type : 'POST',
+                data : {id_essence: this.id},
+                success: function(response){
+                    console.log(response);
+                    let essenceInfo = JSON.parse(response);
+
+                    $('#essences_numero_essence').val(essenceInfo.code_essence);
+                    $('#essences_nom_vernaculaire').val(essenceInfo.nom_vernaculaire);
+                    $('#essences_nom_scientifique').val(essenceInfo.nom_scientifique);
+                    $('#essences_categorie_essence').val(essenceInfo.categorie);
+                    $('#essences_dm_minima').val(essenceInfo.dm_minima);
+                    $('#essences_famille_essence').val(essenceInfo.famille_essence);
+                    $('#essences_taxe_abattage').val(essenceInfo.taxe_abattage);
+                    $('#essences_taxe_preservation').val(essenceInfo.taxe_preservation);
+
+                }
+            })
+        })
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}
+

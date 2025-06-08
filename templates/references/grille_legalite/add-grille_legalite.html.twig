@@ -1,0 +1,101 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Legality Grid{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/grille_legalite.png') }}" alt="grille_legalite">    {% trans %}Legality Grid{% endtrans %} - {% trans %}[ADD]{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-9 mx-auto">
+                        <div class="">{{ form_row(form.libelle_document) }}</div>
+                        <div class="">{{ form_row(form.description_document) }}</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="">{{ form_row(form.periodicite) }}</div>
+                                <div class="">{{ form_row(form.duree)}}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="">{{ form_row(form.statut) }}</div>
+                                <div class="">{{ form_row(form.code_operateur) }}</div>
+                            </div>
+                        </div>
+
+                        <a href="{{ path('ref_grille_legalite') }}" class="bg-danger p-2 me-2 text-white"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-primary text-white p-2 font-weight-lighter" style="margin-left: 10px;">
+
+                            {% if (titre is same as "Ajouter un document modèle") %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Add Document Type{% endtrans %}
+                            {% else %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Edit Document Type{% endtrans %}
+                            {% endif %}
+                        </button>
+                    </div>
+
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+        $(document).ready(function() {
+            $('.operateur').select2({
+                placeholder: "--Sélectionnez la périodicité...",
+                theme: "bootstrap-5",
+                clear: true
+            });
+
+            $('.periodicite').select2({
+                placeholder: '--Sélectionnez le type Opérateur...',
+                theme: "bootstrap-5",
+                width: '100%',
+                clear: true
+            });
+
+            $('.statut').select2({
+                placeholder: '--Définir un statut...',
+                theme: "bootstrap-5",
+                width: '100%',
+                clear: true
+            });
+        });
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}
+

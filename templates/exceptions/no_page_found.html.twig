@@ -1,0 +1,33 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - Page non trouvée
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/login/style_login.css') }}">
+
+    <center>
+          <form method="post" class="form-login alert-light-danger mb-5 mt-5">
+
+            <img src="{{ asset('assets/images/logo_snvlt.png') }}" height="120" alt="SNVLT">
+            <h1 class="text-danger mb-5">Oooops !</h1>
+            <span class=" "><h2 class="font-weight-bold text-dark mb-3">La page que vous recherchez n'a pas été trouvée</h2></span>
+            {% set referer = app.request.headers.get('referer') %}
+
+            <a href="{{ referer }}" class="btn btn-lg btn-danger btn-block mb-3" style="font-size: 18px;" type="submit">
+                {% trans %}I understand{% endtrans %}
+            </a>
+
+        </form>
+    </center>
+
+{% endblock %}

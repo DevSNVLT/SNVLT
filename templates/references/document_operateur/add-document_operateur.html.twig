@@ -1,0 +1,114 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Ajouter un Document Opérateur
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="documents">  {% trans %}My legacy documents{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link href="{{ asset('assets/register/vendor/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section alert-light">
+        <div class="card  alert-light" style="background-color: #f8f4f4">
+            <div class="card-header mx-auto alert-primary w-100 text-center">
+                <span class="fw-bold fs-4" style="color: #fc4513">{{ titre }}</span>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.code_document_grille) }}</div>
+                        <div class="">{{ form_row(form.date_etablissement ) }}</div>
+                        <div class="">{{ form_row(form.date_expiration) }}</div>
+                        <div class="">{{ form_row(form.imageFile) }}</div>
+                        <hr>
+                        <a href="{{ path('ref_document_operateur') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-primary text-white p-2 btn_send" style="margin-left: 10px;font-weight: lighter">
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Envoyer le document
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="">{{ form_row(form.description) }}</div>
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/table/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+
+    <script>
+        enableSend();
+
+        $('.doc_operateur').on('change', function (){
+            recherche_description(this.value)
+            enableSend();
+        })
+        $('.date_etablissement').on('change', function (){
+            enableSend();
+        })
+        $('.date_expiration').on('change', function (){
+            enableSend();
+        })
+        $('.image_file').on('change', function (){
+            enableSend();
+        })
+
+
+        function enableSend(){
+            let date1 = new  Date($('.date_etablissement').val());
+            let date2 = new  Date($('.date_expiration').val());
+            let fileInput = document.getElementById("document_operateur_imageFile_file");
+            if ( $('.doc_operateur').val() &&
+                getNbJours(date1, date2) > 0 &&
+                fileInput.files.length > 0
+            ) {
+                document.querySelector('.btn_send').disabled = false;
+            } else {
+                document.querySelector('.btn_send').disabled = true;
+                if (getNbJours(date1, date2) <= 0){
+                    render_toast_value("Assurez-vous SVP que la date d'expiration soit supérieure à la date d'établissement ", 2)
+                }
+            }
+        }
+
+        function getNbJours(date1, date2){
+
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+
+            return  differenceInDays;
+        }
+
+        function recherche_description(id_grille){
+            $.ajax({
+                'url':'{{ path('app_portail') }}snvlt/RecercheDoc/' + id_grille,
+                'type' : 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    document.querySelector('.description').value = reponse[0].description;
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}
+

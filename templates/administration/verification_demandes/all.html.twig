@@ -1,0 +1,74 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {% trans %}Statistical document requests Validation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <div class="">
+        <img src="{{ asset('assets/images/webapp/validation_demande.png') }}" alt="dr"> {% trans %}Operator request Verification and Validation service{% endtrans %}
+    </div>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
+
+    <section class="section bg-white p-5">
+        <table class="table bg-white w-100" id="document_operateurs">
+            <thead>
+            <div class="w-100 bg-light mb-2 p-2"><span class="text-danger fs-3 fw-bold">{% trans %}Operator Requests{% endtrans %}</span></div>
+            <tr>
+                <th class="bg-secondary text-white fs-5 fw-normal">{% trans %}Operator{% endtrans %}</th>
+                <th class="bg-secondary text-white fs-5 fw-normal">{% trans %}Document{% endtrans %}</th>
+                <th class="bg-secondary text-white fs-5 fw-normal">{% trans %}Quantity requested{% endtrans %}</th>
+                <th class="bg-secondary text-white fs-5 fw-normal">{% trans %}Request Date{% endtrans %}</th>
+                <th class="bg-secondary text-white fs-5 fw-normal">{% trans %}Status{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for demande in mes_demandes %}
+                {% if(demande.verification) %}
+                <tr>
+                {% else %}
+                    <tr class="fw-bold">
+                {% endif %}
+                    {% if (demande.demandeur.codeOperateur.id == 2) %}
+                        <td><a class="link-dark link-opacity-75" href="{{ path('app_validation_demande_validate', {'id_demande': demande.id })}}"><span class="fw-bold">{{ demande.demandeur.codeexploitant.raisonSocialeExploitant}}</span></a></td>
+                    {% elseif (demande.demandeur.codeOperateur.id == 3) %}
+                        <td>{{ demande.demandeur.codeindustriel.raisonSocialeUsine}}</td>
+                    {% endif %}
+                    <td>{{ demande.docStat.abv}}</td>
+                    <td>{{ demande.qte}}</td>
+                    <td>{{ demande.createdAt  | date('d-m-Y') }}</td>
+                    <td>{{ demande.statut}}</td>
+
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+    <script>
+        var table = new DataTable('#document_operateurs', {
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json',
+            },
+        });
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

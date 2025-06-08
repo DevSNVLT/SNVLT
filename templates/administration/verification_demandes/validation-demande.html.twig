@@ -1,0 +1,167 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}Request Validation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/demande.png') }}" alt="dr"> {% trans %}Operator Request Validation{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="{{ asset('assets/webapp/assets/tabs-snvlt/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/webapp/assets/tabs-snvlt/font-awesome.min.css') }}" rel="stylesheet" />
+    <style>
+        @media (min-width: 576px) {
+            .rounded-nav {
+                border-radius: 50rem !important;
+            }
+        }
+
+        @media (min-width: 576px) {
+            .rounded-nav .nav-link {
+                border-radius: 50rem !important;
+            }
+        }
+
+        /* With arrow tabs */
+
+        .with-arrow .nav-link.active {
+            position: relative;
+        }
+
+        .with-arrow .nav-link.active::after {
+            content: '';
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #d9652b;
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: block;
+        }
+
+        /* lined tabs */
+
+        .lined .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .lined .nav-link:hover {
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .lined .nav-link.active {
+            background: none;
+            color: #555;
+            border-color: #d9652b;
+        }
+
+
+        .nav-pills .nav-link {
+            color: #555;
+        }
+        .text-uppercase {
+            letter-spacing: 0.1em;
+        }
+    </style>
+    <section class="section bg-light">
+        <div class="card  bg-light">
+            <div class="card-header  bg-light">
+                <span class="fw-bold fs-4 p-2 mb-5" style="color: #fc4513">{{ titre }}</span>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.doc_stat, {'attr': {'disabled' : true}}) }}</div>
+                        <div class="fw-bold fs-2">{{ form_row(form.qte, {'attr': {'readonly' : true}}) }}</div>
+                        <div class="fw-bold fs-2">{{ form_row(form.qte_validee, {'attr': {'style' : 'lightyellow'}}) }}</div>
+                        <div class="fw-bold fs-2">{{ form_row(form.motif_verification, {'attr': {'style' : 'lightyellow'}}) }}</div>
+                    </div>
+                        <div class="p-5 alert-light-success rounded mb-5 col-md-8">
+                            <!-- Rounded tabs -->
+                            <ul id="myTab" role="tablist" class="nav nav-tabs nav-pills flex-column flex-sm-row text-center bg-white border-0 rounded-nav">
+                                <li class="nav-item flex-sm-fill">
+                                    <a id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" class="nav-link border-0 text-uppercase font-weight-bold active">{% trans %}Legal Documents{% endtrans %}</a>
+                                </li>
+                                <li class="nav-item flex-sm-fill">
+                                    <a id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false" class="nav-link border-0 text-uppercase font-weight-bold">{% trans %}Logging data{% endtrans %}</a>
+                                </li>
+                                <li class="nav-item flex-sm-fill">
+                                    <a id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false" class="nav-link border-0 text-uppercase font-weight-bold">{% trans %}Alerts / Violations{% endtrans %}</a>
+                                </li>
+                            </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div id="home" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade px-4 py-5 show active">
+                                        <table class="table table-sm table-responsive-sm">
+                                            <thead>
+                                            <tr class="alert-light-warning text-dark fw-bold">
+                                                <td>{% trans %}Document type{% endtrans %}</td>
+                                                <td>{% trans %}File{% endtrans %}</td>
+                                            </tr>
+                                            </thead>
+                                                <tbody>
+                                                    {% for fichier in documents_operateur %}
+                                                        <tr class="bg-white">
+                                                            <td class="fw-bold">{{ fichier.codeDocumentGrille.libelleDocument }}</td>
+                                                            <td>
+                                                                <a style="cursor: pointer;" target="popup" onclick="window.open('{{ asset('images/doc_operateurs/') }}{{ fichier.imageName}}','{{ fichier.imageName}}','width=600,height=800,margin=auto')">
+                                                                    <img src="{{ asset('assets/icons/16x16/pdf.png') }}" height="24" alt="*pdf_file">
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                        </table>
+                                </div>
+                                <div id="profile" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade px-4 py-5">
+    <p>{% trans %}Loggers Data{% endtrans%}</p>
+                                </div>
+                                <div id="contact" role="tabpanel" aria-labelledby="contact-tab" class="tab-pane fade px-4 py-5">
+
+                                </div>
+                            </div>
+                            <!-- End rounded tabs -->
+                        </div>
+                </div>
+                <br>
+                <a href="{{ path('app_validation_demande') }}" class="alert-danger p-2"><i class="bi bi-back me-2"></i>{% trans %}Back to request list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-success text-light p-2">
+                        <i class="bi bi-check  me-2"></i>{% trans %}Validate the request{% endtrans %}
+                </button>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+
+
+    <script>
+        // Simple Datatable
+        let table1 = document.querySelector('#drs');
+        let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+    <script>
+
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/tabs-snvlt/jquery-3.3.1.slim.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/tabs-snvlt/bootstrap.bundle.min.js') }}"></script>
+
+
+{% endblock %}

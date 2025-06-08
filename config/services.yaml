@@ -1,0 +1,65 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    users_directory: '%kernel.project_dir%/public/images/uploads/users'
+    printers_directory: '%kernel.project_dir%/public/images/uploads/printers'
+    reports_directory: '%kernel.project_dir%/public/images/uploads/reports'
+    recommendations_caroi_directory: '%kernel.project_dir%/public/images/uploads/reports/caroi'
+    prospections_csv_directory: '%kernel.project_dir%/public/images/uploads/prospections'
+    images_brh_directory: '%kernel.project_dir%/public/images/uploads/brh'
+    images_bcbp_directory: '%kernel.project_dir%/public/images/uploads/bcbp'
+    medias_directory: 'public/uploads/media'
+    uploads_directory: 'uploads/media'
+    abonnes_directory: 'uploads/abonnes'
+    publication_directory: 'uploads/publications'
+    mediatech_directory: 'uploads/helper/medias'
+    oi_tickets_directory: 'uploads/oi/tickets'
+    app.locales: [fr, en]
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    App\EventListeners\ProcessListener:
+        tags:
+            - { name: kernel.event_listener, event: stockdoc.edit, method: onStockDocAdd }
+            - { name: kernel.event_listener, event: secure_au_user, method: onRespoAdd }
+
+    App\EventListeners\AutorisationsListener:
+        tags:
+            - { name: kernel.event_listener, event: attribution.edit, method: onAttributionAdd }
+            - { name: kernel.event_listener, event: reprise.edit, method: onRepriseAdd }
+    App\EventListeners\InventaireListener:
+        tags:
+            - { name: kernel.event_listener, event: app_inventaire, method: onFicheProspectionAdd }
+
+    App\EventListeners\ProcessCircuitGenerate:
+        tags:
+            - { name: kernel.event_listener, event: document_operateur.edit, method: onDocumentOperateurAdd }
+            - { name: kernel.event_listener, event: reprises_op.add, method: onDemandeOperateurAdd }
+
+    App\EventListeners\LocaleListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 20 }
+
+    App\EventListeners\PagesDocumentProcess:
+        tags:
+            - { name: kernel.event_listener, event: app_demande_gen_doccp,  method: onPagesCpAdd }
+
+        # add more service definitions when explicit configuration is needed
+        # please note that last definitions always *replace* previous ones

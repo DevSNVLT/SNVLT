@@ -1,0 +1,301 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - {% trans %}Add Model for Documents Validation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/grille_legalite.png') }}"  alt="attribution">  {% trans %}Model for Documents Validation{% endtrans %}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card" style="background-image: linear-gradient(lightgrey, #bdd3e9)">
+
+            <div class="card-body">
+
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+
+
+                <div class="row m-1 mx-auto " style="">
+                    <div class="col-md-12 mx-auto ms-2 alert-light ">
+                        <div class="row p-1 mb-2 alert-light">
+                            <div class="col-md-6">
+                                {{ form_row(form.libelle_modele, {'attr':{'class':'form-control alert-light-warning fw-bold text-dark', 'style': 'font-size:24px;'}}) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.code_type_modele_communication) }}
+                            </div>
+                        </div>
+
+                            <p class="badge alert-danger p-2 text-dark" style="font-size: medium;width: 100%">{% trans %}Only services or Directions with fullfilled Responsible emails can be displayed below{% endtrans %}</p>
+
+                        <div class="row mt-2 p-2 alert-secondary">
+                            <div class="col-md-2">
+                                    <label class="fw-bold" for="typeservice"></label>
+                                    <select class=" typeservice P-2" name="type_service" id="">
+                                        <option value="DIRECTION">{% trans %}Direction{% endtrans %}</option>
+                                        <option value="SERVICE">{% trans %}Service{% endtrans %}</option>
+                                    </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="hidden" id="service_type" class="service_type" width="2">
+                                {#Liste des directions#}
+                                <label class="fw-bold" for="code_direction"></label>
+                                <select class="code_direction" name="code_direction" id="code_direction">
+
+                                </select>
+                            </div>
+                            <div class="col-md-4 row">
+                            {#Liste des services#}
+                                <div class="col-md-11">
+                                    <label class="fw-bold" for="code_service"></label>
+                                    <select class="code_service" name="code_service" id="code_service">
+
+                                    </select>
+                                </div>
+                                <div class="col-md-1 mt-2">
+                                    <a href="#" class="btn  btn-sm ajouter_detail"><i class="mdi mdi-plus-circle text-success" style="font-size: 32px"></i></a>
+                                </div>
+                            </div>
+
+
+                        <div class="liste_details w-100 p-2 mx-auto m-2" id="liste_details">
+
+                        </div>
+
+                    </div>
+                </div>
+                <br>
+                <div class="text-center mx-auto mt-3 mb-2">
+
+                    <a href="{{ path('app_modele_com') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                    <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                        {% if (titre is same as "Add Model") %}
+                            <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Add Model{% endtrans %}
+                        {% else %}
+                            <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>{% trans %}Edit Model{% endtrans %}
+                        {% endif %}
+                    </button>
+
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+
+    <script>
+
+
+            $('.typeservice').select2({
+                placeholder: "--{% trans %}Type Service{% endtrans %}...",
+                clear: true,
+                theme: 'classic',
+                width: '100%'
+            });
+            $('.typemodele').select2({
+                placeholder: "--{% trans %}Model Type{% endtrans %}...",
+                clear: true,
+                theme: 'classic',
+                width: '100%'
+            });
+            $('.code_direction').select2({
+                placeholder: "--Sélectionnez la direction...",
+                clear: true,
+                theme: 'classic',
+                width: '100%'
+            });
+            $('.code_service').select2({
+                placeholder: "--Sélectionnez le service...",
+                clear: true,
+                theme: 'classic',
+                width: '100%'
+            });
+
+
+            var typeservice = document.querySelector('.typeservice').nodeValue;
+            var code_direction = document.querySelector('#code_direction');
+            var code_service = document.querySelector('.code_service');
+            var liste_details = document.querySelector('#liste_details');
+
+            $('.service_type').val($('.typeservice').val())
+
+            $('.typeservice').on('change', function (){
+                $('.service_type').val(this.value)
+            })
+
+            afficheDetails({{ id_modele }})
+
+            var contenu =  '<table class="table table-responsive-sm" id="detail_modele">' +
+                '<thead>' +
+                '<tr class="bg-info text-dark">' +
+                '<th>{% trans %}Sequence{% endtrans %}</th>' +
+                '<th>{% trans %}Service Type{% endtrans %}</th>' +
+                '<th>{% trans %}Entity{% endtrans %}</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>';
+
+            $('#id_modele').on('change', function (){
+                if (this.value === "" || this.value === null){
+                    $('.typemodele').attr('disabled', false);
+                } else {
+                    $('.typemodele').attr('disabled', true);
+                }
+            });
+
+            $.ajax({
+                url:'{{ path('liste_directions') }}' ,
+                type : 'POST',
+                success: function(response){
+                    console.log(response);
+                    let liste_direction = JSON.parse(response);
+                    var contenu = "";
+                    for(var i = 0; i < liste_direction.length; i++){
+                        contenu = contenu + '<option value="' + liste_direction[i].id + '" >' + liste_direction[i].denomination + '</option>';
+                    }
+                    code_direction.innerHTML = contenu;
+                    afficheServices(code_direction.value)
+                    afficheDetails({{ id_modele }})
+                }
+            })
+
+
+            $('body').on('change', '.code_direction', function() {
+                afficheServices(this.value)
+            })
+
+
+            $('body').on('click', '.ajouter_detail', function() {
+                //e.preventDefault();
+                var codedirection = 0;
+                var codeservice = 0;
+                var service_type = $('.service_type').val();
+                if(code_direction.value !== ""){
+                    codedirection = code_direction.value;
+                }
+                if(code_service.value !== ""){
+                    codeservice = code_service.value;
+                }
+
+                    $.ajax({
+                        url:'{{ path('app_portail')}}snvlt/ref/mc/add-detail/{{ id_modele }}/' +  service_type + "/" + codedirection + "/" + codeservice,
+                        type : 'POST',
+                        data : {code_modele: {{ id_modele }},
+                                type_service: service_type,
+                                code_direction: code_direction.value,
+                                code_service: code_service.value
+                                },
+                        success: function(response){
+                            console.log(response);
+                                afficheDetails({{ id_modele }})
+
+                        }
+                    })
+            })
+
+            $('body').on('click', '.btnDelete', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url:'{{ path('app_portail')}}snvlt/mc/list/details/rem/' + this.id,
+                    type : 'POST',
+                    data : {id_detail: this.id,
+                    },
+                    success: function(response){
+                        console.log(response);
+                        afficheDetails({{ id_modele }})
+                    }
+                })
+            })
+
+
+            function afficheDetails(id_modele){
+
+                $.ajax({
+                    url:'{{ path('app_portail')}}snvlt/mc/list/details/' + id_modele,
+                    type : 'POST',
+                    data : {code_modele: id_modele
+                    },
+                    success: function(response){
+                        console.log(response);
+                        let reponse = JSON.parse(response);
+
+                            var contenu =  '<table class="table table-responsive-sm" id="detail_modele">' +
+                                                '<thead>' +
+                                                    '<tr class="alert-light-info text-dark">' +
+                                                        '<th>{% trans %}Sequence{% endtrans %}</th>' +
+                                                        '<th>{% trans %}Service Type{% endtrans %}</th>' +
+                                                        '<th>{% trans %}Entity{% endtrans %}</th>' +
+                                                        '<th></th>' +
+                                                    '</tr>' +
+                                                '</thead>' +
+                                                '<tbody>';
+
+                                                for(var i = 0; i < reponse.length; i++){
+                                                    if(reponse[i].type_service === "SERVICE"){
+                                                        contenu = contenu + '<tr>' +
+                                                            '<td class=" fw-bold text-center"><span class="badge text-dark alert-warning p-2 rounded-circle fs-6">' + reponse[i].numseq + '</span></td>' +
+                                                            '<td>'+ reponse[i].type_service + '</td>'+
+                                                            '<td class="fw-bold text-dark" style="font-weight:bold;">' +  reponse[i].service_minef + '</td>' +
+                                                            '<td><a class="btnDelete" href="#" id="' + reponse[i].id_minef +'"><img src="{{ asset('assets/icons/16x16/delete.png') }}" alt="delete"></a></td>'+
+                                                            '</tr>';
+                                                    } else {
+                                                        contenu = contenu + '<tr>' +
+                                                            '<td class=" fw-bold text-center"><span class="badge text-dark alert-warning p-2 rounded-circle fs-6">' + reponse[i].numseq + '</span></td>' +
+                                                            '<td>'+ reponse[i].type_service + '</td>'+
+                                                            '<td class="fw-bold text-dark" style="font-weight:bold;">' +  reponse[i].direction_minef + '</td>' +
+                                                            '<td><a class="btnDelete" href="#" id="' + reponse[i].id_minef +'"><img src="{{ asset('assets/icons/16x16/delete.png') }}" alt="delete"></a></td>'+
+                                                            '</tr>';
+                                                    }
+                                                }
+                                                contenu = contenu + '</tbody>' +
+                                                                    '</table>';
+                                                    liste_details.innerHTML =contenu;
+                        $('.modeletext').focus();
+                    }
+                })
+            }
+            function afficheServices(code_direction){
+                $.ajax({
+                    url:'{{ path('app_portail')}}snvlt/servicemenif/list/' + code_direction ,
+                    type : 'POST',
+                    data : {code_direction: code_direction},
+                    success: function(response){
+                        console.log(response);
+                        let liste_service = JSON.parse(response);
+                        var contenu = "";
+                        for(var i = 0; i < liste_service.length; i++){
+                            contenu = contenu + '<option value="' + liste_service[i].id + '" >' + liste_service[i].libelle_service + '</option>';
+                        }
+                        code_service.innerHTML = contenu;
+
+                    }
+                })
+            }
+
+    </script>
+
+{% endblock %}

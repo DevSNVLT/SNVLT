@@ -1,0 +1,361 @@
+
+<div class="col-md-12">
+    <div class="row  bg-white p-1">
+        <div class="col-md-3">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modal-users" class="badge bg-warning text-white d-inline-flex m-2" style="width: 100%;">
+                <i class="mdi mdi-account" style="font-size: 64px"></i>
+                <div class="my-auto mx-auto">
+                    <span class="text-dark" style="font-size: 14px;">{{ 'Users' | trans}}</span><br>
+                    <span class="badge p-2 text-dark font-weight-bold bg-white mt-2 nbUsers" style="font-size: 14px;"><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#" class="badge bg-danger text-white d-inline-flex m-2" style="width: 100%;">
+                <i class="mdi mdi-settings" style="font-size: 64px"></i>
+                <div class="my-auto mx-auto">
+                    <span class="text-white" style="font-size: 14px;">{{ 'Authorizations' | trans}}</span><br>
+                    <span class="badge p-2 text-dark font-weight-bold bg-white mt-2 nbAutorisations" style="font-size: 14px;"><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#" class="badge bg-success text-white d-inline-flex m-2" style="width: 100%;">
+                <i class="mdi mdi-filter" style="font-size: 64px"></i>
+                <div class="my-auto mx-auto">
+                    <span class="text-white" style="font-size: 14px;">{{ 'Volume Exploitation' | trans}}</span><br>
+                    <span class="badge p-2 text-dark font-weight-bold bg-white mt-2 vol_tot" style="font-size: 14px;"><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#" class="badge bg-secondary text-white d-inline-flex m-2" style="width: 100%;">assets/icons/loading.
+                <i class="mdi mdi-factory" style="font-size: 64px"></i>
+                <div class="my-auto mx-auto">
+                    <span class="text-white" style="font-size: 14px;">{{ 'Volume Transformation' | trans}}</span><br>
+                    <span class="badge p-2 text-dark font-weight-bold bg-white mt-2 vol_transfo" style="font-size: 14px;"><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="row mt-3 p-2">
+        <div class="card col-md-7" style="border: 1px;">
+            <div class="card-title p-2 mt-2 text-white font-weight-light mt-3" style="background-color: #f95d01">
+                {{ 'Opérateurs SNVLT' }}
+            </div>
+            <div class="card-body">
+                <div class="" id="chart_operateurs"></div>
+
+                <hr>
+{#                <div class="" id="chart_essences"></div>#}
+                <table class="table w-100" style="">
+                    <div class="card-title p-1 mt-2 text-white font-weight-light mt-3" style="background-color: #046904">
+                        Les 10 essences les plus exploitées
+                    </div>
+                    <thead>
+                        <tr style="background-color: #396b4a;color:white;border-bottom: 2px solid white;">
+                            <th>Essences forestières</th>
+                            <th>Cubage (m<sup>3</sup>)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body_essence">
+                        <tr><td><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card col-md-5" style="border: 1px;background-color: transparent">
+            <div class="bg-white">
+                <div class="card m-2" style="border: 1px;">
+                    <div class="card-title p-2 text-white font-weight-light mt-2" style="background-color: #025e27">
+                        {{ 'Agreements/Authorization' | trans}}
+                    </div>
+                    <div class="">
+                        <img class="img-fluid m-2" src="{{ asset('assets/images/autorisation.png') }}" alt="autorisation">  <span class="font-weight-bold mt-3 tot_auto" style="color: #6c6d6f"> <img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span><br>
+                        <img class="img-fluid m-2" src="{{ asset('assets/images/agreement.png') }}" alt="autorisation" >  <span class="font-weight-bold mt-3 tot_agrement"> <img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></span><br>
+
+                        <div class="" id="chartjauge"></div>
+                    </div>
+
+                </div>
+                <div class="card m-2" style="border: 1px;">
+                    <div class="card-title text-white font-weight-light p-2" style="background-color: #02195e">{{ 'Documents statistiques' | trans}}</div>
+                    <div class="" style="height: 250px;overflow-y: scroll;">
+                        <table class="table">
+                            <thead>
+                            <tr class="alert-success">
+                                <th>{{ 'Doc' | trans}}</th>
+                                <th>{{ 'delivered' | trans}}</th>
+                            </tr>
+                            </thead>
+                            <tbody class="body_docs">
+                            <tr><td><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></td></tr>
+{#                            {% for doc in documents %}#}
+{#                                <tr>#}
+{#                                    <td class="font-weight-bold">{{ doc.document }}</td>#}
+{#                                    <td class="font-weight-bold">{{ doc.nb }}</td>#}
+{#                                </tr>#}
+
+{#                            {% endfor %}#}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card m-2" style="border: 1px;">
+                    <div class="card-title p-1 text-white font-weight-light mt-3" style="background-color: #494847">
+                        {{ 'Logs loading in proccess' | trans}}
+                    </div>
+                    <div class="">
+                        <table class="table table-responsive">
+                            <thead>
+                            <tr class="alert-success">
+                                <th>{{ 'Date' | trans}}</th>
+                                <th>{{ 'No' | trans}}</th>
+                                <th>{{ 'Vehicle registration' | trans}}</th>
+                                <th>{{ 'Volume' | trans}}</th>
+                                <th>{{ 'Sender' | trans}}</th>
+                                <th>{{ 'Destination' | trans}}</th>
+                            </tr>
+                            </thead>
+                            <tbody class="body_chargement">
+                                <tr><td><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+    <div class="modal fade" id="modal-users" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" style="height: 500px;">
+            <div class="modal-content p-4" style="background: linear-gradient(#efeeee, #effae7); font-size: 11px;">
+                <h4>Utilisateurs SNVLT</h4>
+                <table class="table table-responsive border-1" id="tbl-users">
+                    <thead>
+                    <tr class="font-weight-bold">
+                        <td>Nom</td>
+                        <td>email</td>
+                        <td>mobile</td>
+                        <td>Groupe</td>
+                        <td>Type Opérateur</td>
+                        <td>Structure</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr class="bg-white">
+                            <td style="font-size: 10px;">{{ user.nomUtilisateur }} {{ user.prenomsUtilisateur }}</td>
+                            <td style="font-size: 10px;">{{ user.email }}</td>
+                            <td style="font-size: 10px;">{{ user.mobile }}</td>
+                            <td style="font-size: 10px;">{{ user.codeGroupe.nomGroupe }}</td>
+                            <td style="font-size: 10px;">
+                                {% if(user.codeOperateur) %}
+                                    {{ user.codeOperateur.libelleOperateur }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 10px;">-</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+	<link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    
+	<link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css" />
+	
+	
+	<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+
+<script>
+    let table = new DataTable('#tbl-users', {
+        responsive: true,
+        layout: {
+            topStart: {
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        title: 'Données Utilisateurs',
+                        text: 'Exporter en excel',
+                    }
+                ]
+            }
+        },
+        pageLength: 10,
+        colReorder: true,
+        language: {
+            processing:     "Traitement en cours...",
+            search:         "Rechercher&nbsp;:",
+            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+            infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+            infoPostFix:    "",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+            emptyTable:     "Aucune donnée disponible dans le tableau",
+            paginate: {
+                first:      "Premier",
+                previous:   "Pr&eacute;c&eacute;dent",
+                next:       "Suivant",
+                last:       "Dernier"
+            },
+            aria: {
+                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        }
+    });
+//    setInterval(function() {
+//
+//    }, 20000);
+
+    $(document).ready(function (){
+        //volume_exploitation();
+        chargement_billes();
+        stats();
+        docs_stats();
+        essences_volume();
+    })
+
+
+
+
+    // Volume de billes sur tous les docs d'exploitation pour l'exercice en cours
+    function volume_exploitation(){
+        $.ajax({
+            url : '{{path('brh_cubagetotal')}}',
+            type: 'POST',
+            success: function(response){
+                let cubage = JSON.parse(response)
+                if (cubage.length > 0){
+                    let cubage_total = cubage[0].cubage
+                    $('.vol_tot').text(cubage_total.toLocaleString() + " m3");
+                }
+            }
+        })
+    }
+    // Stats
+    function stats(){
+        $.ajax({
+            url : '{{path('stats_auto')}}',
+            type: 'POST',
+            success: function(response){
+                let infos = JSON.parse(response)
+                if (infos.length > 0){
+                    //let cubage_total = cubage[0].cubage
+                    $('.nbUsers').text(infos[0].nb_users.toLocaleString());
+                    $('.nbAutorisations').text(infos[0].nb_auto.toLocaleString());
+                    $('.tot_auto').text(infos[0].nb_auto.toLocaleString() + " autorisation(s)");
+                    $('.tot_agrement').text(infos[0].nb_agrements.toLocaleString() + " agréement(s)");
+                    $('.vol_transfo').html(infos[0].transfo.toLocaleString() + " m<sup>3</sup>");
+                    $('.vol_tot').html(infos[0].cubage_exploitation.toLocaleString() + " m<sup>3</sup>");
+                }
+            }
+        })
+    }
+    // Volume de billes sur tous les docs d'exploitation pour l'exercice en cours
+    function chargement_billes(){
+        let contenu = '';
+        $.ajax({
+            url : '{{path('chargements_en_cours')}}',
+            type: 'POST',
+
+            success: function(response){
+                let infos = JSON.parse(response)
+                if (infos.length > 0){
+                    for(var i = 0; i < infos.length;  i++){
+                        contenu = contenu + '<tr class="alert-info">';
+                        contenu = contenu + '<td class="font-weight-bold">' + infos[i].date_chargement + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].numero_chargement + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].immatriculation + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].volume + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].expediteur + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].destinataire + '</td>';
+                        contenu = contenu + '</tr>';
+                    }
+                    document.querySelector('.body_chargement').innerHTML = contenu;
+                } else {
+                    document.querySelector('.body_chargement').innerHTML = 'Aucun chargement disponible';
+                }
+            }
+        })
+    }function docs_stats(){
+        let contenu = '';
+        $.ajax({
+            url : '{{path('docstats')}}',
+            type: 'POST',
+
+            success: function(response){
+                let infos = JSON.parse(response)
+                if (infos.length > 0){
+                    for(var i = 0; i < infos.length;  i++){
+                        contenu = contenu + '<tr>';
+                        contenu = contenu + '<td class="font-weight-bold">' + infos[i].document + '</td>';
+                        contenu = contenu + '<td class="font-weight-bold text-danger">' + infos[i].nb + '</td>';
+                        contenu = contenu + '</tr>';
+                    }
+                    document.querySelector('.body_docs').innerHTML = contenu;
+                } else {
+                    document.querySelector('.body_docs').innerHTML = '<h3 class="text-danger">Aucun document disponible</h3>';
+                }
+            }
+        })
+    }
+
+    function essences_volume(){
+        let contenu = '';
+        $.ajax({
+            url : '{{path('essences_volumes')}}',
+            type: 'POST',
+            success: function(response){
+                let reponse = JSON.parse(response)
+                if (reponse.length > 0){
+
+
+                    for(var i = 0; i < reponse.length;  i++){
+                        contenu = contenu + '<tr style="background-color: #bbf6cf;color:black;border-bottom: 1px solid white;">';
+                        contenu = contenu + '<td class="font-weight-bold">' + reponse[i].essence + '</td>';
+                        let vol = reponse[i].volume;
+                        contenu = contenu + '<td class="font-weight-bold">' + vol.toLocaleString() + '</td>';
+                        contenu = contenu + '</tr>';
+                    }
+
+                    document.querySelector('#body_essence').innerHTML = contenu;
+                } else {
+                    document.querySelector('#body_essence').innerHTML = 'Aucune essence disponible';
+                }
+
+                    //Chart Essences Administrator
+
+
+                }
+        })
+    }
+</script>

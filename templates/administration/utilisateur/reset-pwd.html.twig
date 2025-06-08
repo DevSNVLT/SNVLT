@@ -1,0 +1,140 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - Modifier le mot de passe
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/key.png') }}"  alt="{% trans %}users{% endtrans %}">  Modifier le mot de passe
+    </h2>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+
+{% block page_content %}
+
+
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+
+    <style>
+        .swal2-container {
+            z-index: 10000;
+        }
+    </style>
+    <section class="section">
+        <div class="card" style="background: linear-gradient(#457551,#2f4d52);">
+
+            <div class="container sticky-top" style="background: linear-gradient(#d2fcdd,#f0fbfd);border: 1px solid #0C9A9A">
+
+                <div class="input-group mb-2 mt-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 300px;">Ancien Mot de passe</span>
+                    <input type="password" class="form-control h4 border-0 fit-width" required style="font-size: large;" id="last_pwd"  aria-label="Ancien Mot de passe" aria-describedby="Ancien Mot de passe">
+                </div>
+
+               <div class="input-group mb-2 mt-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 300px;">Nouveau Mot de passe</span>
+                    <input type="password" class="form-control h4 border-0 fit-width" required style="font-size: large;" id="new_pwd"  aria-label="Ancien Mot de passe" aria-describedby="Ancien Mot de passe">
+                </div>
+
+               <div class="input-group mb-2 mt-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 300px;">Confirmer Mot de passe</span>
+                    <input type="password" class="form-control h4 border-0 fit-width" required style="font-size: large;" id="confirm_pwd"  aria-label="Ancien Mot de passe" aria-describedby="Ancien Mot de passe">
+                </div>
+                <div class=" p-1">
+                    <a href="{{ app.request.headers.get('referer') }}" class="bg-danger p-2 me-2 text-white font-weight-light"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                    <button  class="btn btn-sm bg-primary text-white p-2 font-weight-light new_mdp" style="margin-left: 10px;">
+                        <i class="mdi mdi-bag-personal" style="font-size: 18px;margin-right: 10px;"></i>Modifier le mot de passe
+                    </button>
+                    <a class="btn btn-sm bg-transparent text-danger p-2 font-weight-light " href="{{ path('app_forgot_password_request') }}" style="float: right;">j'ai oublié mon mot de passe</a>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </section>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script>
+
+
+        $(document).ready(function(){
+            $('.new_mdp').on('click', function (){
+                send_value();
+            })
+            function send_value(){
+                var obj = {};
+                obj.id_user =  {{ app.user.id }};
+                obj.ancien =  $("#last_pwd").val();
+                obj.nouveau =  $("#new_pwd").val();
+                obj.confirm =  $("#confirm_pwd").val();
+
+                var data = JSON.stringify(obj);
+
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/user/resetPwd/ChangeWithNew/' + data,
+                    type : 'POST',
+                    success: function (response){
+                        let reponse = JSON.parse(response);
+
+                        if (reponse[0].code === 'LAST_PWD_NOT_VALID'){
+                            render_toast_value("Votre ancien mot de passe n'est pas correct", 0)
+
+                        } else if (reponse[0].code === 'PWD_NOT_CONFIRMED'){
+                            render_toast_value("Mot de passe non confirmé", 0)
+
+                        } else if (reponse[0].code === 'BAD_USER'){
+                            render_toast_value("Vous n'êtes plus connecté! Veuillez-vous reconnecter.", 0)
+                            document.location.reload();
+
+                        } else if (reponse[0].code === 'BAD_REQUEST'){
+                            render_toast_value("Erreur Serveur", 0)
+
+                        } else if (reponse[0].code === 'NOT_ENOUGH_LENGTH'){
+                            render_toast_value("Le mot de passe doit être supérieur ou égal à 8 caractères", 0)
+
+                        } else if (reponse[0].code === 'PWD_CHANGED'){
+                            render_toast_value("SUCCES!\nLe mot de passe a été pris en compte", 1)
+                            document.location.href = "{{ app.request.headers.get('referer') }}";
+                        }
+                    }
+                })
+            }
+
+            function render_toast_value(valeur, type_valeur){
+                let couleur = '#ff2222';
+                let icon = 'error';
+                if(type_valeur === 1){ couleur = '#2e8303'; icon = 'success'}
+                Swal.fire({
+                    toast: true,
+                    background: couleur,
+                    color: 'white',
+                    position: "top-end",
+                    timer : 7000,
+                    icon: icon,
+                    iconColor: "white",
+                    title: valeur,
+                    showConfirmButton: false
+                });
+            }
+        });
+
+    </script>
+
+{% endblock %}

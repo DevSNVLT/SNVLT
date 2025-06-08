@@ -1,0 +1,332 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Documentation légale
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="documents">  Documentation légale
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <select name="type_op" id="type_op" style="width: 200px;background: steelblue;color: white;margin-right: 10px;">
+            <option value="0">--Type opérateur--</option>
+            <option value="2">Exploitant forestier</option>
+            <option value="3">Transformateur de bois</option>
+            <option value="4">Exportateur</option>
+        </select>
+        <select name="operateurs" id="operateurs" style="width: 200px;background: steelblue;color: white;margin-right: 10px;">
+            <option value="0">--Opérateur--</option>
+        </select>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <hr>
+
+    <section class="section">
+        <div class="div_contenu">
+            <div class="text-center">
+                <img style="border-bottom: 4px solid darkblue;" src="{{ asset('assets/images/doc_legalite.jpg') }}" alt="legalite">
+            </div>
+        </div>
+
+        {#        Modification document#}
+        <div class="modal fade" id="doc_operateur" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle"></h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="alert-danger p-1 text-danger">ATTENTION!!! <br>Ne pas modifier les données si vous ne savez pas ce que vous faites!</p>
+
+                        <input type="hidden" id="id_doc">
+                        Documant :<input type="text" disabled id="libelle" style="width:100%"><br>
+                        <div class="row mt-3 p-1 alert-warning">
+                            <div class="col-md-3 font-weight-bold">
+                                Etabli le
+                            </div>
+                            <div class="col-md-4">
+                                <input class="mt-2" type="date" id="date_etablissement">
+                            </div>
+                        </div>
+                        <div class="row p-1 alert-warning">
+                            <div class="col-md-3 font-weight-bold">
+                                Expire le
+                            </div>
+                            <div class="col-md-4">
+                                <input class="mt-2" type="date" id="date_expiration">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Edit' | trans}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script src="{{ asset('assets/Js/moment-with-locales.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+
+
+
+
+        $('#type_op').on('change', function (){
+            charge_operateurs();
+        });
+        charge_operateurs();
+        //Affiche la grille de légalité de l'opérateur
+        $('#operateurs').on('change', function (){
+            let type_op = $('#type_op').val();
+            let operateur = $('#operateurs').val();
+            let contenu_op = "";
+            let url = '';
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/grille/' + type_op + '/' + operateur,
+                type: 'POST',
+                success: function(response){
+                    let liste_op = JSON.parse(response)
+                    if (liste_op.length > 0){
+                        contenu_op = contenu_op + '<table class="table" id="tbl_grille">'
+                        contenu_op = contenu_op + '<thead>'
+                        contenu_op = contenu_op + '<tr class="font-weight-bold bg-light" style="width: 100%;">'
+                        contenu_op = contenu_op + '<th>Document</th>'
+                        contenu_op = contenu_op + '<th>Etabli le</th>'
+                        contenu_op = contenu_op + '<th>Expire le</th>'
+                        contenu_op = contenu_op + '<th>Nb Jours restants</th>'
+                        contenu_op = contenu_op + '</tr>'
+                        contenu_op = contenu_op + '</thead>'
+                        contenu_op = contenu_op + '<tbody class="body_legalite">'
+
+                        for (let i = 0; i < liste_op.length ; i++){
+                            if (liste_op[i].fichier === '-') {
+                                contenu_op = contenu_op + '<tr>'
+                                contenu_op = contenu_op + '<td>' + liste_op[i].document + '</td>'
+
+                            } else if (liste_op[i].ecart >= 30){
+                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #bffac7;font-weight: bold;font-size:14px;">'
+                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+
+                              } else if (liste_op[i].ecart < 30 && liste_op[i].ecart > 0){
+                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #f8b91b;font-weight: bold;font-size:14px;">'
+                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+
+                            } else if (liste_op[i].ecart <= 0){
+                                contenu_op = contenu_op + '<tr class="bg-danger" style="background: #fd0000;font-weight: bold;font-size:14px;">'
+                                contenu_op = contenu_op + '<td><a style="color:white;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+
+                            }
+
+
+                                contenu_op = contenu_op + '<td>' + liste_op[i].date_etablissement + '</td>'
+                                contenu_op = contenu_op + '<td>' + liste_op[i].date_expiration + '</td>'
+                                
+                                if (liste_op[i].ecart > 0){
+                                    contenu_op = contenu_op + '<td>' + liste_op[i].ecart + ' <img class="btn_editer" id="' + liste_op[i].id + '" src="{{ asset('assets/icons/16x16/edit.png') }}" alt="editer" style="margin-left:5px;cursor:pointer;height:16px;width:16px;" data-bs-toggle="modal" data-bs-target="#doc_operateur"></td></tr>'
+                                } else {
+                                    contenu_op = contenu_op + '<td>0</td></tr>'
+                                }
+                                
+                            }
+                        contenu_op = contenu_op + '</tbody>'
+                        contenu_op = contenu_op + '</table>'
+                        }
+
+
+
+                    document.querySelector('.div_contenu').innerHTML = contenu_op;
+
+                    let table = new DataTable('#tbl_grille', {
+                        responsive: true,
+                        layout: {
+                            topStart: {
+                                buttons: [
+                                    {
+                                        extend: 'excelHtml5',
+                                        title: 'Télécharger en Excel'
+                                    }
+                                ]
+                            },
+                            pageLength: 25
+                        },
+                        colReorder: true,
+                        language: {
+                            processing:     "Traitement en cours...",
+                            search:         "Rechercher&nbsp;:",
+                            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                            infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                            infoPostFix:    "",
+                            loadingRecords: "Chargement en cours...",
+                            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                            emptyTable:     "Aucun document de légalité disponible",
+                            paginate: {
+                                first:      "Premier",
+                                previous:   "Pr&eacute;c&eacute;dent",
+                                next:       "Suivant",
+                                last:       "Dernier"
+                            },
+                            aria: {
+                                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                            }
+                        }
+                    });
+                }
+            })
+        });
+        $('body').on('click', '.btn_editer', function (){
+            $('#id_doc').val(this.id);
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/grille/doc-op/' + this.id,
+                type: 'POST',
+                success: function(response){
+                    let info = JSON.parse(response)
+                    if (info.length > 0){
+
+                        $('#libelle').val(info[0].document)
+                        $('#date_etablissement').val(info[0].date_etablissement)
+                        $('#date_expiration').val(info[0].date_expiration)
+                }
+            }
+            });
+        });
+
+        $('#save_data').on('click', function (){
+            let date_etablissement = $("#date_etablissement").val();
+            let date_expiration =  $("#date_expiration").val();
+
+            if (date_expiration < date_etablissement){
+                alert("Désolé! la date Expiration doit être supérieure à la date Etablissement")
+            } else {
+                var obj = {};
+                obj.date_etablissement =  date_etablissement;
+                obj.date_expiration =  date_expiration;
+                obj.id =  $("#id_doc").val();
+
+
+                var data = JSON.stringify(obj);
+
+                $.ajax({
+                    'url': '{{ path('app_portail') }}snvlt/docop/op/edit/'+ data,
+                    'type': 'POST',
+
+                    success: function(response) {
+                        let info = JSON.parse(response)
+
+                            alert("Données mises à jour");
+                            document.location.reload();
+
+                    }
+                })
+            }
+        })
+
+        function GetNow(value){
+            var datetime = value.getFullYear() + "/0"
+                + (value.getMonth()+1)  + "/"
+                + value.getDate();
+            let mois = value.getMonth()+1;
+            if (mois.length === 2){
+                var datetime = value.getFullYear() + "/"
+                    + (value.getMonth()+1)  + "/"
+                    + value.getDate();
+            }
+            return datetime;
+        }
+        function openDropdown(elementId) {
+            function down() {
+                var pos = $(this).offset(); // remember position
+                var len = $(this).find("option").length;
+                if(len > 20) {
+                    len = 20;
+                }
+
+                $(this).css("position", "absolute");
+                $(this).css("zIndex", 9999);
+                $(this).offset(pos);   // reset position
+                $(this).attr("size", len); // open dropdown
+                $(this).unbind("focus", down);
+                $(this).focus();
+            }
+            function up() {
+                $(this).css("position", "static");
+                $(this).attr("size", "1");  // close dropdown
+                $(this).unbind("change", up);
+                $(this).focus();
+            }
+            $("#" + elementId).focus(down).blur(up).focus();
+        }
+
+        function charge_operateurs(){
+
+            let type_op = $('#type_op').val();
+            let contenu_op = "";
+            let url = '';
+            if (type_op === "2"){
+                url = '{{path('json_exploitants')}}';
+            } else if (type_op === "3"){
+                url = '{{path('json_usines')}}';
+            }else if (type_op === "4"){
+                url = '{{path('json_exportateurs')}}';
+            }
+            $.ajax({
+                url: url,
+                type: 'POST',
+                success: function(response){
+                    let liste_op = JSON.parse(response)
+                    if (liste_op.length > 0){
+                        contenu_op = '<option value="0">--Opérateurs--</option>';
+                        for (let i = 0; i < liste_op.length ; i++){
+                            if (liste_op[i].sigle === "" || liste_op[i].sigle === null ){
+                                contenu_op = contenu_op + '<option value="' + liste_op[i].id + '">' + liste_op[i].rs + '</option>'
+                            } else {
+                                contenu_op = contenu_op + '<option value="' + liste_op[i].id + '">' + liste_op[i].sigle + '</option>'
+                            }
+
+                        }
+                    }
+                    document.querySelector('#operateurs').innerHTML = contenu_op;
+                    //openDropdown("operateurs");
+                }
+            })
+
+        }
+    </script>
+
+{% endblock %}
+

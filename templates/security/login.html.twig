@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html lang="fr-FR"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>SNVLT - Connexion</title>
+    <meta name="description" content="Panneau de contrôle LWS - Gérer vos services Mutu, Mail, VPS, Stockage Professionnel, ...">
+    <meta http-equiv="Content-Language" content="fr">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="{{ asset('assets/login_files/') }}bootstrap.min.css" rel="stylesheet">    <link href="{{ asset('assets/login_files/') }}bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}base-admin0916.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}dashboard.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}reports.css" rel="stylesheet">
+    <!--<link href="./css/DT_bootstrap.css" rel="stylesheet">-->
+    <link href="{{ asset('assets/login_files/') }}jquery.dataTables.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}dataTables.dateTime.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}domaine.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}ticket.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/login_files/') }}colorbox.css">
+    <link rel="stylesheet" href="{{ asset('assets/login_files/') }}notification.css">
+    <link href="{{ asset('assets/login_files/') }}font-awesome.min_002.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/login_files/') }}font-awesome.min.css">
+    <link href="{{ asset('assets/login_files/') }}theme2016v2.css" rel="stylesheet">
+    <link href="{{ asset('assets/login_files/') }}recherche_service.css" rel="stylesheet">
+    <!-- Connexion CSS -->
+    <link href="{{ asset('assets/login_files/') }}connexion.css" rel="stylesheet">
+    <link rel="stylesheet" crossorigin="anonymous" href="{{ asset('assets/login_files/') }}main.css"><link href="{{ asset('assets/login_files/') }}connexion_002.css" rel="stylesheet"><style type="text/css" class="abn_style" nonce="">
+    </style></head>
+
+<body>
+<div class="content-index" >
+    <div class="exclu" style="background-image: url('{{ asset('assets/login_files/') }}carto.png'); background-size: cover; background-repeat: no-repeat;">
+    </div>
+
+    <div class="form-connect">
+        <div class="content">
+            <img height="64" style="width:256px;" src="{{ asset('assets/login_files/') }}logo_snvlt.png" alt="Logo SNVLT" class="logo_snvlt">
+            <div class="form-bg-blue" style="border-top: darkgreen solid 4px;">
+                <p class="title">Se connecter</p>
+
+                <form class="connect" id="form_identification" name="form1" method="post">
+                    <!-- Add Class error si ce champ est en erreur -->
+                    <div class="form-field">
+                        {% for message in app.session.flashBag.get('error') %}
+                            <div class="alert bg-danger text-white">Vos accès ont été restreints par votre administrateur</div>
+                        {% endfor %}
+                        {% if error %}
+                            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                        {% endif %}
+                        <input class="f-elem" value="{{ last_username }}" type="text" placeholder="votre mail" name="email" {#id="inputEmail"#} id="inputEmail" autocomplete="off" required="">
+                        <div class="placeholder-in-border">votre mail</div>
+                        <div class="error-message">
+                            <img class="warning" src="{{ asset('assets/login_files/') }}warning_rouge.svg" alt="attention">
+                            <p>Merci d'entrer vos identifiants</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Class error si ce champ est en erreur -->
+                    <div class="form-field password-field">
+                        <input class="f-elem" type="password" placeholder="Mot de passe" name="password" id="inputPassword"  autocomplete="off" required="">
+                        <div class="placeholder-in-border">Mot de passe</div>
+                        <img width="20" height="20" class="eye close-eye" src="{{ asset('assets/login_files/') }}oeil_ferme.svg" alt="Show password">
+                        <div class="error-message">
+                            <img class="warning" src="{{ asset('assets/login_files/') }}warning_rouge.svg" alt="attention">
+                            <p><strong>Vérifiez la validité de votre mot de passe</strong>, surtout si vous avez plusieurs comptes LWS</p>
+                        </div>
+                    </div>
+                    <input name="passevc" type="hidden" value="ok">
+                    <input type="hidden" id="recaptchaResponse" name="g-recaptcha-response">
+                    <div class="btn-submit">
+                        <input id="submit" type="submit" value="Connexion" class="btnlogin">
+                        <img src="{{ asset('assets/login_files/tail-spin.svg') }}">
+                    </div>
+                    <input type="hidden" name="_csrf_token"  value="{{ csrf_token('authenticate') }}">
+
+
+                </form>
+
+                <a href="{{ path('app_forgot_password_request') }}">Identifiant ou mot de passe oublié ?</a>
+                <hr>
+                <p class="under-hr">Pas encore inscrit ? Envoyez votre demande d'adhésion  <a href="{{ path('register_new') }}">ici</a></p>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+<div class="modal-backdrop"></div>
+
+<script src="{{ asset('assets/login_files/') }}jquery191.min.js"></script>
+
+<!-- Script JS Lang - Choice Lang -->
+<script>
+    $('.select-lang').click(function(){
+        if($('.select-lang').hasClass('open')) {
+            $('.select-lang').removeClass('open');
+        } else {
+            $('.select-lang').addClass('open');
+        }
+        $('.choice-lang').toggle();
+    });
+
+    $('.langs').each(function () {
+        $(this).click(function(){
+            var lang = $(this).data('lang');
+            var img = $(this).data('img');
+
+            $('#current-flag').attr('src', './img/'+img+'.svg');
+            $('#current-lang').html(lang);
+
+            if($('.select-lang').hasClass('open')) {
+                $('.select-lang').removeClass('open');
+            } else {
+                $('.select-lang').addClass('open');
+            }
+            $('.choice-lang').toggle();
+
+            var path = window.location.pathname;
+            var page = path.split("/").pop();
+            location.href = page + "?lng=" + lang;
+        });
+    });
+</script>
+
+<!-- Script JS Info - Secure Bottom Page -->
+<script>
+    $('#secure-warning').click(function(){
+        $('.modal-backdrop').addClass('fade show');
+        $('#modal-warn').addClass('show');
+    });
+
+    $('.close-m').click(function(){
+        $('.modal-backdrop').removeClass('fade show');
+        $('#modal-warn').removeClass('show');
+    });
+
+    $(document).on('click', function (e) {
+        if ($(e.target).closest("#modal-warn").length === 0 && $(e.target).closest("#secure-warning").length === 0) {
+            $('.modal-backdrop').removeClass('fade show');
+            $("#modal-warn").removeClass('show');
+        }
+    });
+</script>
+
+<!-- Script JS Show Hide Password -->
+<script>
+    $('.eye').click(function(){
+        if($(this).hasClass('close-eye')) {
+            $(this).removeClass('close-eye').addClass('open-eye');
+            $(this).attr('src', '{{ asset('assets/login_files/') }}oeil_ouvert.svg');
+            $(this).prev().prev().attr('type','text');
+        } else {
+            $(this).removeClass('open-eye').addClass('close-eye');
+            $(this).attr('src', '{{ asset('assets/login_files/') }}oeil_ferme.svg');
+            $(this).prev().prev().attr('type','password');
+        }
+    });
+</script>
+
+<!-- Script JS Field Placeholder On if not empty -->
+<script>
+    $('.f-elem').on( "keyup", function() {
+        if($(this).val() != '') {
+            $(this).next('.placeholder-in-border').addClass('place-move');
+        } else {
+            $(this).next('.placeholder-in-border').removeClass('place-move');
+        }
+    });
+</script>
+
+
+
+
+
+
+
+<script>
+
+    var keyEncrypt = '8ab12d1ae72af9e6c045fb4430bfdb31388f8713';
+
+    //fonction pour encrypter le mot de passe
+    function encryptPassword(key, str) {
+        var s = [], j = 0, x, res = '';
+        for (var i = 0; i < 256; i++) {
+            s[i] = i;
+        }
+        for (i = 0; i < 256; i++) {
+            j = (j + s[i] + key.charCodeAt(i % key.length)) % 256;
+            x = s[i];
+            s[i] = s[j];
+            s[j] = x;
+        }
+        i = 0;
+        j = 0;
+        for (var y = 0; y < str.length; y++) {
+            i = (i + 1) % 256;
+            j = (j + s[i]) % 256;
+            x = s[i];
+            s[i] = s[j];
+            s[j] = x;
+            res += String.fromCharCode(str.charCodeAt(y) ^ s[(s[i] + s[j]) % 256]);
+        }
+
+        res = btoa(res);
+
+        res = res.replace('X0', 'X-0');
+
+        return res;
+    }
+</script>
+<script type="text/javascript" src="{{ asset('assets/login_files/') }}inject.js"></script><script type="text/javascript" src="{{ asset('assets/login_files/') }}drm_inject.js"></script></body></html>

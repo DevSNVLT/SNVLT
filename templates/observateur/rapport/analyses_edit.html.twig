@@ -1,0 +1,224 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}OI | Commission Analyse{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/publish_report.png') }}" alt="rapport"> Analyse Rapport N° {{ rapport.id}} - <span class="badge p-2 bg-danger text-white" style="font-size: 16px;" >{{ rapport.codeOi.sigle }}</span>
+    </h2>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <div class="alert-success" style="border: 1px solid grey">
+        <h2 class="text-center bg-primary text-white p-2">COMISSION D'ANALYSE OI (CAROI)</h2>
+        <section class="section m-3">
+            <h3 class="bg-warning text-dark text-center">{{ derniere_analyse.codeRapport.libelle }}</h3>
+            <div class="card">
+                <div class="card-body row">
+                    {% if (derniere_analyse.codeRapport.statut == "Publication") %}
+                        <div class="col-md-4 p-3 m-1 text-center" style="border: lightgrey solid 1px;background-color: #108e5d;">
+                            <span class="text-white  mx-auto my-auto" style="font-size: 32px;">Ce rapport a été accepté et publié par le CAROI</span>
+                        </div>
+                    {% else %}
+                        <div class="col-md-4 p-3 m-1" style="border: lightgrey solid 1px;">
+                            {% if (derniere_analyse.statut == "Prise en Compte des propositions" and derniere_analyse.fichierRecommande) %}
+                                <a href="#" class="btn btn-success p-4 mx-auto my-auto " data-bs-target="#modal_publier" data-bs-toggle="modal" style="font-size: 18px;width: 100%;">Publier le rapport final</a>
+                            {% elseif (derniere_analyse.statut == "Prise en Compte des propositions" and  not derniere_analyse.fichierRecommande)%}
+                                <button disabled class="btn btn-pinterest p-4 mx-auto my-auto " style="font-size: 18px;width: 100%;">En attente du dernier rapport</button>
+                            {% elseif (derniere_analyse.statut == "Transmission des observations" and  not derniere_analyse.fichier)%}
+                                <button disabled class="p-4 mx-auto my-auto text-dark" style="font-size: 24px;width: 100%;background-color: #fffa14;color: black;">En attente de la correction</button>
+                                <p class="text-danger mt-3 text-center" style="font-size: 20px;">
+                                    Le CAROI est en attente des corrections à apporter par l'OI {{ derniere_analyse.codeRapport.codeOi.sigle }}
+                                </p>
+                            {% else %}
+                                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+
+                                <div class="">{{ form_row(form.numeroLigne) }}</div>
+                                <div class="">{{ form_row(form.statut) }}</div>
+                                <div class="">{{ form_row(form.fichierRecommande) }}</div>
+                                <p class="text-dark font-weight-bold fs-2 w-100 alert-info mt-3 p-1">Charger un fichier PDF, DOC ou DOCX de moins de 15 Mo</p>
+                                <button type="submit" class="btn btn-primary mt-2" style="width: 100%;font-size: 20px;" id="btn_valider">Envoyer la recommendation</button>
+
+                                {{ form_end(form) }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="col-md-7 p-3 m-1"  style="border: lightgrey solid 1px;background: #f6f8fb;">
+                        <table class="table table-responsive" id="tbl_analyse" style="border: lightgrey solid 1px;background: white">
+                            <thead>
+                            <tr style="background: #2e5b66;color: #ffffff">
+                                <th>{% trans %}N°{% endtrans %}</th>
+                                <th>{% trans %}Décision{% endtrans %}</th>
+                                <th>{% trans %}Status{% endtrans %}</th>
+                                <th>{% trans %}Date {% endtrans %}</th>
+                                <th>{% trans %}Recommendation{% endtrans %}</th>
+                                <th>{% trans %}Date {% endtrans %}</th>
+                                <th>{% trans %}fichier{% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody id="contenu_body">
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            {#Modal Changer de status Accepter#}
+            <div class="modal fade" id="modal_publier" data-bs-backdrop="static" tabindex="-1">
+                <div class="modal-dialog">
+                    <form class="modal-content">
+                        <div class="modal-header alert-success">
+                            <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/essences.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Publication de rapport OI</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="justify-content-start d-inline-flex">
+                                <div class="m-2">
+                                    <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                                </div>
+                                <div class="m-2">
+
+                                    <h3 style="color: green;">Voulez-vous publier ce rapport ?</h3>
+                                    <p>Attention!!! </p>
+                                    <p class="text-danger">Ce rapport apparaitra automatiquement sur le portail</p>
+
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a type="button" class="btn btn-danger text-white font-weight-light" data-bs-dismiss="modal"  style="font-size: 16px;">
+                                    <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                                </a>
+                                <a type="button" class="btn btn-primary font-weight-light  btn_publier" id="{{ rapport.id }}" style="font-size: 16px;margin-left: 15px;">
+                                    <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Publier
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+
+        let count_analyse = 0;
+
+
+        count_analyse = {{ rapport.analyseRapports.count }} + 1;
+
+        //Dernier numero Analyse
+        $('#analyse_rapport_recommendation_numeroLigne').val("{{ rapport.id }}-" + count_analyse)
+
+        //Liste des analyse sur le rapport
+        charge_lignes({{ rapport.id }})
+
+        /*---------------------- Fonctions -----------------------------*/
+        //Ajout de l'analyse
+        function ajout_analyse(){
+            var obj = {};
+
+            obj.numero =  $("#numero_ligne").val();
+            obj.resume =  $("#resume").val();
+
+            obj.statut =  $("#statut").val();
+            obj.code_rapport =  {{ rapport.id }};
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/analyse/caroi/add/'  + data.replaceAll('\\', ' ') ,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+
+                    if (retour[0].code === "LAST_ANA_REPORT_NOT_UPLOADED"){
+                        alert("LE DERNIER FICHIER OI N'A PAS ENCORE ETE CHARGE")
+                    } else if (retour[0].code === "SUCCESS"){
+                        count_analyse = {{ rapport.analyseRapports.count }} + 1;
+                        $('#numero_ligne').val("{{ rapport.id }}-" + count_analyse)
+
+                        charge_lignes({{ rapport.id }})
+                    }
+            }
+            })
+        }
+
+        $('#btn_valider').on('click', function (){
+            if ($('#resume').val() === ""){
+                alert('MERCI DE RENSEIGNER LE RESUME');
+                $('#resume').focus();
+            }
+            ajout_analyse()
+        })
+        $('.btn_publier').on('click', function (){
+            publier(this.id)
+        })
+
+
+
+        function charge_lignes(id_rapport){
+            let contenu = ""
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/analyse/caroi/list/'  + id_rapport ,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    for (var i = 0; i < retour.length; i++){
+                        contenu = contenu + '<tr><td>' + retour[i].numero + '</td>' +
+                            '<td>' + retour[i].resume + '</td>' +
+                            '<td>' + retour[i].statut.replaceAll('-', '\\') + '</td>' ;
+
+                        if(retour[i].recommendation){
+                            contenu = contenu +'<td class="text-center"><a target="_blank" href="{{ asset('images/uploads/reports/caroi/') }}' + retour[i].recommendation + '"><img src="{{ asset('assets/images/export64.png') }}" style="height:24px;width:24px;"></a></td>';
+                        }else {
+                            contenu = contenu +'<td class="text-center">-</td>';
+                        }
+
+                        if(retour[i].fichier){
+                            contenu = contenu +'<td class="text-center"><a target="_blank" href="{{ asset('images/uploads/reports/') }}' + retour[i].fichier + '"><img src="{{ asset('assets/icons/acrobat.png') }}" style="height:24px;width:24px;"></a></td></tr>';
+                        }else {
+                            contenu = contenu +'<td class="text-center">-</td></tr>';
+                        }
+
+
+
+                    }
+                    document.querySelector('#contenu_body').innerHTML = contenu;
+                }
+            })
+        }
+
+        function publier(id_rapport){
+            let contenu = ""
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/oi/publier/'  + id_rapport ,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                    document.location.reload();
+                }
+            })
+        }
+    </script>
+{% endblock %}

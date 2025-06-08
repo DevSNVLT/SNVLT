@@ -1,0 +1,214 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {{ notification.sujet }}
+{% endblock %}
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/notification.png') }}"  alt="{{ notification.reference }}">{{ notification.sujet }}
+    </h2>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+
+
+    <section class="section p-3  mx-auto bg-white border-1">
+        <div class="w-100 text-dark text-dark"><p class="p-2" style="font-size: 20px;background-color: #e7e2e2" >{{ notification.description }}</p></div>
+
+
+        <div class="mt-1">
+            <span class="text-white badge bg-dark p-2" style="font-size: medium">{% trans %}Created at{% endtrans %} {{ notification.createdAt | date('d m Y  h:i:s') }}</span>
+            <span class="text-white badge bg-info p-2" style="font-size: medium">{% trans %}sent to you on{% endtrans %} {{ circuit.updatedAt | date('d m Y  h:i:s') }}</span>
+        </div>
+        <hr>
+            <div class="row">
+                    <div class="card m-3">
+                        <div class="card-title alert-info p-2">
+                            <span class="">{{ 'Basic informations' | trans }}</span>
+                        </div>
+                        <div class="card-body bg-white">
+                            <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Operator Type{% endtrans %} :</span><span class="text-danger" style="font-weight: bold">{{ circuit.codeDemandeOperateur.codeOperateur}} </span></div>
+                            <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Operator{% endtrans %} :</span><span class="badge bg-success text-white p-2" style="font-weight: bold; font-size: large">{{ operateur['rs']}} </span></div>
+                            <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Code{% endtrans %} :</span><span class="text-danger" style="font-weight: bold">{{ operateur['code']}} </span></div>
+                            <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Cantonnement{% endtrans %} :</span><span class="text-danger" style="font-weight: bold">{{ operateur['cantonnement']}} </span></div>
+                           {% if(circuit.codeDemandeOperateur.codeOperateur.id == 2) %}
+                                <div class="bg-white p-2"><span class="text-dark" style="font-weight: bold; font-size: 20px;" >{% trans %}Forest{% endtrans %} :</span> <span class="text-danger" style="font-weight: bold">
+                                        {% if (circuit.codeDemandeOperateur.codeReprise) %}
+                                            {{ circuit.codeDemandeOperateur.codeReprise.codeAttribution.codeForet.denomination}} - {{ circuit.codeDemandeOperateur.codeReprise.codeAttribution.codeForet.codeTypeForet.libelle}}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card m-3">
+                        <div class="card-title alert-primary p-2">
+                            <span class="">{{ 'Data' | trans }}</span>
+
+                        </div>
+                        <div class="card-body bg-white">
+
+                        </div>
+                    </div>
+                    <div class="card m-3">
+                        <div class="card-title alert-danger p-2">
+                            <span class="">{{ 'Legal Documents' | trans }}</span>
+                        </div>
+                        <div class="card-body bg-white">
+
+                        </div>
+                    </div>
+            </div>
+
+
+
+            <div class="row p-2 alert-warning" style="margin-left: 10px;font-weight: bold">
+                <div class="col-md-2">
+                    <label>
+                        {{ 'Document type' | trans }}
+                        <input
+                                type="text"
+                                class="form-control text-center bg-warning font-weight-bold"
+                                style="font-size: 20px;"
+                                readonly
+                                value="{{ circuit.codeDemandeOperateur.docStat.abv }}"
+
+                        >
+                    </label>
+                </div>
+                <div class="col-md-2">
+                    <label>
+                        {{ 'Quantity requested' | trans }}
+                        <input type="text"
+                               class="form-control text-center bg-warning font-weight-bold"
+                               style="font-size: 20px;"
+                               readonly
+                               value="{{ circuit.codeDemandeOperateur.qte }}">
+                    </label>
+                </div>
+            </div>
+
+        <div class="mt-5 p-2">
+            <a
+                    class="btn btn-danger text-white p-2"
+                    style="font-size: large"
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#refuseRequest"
+            >
+                <i class="mdi mdi-cancel text-white me-2" style="font-size: 20px"></i> {% trans %}Refuse request{% endtrans %}</a>
+            <a
+                    class="btn btn-primary text-white p-2"
+                    style="font-size: large"
+                    id="{{ circuit.id }}"
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#acceptRequest"
+            >
+                <i class="mdi mdi-check text-white me-2" style="font-size: 20px"></i> {% trans %}Accept request{% endtrans %}</a>
+        </div>
+    </section>
+    {#Modal pour la génération des documents utilisateurs#}
+
+    <!-- Modal REJECT-->
+    <div class="modal fade" id="refuseRequest" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-danger">
+                    <h5 class="modal-title" id="backDropModalTitle">{{ 'You want to refuse this request' | trans}}</h5>
+                </div>
+                <div class="modal-body">
+                    <label for="motif" class="text-danger font-weight-bold">{{ 'Reason for this reject ' |trans}}</label>
+                    <input name="motif" class="form-control" id="motif" value="" style="height: 100px">
+                </div>
+                <div class="modal-footer">
+                    <a type="button" class="btn btn-warning text-dark font-weight-light" data-bs-dismiss="modal" id="{{ circuit.id }}"  style="font-size: 16px;">
+                        <i class="mdi mdi-backspace text-dark me-2" style="font-size: 20px;margin-right: 5px;"></i>{{ 'Do not reject'|trans }}
+                    </a>
+                    <a type="button" class="btn btn-danger refuser font-weight-light" id="{{ circuit.id }}" style="font-size: 16px;">
+                        <i class="mdi mdi-cancel text-white me-2" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Reject this request'|trans }}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal ACCEPT-->
+    <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle">{{ 'Accepting the request' | trans}}</h5>
+                </div>
+                <div class="modal-body">
+                    <label for="motif" class="text-dark font-weight-bold">{{ 'Do you want to accept this request ' |trans}}</label>
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-warning text-dark font-weight-light" data-bs-dismiss="modal" id="{{ circuit.id }}"  style="font-size: 16px;">
+                            <i class="mdi mdi-backspace text-dark me-2" style="font-size: 20px;margin-right: 5px;"></i>{{ 'Do not accept'|trans }}
+                        </a>
+                        <a type="button" class="btn btn-primary accepter font-weight-light" id="{{ circuit.id }}" style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Accept this request'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+
+    <script>
+
+
+            $(document).ready(function() {
+                var notification_id = {{ notification.id }}
+
+            $('.accepter').on('click', function(){
+
+            $.ajax({
+                url:'{{path('app_portail')}}snvlt/validation/circuit/request/acc/' + this.id + '/'  + notification_id ,
+                type : 'POST',
+                data : {'id_circuit': this.id, 'id_notification': notification_id},
+                success: function(response){
+                    console.log(response);
+                    document.location.href = "{{ path('app_notifs') }}";
+                    }
+            });
+        });
+
+        $('.refuser').on('click', function(){
+            let value = 0;
+            var motif = document.querySelector('#motif').value;
+
+            if(motif === null || motif ==="") {
+                alert('{{ "SORRY! YOU MUST SPECIFY A REASON TO REJECT THIS REQUEST" | trans }}')
+            } else {
+                $.ajax({
+                    url:'{{path('app_portail')}}snvlt/validation/circuit/request/ref/' + this.id + '/' + notification_id + '/'+ motif,
+                    type : 'POST',
+                    data : {'id_circuit': this.id, 'id_notification':notification_id, 'motif': motif},
+                    success: function(response){
+                        console.log(response);
+                        document.location.href = "{{ path('app_notifs') }}";
+                    }
+                });
+            }
+
+        });
+        });
+
+
+    </script>
+
+
+{% endblock %}

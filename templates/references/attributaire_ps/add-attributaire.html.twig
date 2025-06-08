@@ -1,0 +1,98 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}PS Owners{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/responsable.png') }}" alt="{% trans %}owner{% endtrans %}">  {% trans %}PS Owners{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a
+                    class="btn"
+                    style="border: 0px; font-size: 16px;"
+                    href="{{ path('attributaire_ps.edit') }}"
+                    id="btn-add"
+                    title="{% trans %}Add a PS Owner{% endtrans %}"
+            > <i class="mdi mdi-plus-circle me-2" style="font-size: 32px;color: red"></i></a>
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+
+    <section class="section">
+        <div class="card">
+                <div class="card-body" style="border-top: solid 3px #024202">
+                    <h3 class="text-danger">
+                        {% if (new_item == "true") %}
+                            Ajouter un
+                        {% else %}
+                            Editer un
+                        {% endif %} attributaire de produits secondaires
+                    </h3>
+
+                    {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                    <div class="row p-3 bg-white m-1 container">
+                        <div class="col-md-6  p-1">
+                            <div class="">{{ form_row(form.raison_sociale) }}</div>
+                            <div class="">{{ form_row(form.code) }}</div>
+                            <div class="">{{ form_row(form.type_atributaire) }}</div>
+                            <div class="">{{ form_row(form.contact) }}</div>
+                            <div class="">{{ form_row(form.adresse) }}</div>
+                            <div class="">{{ form_row(form.nationalite) }}</div>
+
+                        </div>
+                        <div class="col-md-6 p-1">
+                            <div class="">{{ form_row(form.sexe) }}</div>
+                            <div class="">{{ form_row(form.cc) }}</div>
+                            <div class="">{{ form_row(form.personne_ressource) }}
+                            <div class="">{{ form_row(form.email_personne_ressource) }}
+                            </div><div class="">{{ form_row(form.mobile_personne_ressource) }}</div>
+                            <div class="">{{ form_row(form.statut) }}</div>
+                        </div>
+
+                    </div>
+                    <hr>
+                        <a href="{{ path('app_references_attributaire_ps') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                        <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                            {% if (new_item == "true") %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Ajouter un attributaire
+                            {% else %}
+                                <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Editer un attributaire
+                            {% endif %}
+                        </button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+            <div class="card-footer">
+
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+{% endblock %}
+

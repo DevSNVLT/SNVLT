@@ -1,0 +1,402 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans%} - {% trans %}All Users{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/responsable.png') }}"  alt="{% trans %}users{% endtrans %}">  Gestion des utilisateurs
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a href="{{ path('app_utilisateur') }}" class="btn btn-sm btn-primary font-weight-light me-4" style="font-size: 18px;">Voir les Responsables</a>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block notifs %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <section class="section  bg-white" style="border-top : 3px solid darkgreen;">
+        <h3 class="text-center alert-success p-1" style="">Tous les utilisateurs
+            <span class="badge bg-warning text-danger ms-2" style="font-size: 20px;">
+
+
+                {% for utilisateur in liste_users %}
+                    {% set i = i + 1 %}
+                {% endfor %}
+                {{ i }}
+            </span>
+        </h3>
+        <div class="card">
+
+            <div class="card-body">
+
+                <table class="table table-responsive" style="border: lightgrey 1px solid" id="users">
+                    <thead>
+                    <tr style="background: #f55e04;color: #fcf8f8">
+
+                        <th>{% trans %}Firstname and Lastname{% endtrans %}</th>
+                        <th>{% trans %}Email{% endtrans %}</th>
+                        <th>{% trans %}Function{% endtrans %}</th>
+                        <th>{% trans %}Contacts{% endtrans %}</th>
+                        <th>{% trans %}Group{% endtrans %}</th>
+                        <th>{% trans %}Type of Operator{% endtrans %}</th>
+                        <th>{% trans %}Structure{% endtrans %}</th>
+                        <th>{% trans %}Actions{% endtrans %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for utilisateur in liste_users %}
+
+                        {% if (utilisateur.actif == true) %}
+                            <tr style="border: lightgrey 1px solid">
+                        {% else %}
+                            <tr class="alert-danger" style="border: lightgrey 1px solid" title="{% trans %}This user is blocked into the system{% endtrans %}">
+                        {% endif %}
+
+                        <td class="text-dark "style="font-size: 16px;">
+                           {{ utilisateur.prenomsUtilisateur}} {{ utilisateur.nomUtilisateur}}
+                        </td>
+                        <td style="font-size: 16px;">{{ utilisateur.email }}</td>
+                        <td style="font-size: 16px;">{{ utilisateur.fonction }}</td>
+                        <td style="font-size: 16px;">{{ utilisateur.mobile }}</td>
+                        <td class="text-center" style="font-size: 16px;font-weight: bold;">
+                            {% if (utilisateur.codeGroupe.id == 1) %}
+                                <a class='badge alert-danger btn-sm font-weight-bold text-dark' style="border: 2px solid red; border-radius: 5px;" id="{{ utilisateur.id }}">
+                                    {{ utilisateur.codeGroupe.nomGroupe }}
+                                </a>
+                            {% else %}
+                                <a class='badge alert-success btn alert btn-sm font-weight-bold text-dark drpBtn '  style="border: 2px solid green; border-radius: 5px;"  type='button' id="{{ utilisateur.id }}" data-bs-toggle='dropdown' aria-expanded='false'>
+                                    {{ utilisateur.codeGroupe.nomGroupe }}
+                                </a>
+                                <ul class='dropdown-menu alert-light-success ms-5' style="height:400px; overflow-y:scroll; background-color: #f0fffb;" aria-labelledby='dropdownMenuButtonSM'>
+                                    {% for profile  in mygroups %}
+                                        <li>
+                                            {% if(profile.nomGroupe == utilisateur.codeGroupe.nomGroupe) %}
+                                                <a class='dropdown-item menuBtn  text-dark' id='{{ profile.id }}'>
+                                                    <i class="bi bi-check fs-4 text-success font-weight-bold me-2"></i><span class='font-weight-bold ms-2'>{{ profile.nomGroupe }}</span>
+                                                </a>
+                                            {% else %}
+                                                <a class='dropdown-item menuBtn ms-2  text-dark' id='{{ profile.id }}' href='{{ path('change_profile_respo', {'id_utilisateur': utilisateur.id, 'id_groupe': profile.id },) }}'>
+                                                    <span class='ms-3'>- {{ profile.nomGroupe }}</span>
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 16px;">{% if(utilisateur.codeOperateur) %}
+                                {{ utilisateur.codeOperateur.libelleOperateur }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 16px;font-weight: bold;color: #0f5132">
+                            {% if(utilisateur.codeOperateur) %}
+                                {% if(utilisateur.codeOperateur.id == 1) %}
+                                    {% if(utilisateur.codeService == null and utilisateur.codeDirection == null) %}
+                                        -
+                                    {% else %}
+                                        {% if(utilisateur.codeService)  %}
+                                            <h3 class="badge alert-primary" style="font-size: medium">{{ utilisateur.codeService.sigle}}</h3>
+                                        {% else %}
+                                            <h3 class="badge alert-primary" style="font-size: medium">{{ utilisateur.codeDirection.sigle }}</h3>
+                                        {% endif %}
+                                    {% endif %}
+
+                                {% elseif(utilisateur.codeOperateur.id == 2) %}
+                                    <h3 class="badge alert-success " style="font-size: medium">{{ utilisateur.codeexploitant.sigle }}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 3) %}
+                                    <h3 class="badge alert-success " style="font-size: medium">{{ utilisateur.codeindustriel.sigle}}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 4) %}
+                                    <h3 class="badge alert-success " style="font-size: medium">{{ utilisateur.codeExportateur.raisonSocialeExportateur}}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 5) %}
+                                    <h3 class="badge bg-warning " style="font-size: medium">{{ utilisateur.codeDr.denomination }}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 6) %}
+                                    <h3 class="badge bg-warning " style="font-size: medium">{{ utilisateur.codeDdef.nomDdef }}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 7) %}
+                                    <h3 class="badge bg-warning " style="font-size: medium">{{ utilisateur.codeCantonnement.nomCantonnement }}</h3>
+                                {% elseif(utilisateur.codeOperateur.id == 10) %}
+                                    <h3 class="badge bg-warning " style="font-size: medium">{{ utilisateur.codePosteControle.denomination }}</h3>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button  class="btn monprofil" id="{{ utilisateur.id }}">
+                                <img src="{{ asset('assets/images/webapp/user.png') }}" alt="user" height="16">
+                            </button>
+                            {% if (utilisateur.actif) %}
+                                {#{% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}#}
+                                <a href="#" class="bloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/lock.png') }}" height="16" alt="Bloquer"></a>
+                                {#{% endif %}#}
+                            {% else %}
+                                {#{% if(utilisateur.codeOperateur.id == 2 or utilisateur.codeOperateur.id == 3 or utilisateur.codeOperateur.id == 4) %}#}
+                                <a href="#"  class="debloquer" id="{{ utilisateur.id }}"><img src="{{ asset('assets/icons/unlock.png') }}" height="16" alt="Débloquer"></a>
+                                {#{% endif %}#}
+                            {% endif %}
+
+                        </td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal fade" id="saisiecp" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter Données BCBGFH</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="row overflow-y-scroll" >
+
+                            <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+                                <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;" id="lbl_alert"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+                                    {# <input type="number" value="" id="numero_lignepagebrh" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;" onload="this.focus()">
+                                    #}<select type="number" class="select_numero"  id="select_numero" style="font-size: 16px;background-color: #72d5f9;font-weight: bold; border: 1px solid lightgrey;" onload="this.focus()">
+
+                                    </select>
+                                    <select  id="lettre_lignepagebrh" style="font-size: 16px;background-color: #72d5f9; border: 1px solid lightgrey;font-weight: bold;">
+                                        {#<option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>#}
+                                    </select>
+                                </div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                    {#        <select id="nom_essencebrh" readonly  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une essence ---</option>
+                                    {% for essence in essences %}
+                                        <option value="{{ essence.id }}">{{ essence.nomVernaculaire }}</option>
+                                    {% endfor %}
+                                </select>#}
+                                    <input type="text" readonly value="" id="nom_essencebrh" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                </div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                    {#<select id="zh_lignepagebrh" readonly="true" onFocus="expand(this)" onBlur="unexpand(this)" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                    <option value=0>-- Sélectionnez une zone ---</option>
+                                    {% for zone in zones %}
+                                        <option value="{{ zone.id }}">{{ zone.zone }}</option>
+                                    {% endfor %}
+                                </select>#}
+                                    <input type="text" readonly value="" id="zh_lignepagebrh" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                </div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="x_lignepagebrh" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="y_lignepagebrh" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                                {#<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                                <select  id="lettre_lignepagebrh" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>#}
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="longeur_lignepagebrh" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="diametre_lignepagebrh" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                                <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebrh" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </section>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+    <script>
+        dataTableSnvlt("#users", "Liste des utilisateurs", 5)
+        // let table = new DataTable("#users", {
+        //     responsive: true,
+        //     pageLength: 10,
+        //     layout: {
+        //         topStart: {
+        //             buttons: [
+        //                 {
+        //                     extend: 'excelHtml5',
+        //                     title: "Liste des utilisateurs",
+        //                     text: "Télécharger la liste"
+        //
+        //                 }
+        //             ]
+        //         }
+        //     },
+        //     colReorder: true,
+        //     language: {
+        //         processing:     "Traitement en cours...",
+        //         search:         "Rechercher&nbsp;:",
+        //         lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+        //         info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+        //         infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+        //         infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+        //         infoPostFix:    "",
+        //         loadingRecords: "Chargement en cours...",
+        //         zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+        //         emptyTable:     "Aucune donnée disponible dans le tableau",
+        //         paginate: {
+        //             first:      "Premier",
+        //             previous:   "Pr&eacute;c&eacute;dent",
+        //             next:       "Suivant",
+        //             last:       "Dernier"
+        //         },
+        //         aria: {
+        //             sortAscending:  ": activer pour trier la colonne par ordre croissant",
+        //             sortDescending: ": activer pour trier la colonne par ordre décroissant"
+        //         }
+        //     }
+        // });
+        // $(document).ready(function () {
+        //     dataTableSnvlt("#users", "Liste des utilisateurs", 10)
+        // });
+        $('#chargement_snvlt').modal('show')
+
+        $('.body').on('click', '.monprofil', function(){
+            let id_user = this.id;
+            alert(id_user);
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/json_user/' + id_user,
+                type: 'POST',
+                data:{id_user: id_user,
+                },
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        })
+
+        //Affiche les information sur l'utilisateur
+
+
+
+        $('body').on('click', '.bloquer', function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                html: "<h4 class='text-danger'>{% trans %}Do you want to lock this user ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5daf11',
+                background: '#f8e9e9',
+                confirmButtonText: '{% trans %}Yes, lock{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_lock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}locked!{% endtrans %}',
+                        'The user is now blocked.',
+                        '{% trans %}Success{% endtrans %}' )
+                        .then((result) => {
+                            if (result.isConfirmed) {
+                                document.location.reload();
+                            }
+                        });
+
+                }
+            });
+        });
+
+        $('body').on('click', '.debloquer', function (e){
+            Swal.fire({
+                title: '{% trans %}SNVLT SECURITY{% endtrans %}',
+                text: "{% trans %}Do you want to unlock this user ?{% endtrans %}",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#5daf11',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '{% trans %}Yes, Unlock{% endtrans %}!',
+                toast: true,
+                padding: '1em',
+                background: '#e6f8e8'
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('secure_unlock_user') }}/' + this.id ,
+                        type : 'POST',
+                        data : {id_user: this.id},
+                        success: function(response){
+                            console.log(response);
+                            let parentMenuInfo = JSON.parse(response);
+                        }
+                    });
+                    Swal.fire(
+                        '{% trans %}Unlocked!{% endtrans %}',
+                        'The user is now active.',
+                        '{% trans %}Success{% endtrans %}')
+                        .then((result) => {
+                            if (result.isConfirmed) {
+                                document.location.reload();
+                            }
+                        });
+
+
+
+                }
+
+            });
+        });
+
+        // Simple Datatable
+        // let table1 = document.querySelector('#users');
+        // let dataTable = new simpleDatatables.DataTable(table1);
+    </script>
+
+
+
+{% endblock %}

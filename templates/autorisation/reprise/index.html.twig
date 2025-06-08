@@ -1,0 +1,262 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    SNVLT - Reprises
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/attribution.png') }}" alt="reprise">  Reprises annuelles d'activités
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-primary p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('reprise.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>Ajouter</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+{% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css" />
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+    <section class="section bg-white p-2">
+        <table class="table table-responsive-sm w-100 p-2 bg-white" id="reprises">
+            <thead>
+            <tr style="background: #46a46a; color: #f0fcf0;">
+                <th class="text-center"  style="font-size: 18px;">{% trans %}N° Décision{% endtrans %}</th>
+                <th class="text-center"  style="font-size: 18px;">{% trans %}Forêt{% endtrans %}</th>
+                <th class="text-center"  style="font-size: 18px;">{% trans %}Attributaire{% endtrans %}</th>
+                <th class="text-center"  style="font-size: 18px;" class="text-center">{% trans %}Statut{% endtrans %}</th>
+                <th class="text-center"  style="font-size: 18px;">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for reprise in reprises %}
+                {% if(reprise.statut) %}
+                    <tr>
+                {% else %}
+                    <tr style="background: #fcaaa9;color:white;">
+                {% endif %}
+                    <td><a class="badge p-2 editBtn font-weight-bold" style="font-size: 16px;font-weight: bold;color: #750f0f" href="{{ path('reprise.edit', {'id_reprise': reprise.id })}}" id="{{ reprise.id }}">{{ reprise.numeroAutorisation }} du {{ reprise.dateAutorisation | date('d/m/Y') }}</a></td>
+                    {% if (reprise.codeAttribution) %}
+                        <td class="text-center fw-bold">{{ reprise.codeAttribution.codeForet.denomination }}</td>
+                        <td class="text-dark fw-bold">{{ reprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</a></td>
+                    {% else %}
+                        <td class="text-center fw-bold">-</td>
+                        <td class="text-center fw-bold">-</td>
+                    {% endif %}
+
+                    <td class="text-center">
+                        {% if(reprise.statut) %}
+                            <span class="badge p-2 alert-success" style="font-weight: bold;">EN ACTIVITE</span>
+                            <td class="text-dark fw-bold">
+                                <a class="btn btn-sm text-white btn_att" id="{{ reprise.id }}" style="background: red" data-bs-toggle="modal" data-bs-target="#confirm_retrait">Suspendre</a>
+                            </td>
+                        {% else %}
+                            <span class="badge p-2 bg-danger text-white">SUSPENDUE</span>
+                            <td class="text-dark fw-bold">
+                                <a class="btn btn-sm text-dark bg-warning btn_restaurer" id="{{ reprise.id }}" style="background: red" data-bs-toggle="modal" data-bs-target="#confirm_restore">Restaurer</a>
+                            </td>
+                        {% endif %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {#    Suspendre la reprise#}
+        <div class="modal fade" id="confirm_retrait" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">Suspendre la reprise</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">Voulez-vous suspendre cette reprise ?</label>
+                                <h4  class="text-danger mt-2">L'opérateur ne pourra saisir de données d'exploitation ni bénéficier de nouveaux documents dans SNVLT</h4>
+                            </div>
+                        </div>
+                        <textarea class="form-control" style="min-height: 150px; border: solid green 1px;" name="motif" value="" id="motif" placeholder="Renseigner le motif">
+                    </textarea>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+                        <button type="button" class="btn btn-success mt-3" style="font-size: 20px;" id="retour">Annuler</button>
+                        <button type="button" class="btn btn-danger mt-3" style="font-size: 20px;" id="btn_retirer" >Suspendre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {#    Restaurer la reprise #}
+        <div class="modal fade" id="confirm_restore" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">Restaurer l'attribution</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="justify-content-start d-inline-flex">
+                            <div class="m-2">
+                                <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                            </div>
+                            <div class="m-2">
+                                <label for="motif" class="text-dark font-weight-bold">Voulez-vous restaurer cette reprise ?</label>
+                                <h4  class="text-danger mt-2">Vous allez permettre la création et la saisie de documents d'exploitation dans SNVLT !</h4>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+                        <button type="button" class="btn btn-success mt-3 h3" style="font-size: 20px;" id="retour" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger mt-3 h3" style="font-size: 20px;" id="btn_restaurer" >Restaurer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+
+    <script>
+        //let table1 = new DataTable('.sasies_brh');
+        let id_reprise = 0;
+        let table = new DataTable('#reprises', {
+            responsive: true,
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            title: 'Reprises',
+                            text: 'Exporter en excel',
+
+                        }
+                    ]
+                }
+            },
+            pageLength: 15,
+            colReorder: true,
+            language: {
+                processing:     "Traitement en cours...",
+                search:         "Rechercher&nbsp;:",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                infoPostFix:    "",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                paginate: {
+                    first:      "Premier",
+                    previous:   "Pr&eacute;c&eacute;dent",
+                    next:       "Suivant",
+                    last:       "Dernier"
+                },
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+
+        $('body').on('click','.btn_att', function (){
+
+            id_reprise = this.id;
+            $('#motif').val("");
+        })
+
+        $('body').on('click','.btn_restaurer', function (){
+            id_reprise = this.id;
+            // $('#motif').val("");
+        })
+
+        $('body').on('click','#btn_retirer', function (){
+            let motif = $('#motif').val();
+            if (motif === ""){
+                alert("RENSEIGNEZ SVP LE MOTIF")
+            } else {
+                $.ajax({
+                    url: '{{ path('app_portail') }}snvlt/reprise/suspendre/' +id_reprise  + '/' + motif,
+                    type: 'POST',
+                    success: function(response) {
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+                            alert("OPERATION EFFECTUEE AVEC SUCCES")
+                            document.location.reload()
+                        }else {
+                            alert("ERREUR LORS DE L'OPERATION")
+                        }
+                    }
+                })
+            }
+        })
+
+        $('body').on('click','#btn_restaurer', function (){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/reprise/restaure/' +id_reprise,
+                type: 'POST',
+                success: function(response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].CODE === "SUCCESS"){
+                        alert("RESTAURATION EFFECTUEE AVEC SUCCES")
+                        document.location.reload()
+                    }else {
+                        alert("ERREUR LORS DE LA TENTATIVE DE RESTAURATION")
+                    }
+                }
+            })
+        })
+    </script>
+
+{% endblock %}

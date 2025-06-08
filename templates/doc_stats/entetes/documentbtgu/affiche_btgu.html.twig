@@ -1,0 +1,930 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}My BTGU{% endtrans %} - [ {{ document_name.numeroDocbtgu }} ]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/wood truck.png') }}" alt="btgu">  {% trans %}My BTGU{% endtrans %} -
+        [
+        <span class="alert-success p-2" style="font-size: 16px;">{{ document_name.numeroDocbtgu }}</span>
+        - <span class="alert-info p-2 ms-2" style="font-size: 16px;">{{ document_name.codeUsine.sigle }}</span>
+        - <span class="alert-warning p-2 ms-2" style="font-size: 16px;">{{ document_name.codeUsine.codeCantonnement.nomCantonnement }}</span>
+        ]
+        <label for="#" class="badge rounded-5 bg-primary p-2 text-white" style = "font-size:16px;" id = "lbl_dest"></label>
+        <label for="#" class="badge rounded-5 bg-primary p-2 text-white" style="font-size:16px;margin-left: 5px" id = "lbl_usine"></label>
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+            <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_save" style="background: #316a02; font-size: 16px;margin: 10px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>Enregistrer entête</a>
+            <a class="btn text-white p-2 " data-bs-target="#transfert" data-bs-toggle="modal" style="border: 0px; font-size: 16px;background: linear-gradient(#7a5003, #512e23);margin: 10px;" href="#" id="transfer_chargement"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>Transférer le chargement</a>
+        </div>
+    </div>
+    <h1 class="bg-success text-white lbl_termine p-1"></h1>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    </style>
+    <section class="section p-3" style="background:radial-gradient(#dff49d, #f2f1cc); border: 1px #c1bebe solid">
+        <div class="" style="background: transparent">
+            <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
+                <div class="col-md-4" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Page No' | trans }}</span><select class="col-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 16px;background-color: #fc640b; border: 1px solid lightgrey;color: white">
+                        </select>
+                    </div>
+                    <div class="row form-group has-error has-feedback mb-2">
+                        <span class="col-5">{{ 'Destination' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="destination" id="destination" data-placeholder="Destination" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            <option value="0">-- Sélectionnez une ville ---</option>
+                            {% for ville in villes %}
+                                <option value="{{ ville.id }}">{{ ville.nomCantonnement }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row form-group has-error has-feedback mb-2">
+                        <span class="col-5">{{ 'Factory park' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="parc_usine" id="parc_usine" data-placeholder="usine de destination" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            <option value="0">-- Sélectionnez une usine ---</option>
+                            {% for usine in usines %}
+                                {%  if (usine.sigle) %}
+                                    <option value="{{ usine.id }}">{{ usine.sigle }}</option>
+                                {% else %}
+                                    <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Date Chargement' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="date" name="date_chargement" id="date_chargement"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                    </div>
+                </div>
+                <div class="col-md-4" style="width: 100%;">
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Transporteur' | trans }}</span><input class="col-6" type="text" name="transporteur" id="transporteur" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-6">{{ 'Chauffeur' | trans }}</span><input class="col-6" type="text" name="chauffeur" id="chauffeur" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Immatriculation' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text" name="immatriculation" id="immatriculation"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;text-transform: uppercase;">
+                    </div>
+                </div>
+                <div class="col-md-4" style="width: 100%;">
+
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Month' | trans }}</span><span class="text-danger col-1">*</span>
+                        <select name="mois" id="mois" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            <option value="1">Jan</option>
+                            <option value="2">Fev</option>
+                            <option value="3">Mar</option>
+                            <option value="4">Avr</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juin</option>
+                            <option value="7">Juil</option>
+                            <option value="8">Aout</option>
+                            <option value="9">Sep</option>
+                            <option value="10">Oct</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dec</option>
+                        </select>
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Year' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="number" name="annee" id="annee"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                    </div>
+
+
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Date Départ' | trans }}</span><span class="text-danger col-1"> </span><input class="col-6" type="date" name="date_depart" id="date_depart"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                    </div>
+                    <div class="row mb-2">
+                        <span class="col-5">{{ 'Date Arrivée' | trans }}</span><span class="text-danger col-1"> </span><input class="col-6" type="date" name="date_arrivee" id="date_arrivee"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="card " style="border: lightgrey solid 1px;background: #ffffff;">
+            <div style="background:radial-gradient(#f7fbeb, #ffffff)">
+                <a href="#" class="btn  btn-sm m-2 font-weight-light" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiebtgu"   style="font-size: 18px;color: white;background: #032ecd"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Sélectionnez les billes à transférer' | trans }}</span></a>
+            </div>
+            <div class="card-body p-2" style="background: #ffffff">
+                <div class="tab-content tab-transparent-content">
+                    <div class="tab-pane fade show active" id="databtgu" role="tabpanel" aria-labelledby="business-tab">
+                        <div class="row" style="background: #f4f2f2">
+                            <div class="col-md-12">
+                                <div class="overflow-y-scroll" style="height: 400px;">
+                                    <table class="table table-responsive sticky-top" id="data_btgu"  style="height: 400px;">
+                                        <thead>
+                                        <tr class="alert-warning">
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Tree No' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Letter' |trans}}</th>
+                                            <th class="font-weight-bold" style="font-size: 16px;width: 15%;">{{ 'species' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Zone' |trans }}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'X' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Y' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'length' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 7%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                            <th class="text-center font-weight-bold" style="font-size: 16px;width: 15%;">{{ 'Logger' |trans}}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="body_contenu" class="bg-white">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="photo_tab" role="tabpanel" aria-labelledby="business-tab">
+                        <img src="" id="image_feuillet" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {#Ajout Lignepagebtgu#}
+    <div class="modal fade" id="saisiebtgu" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header  alert-secondary">
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Add BTGU Data' | trans}}</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row overflow-y-scroll" >
+
+                        <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+
+                                <select class="select_numero"  id="select_numero" style="font-size: 16px;background-color: #aff972;font-weight: lighter; border: 1px solid lightgrey;width:200px;">
+
+                                </select><label class="text-danger font-weight-bold ms-2" for="" id="lbl_typedoc"></label>
+
+                            </div>
+
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+
+                                <input type="text" readonly value="" id="nom_essencebtgu" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+
+
+                                <input type="text" readonly value="" id="zh_lignepagebtgu" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                            </div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="x_lignepagebtgu" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="y_lignepagebtgu" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+
+
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="longeur_lignepagebtgu" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="diametre_lignepagebtgu" style="font-weight: bold;font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebtgu" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer alert-secondary">
+
+                    <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">Transférer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal ACCEPT-->
+    <div class="modal fade" id="transfert" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Transfert de Grumes entre Usines</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                            style="display: none;"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">{{ 'We need your approbation' |trans}}</label>
+                            <h6  class="text-danger ">{{ 'Do you want to authorize this loading to the selected destination ?' |trans}}</h6>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                        </a>
+                        <a type="button" class="btn btn-success accepter font-weight-light  accept_loading"  style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        // Index de la page courante
+        let index_page = 0;
+        //Affiche les pages du document BRH
+
+        liste_numeros_lje();
+        affiche_pages({{ document_name.id }});
+
+        $('#add_data').on('click', function (){
+            liste_numeros_lje();
+        });
+
+        /*$('.select_numero').select2({
+            theme: "classic"
+        });*/
+
+        $('#numero_page_select').on('change', function (){
+            //document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+            index_page = this.value;
+            initialiser_page();
+            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+
+            affiche_page_courante(index_page)
+
+            affiche_lignes_courante(index_page)
+
+        })
+
+        $('#select_numero').on('change', function (){
+            initialiser_numero_select();
+            infos_billes(this.value)
+
+        })
+
+
+        $('#lettre_lignepagebtgu').on('change', function (){
+
+            document.querySelector('#longeur_lignepagebtgu').value = "";
+            document.querySelector('#diametre_lignepagebtgu').value = "";
+            document.querySelector('#cubage_lignepagebtgu').value = "";
+
+            affiche_mensurations( $('#select_numero').val(), this.value);
+        })
+
+        $('#longeur_lignepagebtgu').on('change', function (){
+            $("#cubage_lignepagebtgu").val(calcul_volume(this.value, $('#diametre_lignepagebtgu').val()))
+        })
+
+        $('#diametre_lignepagebtgu').on('change', function (){
+            $("#cubage_lignepagebtgu").val(calcul_volume($('#longeur_lignepagebtgu').val(), this.value))
+        })
+
+        $('#destination').on('change', function (){
+            charge_usines(this.value)
+        })
+
+        function calcul_volume(lng, dm){
+            return Math.round((((dm * dm)/4)*3.14159 * (lng/1000000)) * 1000)/1000
+        }
+
+        $('#btn_save').on('click', function (){
+
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#immatriculation').val() === "" ||
+                $('#mois').val() === "" ||
+                $('#annee').val() === "" ||
+                $('#immatriculation').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: '{% trans %}BTGU Loading{% endtrans %}',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                maj_page_btgu();
+            }
+
+        })
+
+        function affiche_pages(id_btgu){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbtgu/op/pages_btgu/' +id_btgu,
+                type: 'POST',
+                success: function(response) {
+
+                    let page_btgu = JSON.parse(response);
+                    var contenu = '';
+                    let select_page = document.querySelector("#numero_page_select");
+
+
+
+                    for(var i = 0; i < page_btgu.length ; i++){
+
+                        contenu = contenu + '<option value="' + page_btgu[i].id_page + '">' + page_btgu[i].numero_page + '</option>';
+                    }
+                    contenu = contenu + '</div>'
+                    select_page.innerHTML = contenu;
+
+                    affiche_page_courante(select_page.value);
+                    $('#numero_page_select').val(page_btgu[0].id_page)
+                    index_page =  $('#numero_page_select').val();
+
+                    affiche_lignes_courante(index_page)
+                    //affiche_lignes_courante(page_btgu[0].id_page);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        //Affiche la page_courante
+        function affiche_page_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbtgu/op/pages_btgu/data/' +id_page,
+                type: 'POST',
+                data: {'id_btgu': id_page},
+                success: function(response) {
+
+                    let page_btgu = JSON.parse(response);
+
+                    let date_chargement = page_btgu[0].date_chargement;
+                    let date_depart = page_btgu[0].date_depart;
+                    let date_arrivee = page_btgu[0].date_arrivee;
+
+                    $('#destination').val(page_btgu[0].destination);
+                    // charge_usines(page_btgu[0].destination)
+
+                    $('#date_chargement').val(date_chargement);
+                    $('#date_depart').val(date_depart);
+                    $('#date_arrivee').val(date_arrivee);
+                    $('#chauffeur').val(page_btgu[0].chauffeur);
+                    $('#transporteur').val(page_btgu[0].transporteur);
+                    $('#mois').val(page_btgu[0].mois);
+                    $('#annee').val(page_btgu[0].annee);
+                    $('#immatriculation').val(page_btgu[0].immatriculation);
+                    $('#parc_usine').val(page_btgu[0].parc_usine);
+                    $('#destination').val(page_btgu[0].destination_id);
+                    $('#lbl_usine').text(page_btgu[0].usine_dest);
+                    $('#lbl_dest').text(page_btgu[0].destination);
+                    //document.querySelector("#image_feuillet").src ="{{ asset('images/uploads/btgu') }}/" +  page_btgu[0].photo
+                   if (page_btgu[0].fini) {
+                       transfert_effectue()
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function affiche_lignes_courante(id_page){
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/docbtgu/op/lignes_btgu/data/' +id_page,
+                type: 'POST',
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    var contenu = '';
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu').innerHTML = '<tr ><h6 class="text-danger font-weight-lighter bg-transparent">No Data Available</h6></tr>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center"><a class="text-dark font-weight-bold" style="font-size: 16px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="badge bg-dark text-white p-1"style="font-size: 16px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh_btgu  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x_btgu  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y_btgu  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng_btgu  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm_btgu  + '</span></td>'+
+                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 16px;">' + lignes[i].cubage_btgu + '</span></td>'+
+                                '<td class="text-center"><span class="badge p-1 alert-primary font-weight-bold alert-dark rounded-5" style="font-size: 16px;">' + lignes[i].exploitant + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].cubage_btgu) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr class="alert-danger"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu').innerHTML = contenu;
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('.txt_essence').innerHTML = contenu;
+                }
+            })
+        }
+        $('.accepter').on('click', function(){
+            accepter_chargement(index_page)
+        })
+        function accepter_chargement(id_page){
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/btgu/validate_form/' + id_page,
+                'type': 'POST',
+                success: function(response) {
+                    $('#transfert .btn-close').click()
+                    alert("SUCCES! Votre transfert a été effectué")
+                    transfert_effectue()
+                }
+            })
+        }
+        function transfert_effectue(){
+            document.querySelector('#btn-save').disabled = true;
+            document.querySelector('#transfer_chargement').disabled = true;
+            document.querySelector('#lbl_termine').text = "Ce bordereau a déjà été transféré à l'usine de destination";
+
+        }
+
+        //Charge les numeros CP disponibles pour cette foret
+        function liste_numeros_lje(){
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/numlje/dispo',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_numeros = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez une bille</option>';
+
+                    for (var i = 0; i< liste_numeros.length ; i++){
+                        contenu = contenu + '<option value="' + liste_numeros[i].id_ligne + '">' + liste_numeros[i].num + '</option>'
+                    }
+                    document.querySelector('.select_numero').innerHTML = contenu;
+                    const config = {
+                        search: false, // Toggle search feature. Default: false
+                        creatable: false, // Creatable selection. Default: false
+                        clearable: false, // Clearable selection. Default: false
+                        maxHeight: '360px', // Max height for showing scrollbar. Default: 360px
+                        size: '', // Can be "sm" or "lg". Default ''
+                    }
+
+
+                }
+            })
+        }
+
+        function liste_zones(){
+            $.ajax({
+                'url': '{{ path('zoneh.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_zone = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez la zone</option>';
+
+                    for (var i = 0; i< liste_zone.length ; i++){
+                        contenu = contenu + '<option value="' + liste_zone[i].zone_id + '">' + liste_zone[i].zone_nom + '</option>'
+                    }
+                    document.querySelector('.txt_zone').innerHTML = contenu;
+                }
+            })
+        }
+
+        $("#save_data").on('click', function (){
+
+            //Vérification des données en-tetes
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#parc_usine').val() === "0" ||
+                $('#destination').val() === "" ||
+                $('#destination').val() === "0" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null ||
+                $('#date_depart').val() === null ||
+                $('#date_depart').val() === "" ||
+                $('#date_arrivee').val() === null ||
+                $('#date_arrivee').val() === ""
+            ){
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    background: '#f5c8b8',
+                    timer : 3000,
+                    icon: "success",
+                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
+                    showConfirmButton: false
+                });
+
+                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+            }else {
+                if (
+                    $('#select_numero').val() === "" ||
+                    $('#select_numero').val() === "0" ||
+                    $('#nom_essencebtgu').val() === "" ||
+                    $('#x_lignepagebtgu').val() === "" ||
+                    $('#y_lignepagebtgu').val() === "" ||
+                    $('#longeur_lignepagebtgu').val() === "" ||
+                    $('#diametre_lignepagebtgu').val() === "" ||
+                    $('#cubage_lignepagebtgu').val() === "" ||
+                    $('#zh_lignepagebtgu').val() === null
+                ){
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#f5c8b8',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+
+                } else {
+                    transferer_bille($('#select_numero').val());
+                }
+            }
+
+
+        });
+
+        function maj_page_btgu(){
+            var obj = {};
+            obj.date_chargement =  $("#date_chargement").val();
+            obj.date_depart =  $("#date_depart").val();
+            obj.date_arrivee =  $("#date_arrivee").val();
+            obj.destination =  $("#destination").val();
+            obj.parc_usine =  $("#parc_usine").val();
+            obj.transporteur =  $("#transporteur").val();
+            obj.chauffeur =  $("#chauffeur").val();
+            obj.mois =  $("#mois").val();
+            obj.annee =  $("#annee").val();
+            obj.immatriculation =  $("#immatriculation").val();
+            obj.code_docbtgu=  {{ document_name.id }};
+
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbtgu/op/pages_btgu/data/edit/'+ index_page + '/'  + data,
+                'type': 'POST',
+
+                success: function(response) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        background: '#dffbdd',
+                        timer : 3000,
+                        icon: "success",
+                        title: '{% trans %}Page header saved !{% endtrans %}',
+                        showConfirmButton: false
+                    });
+
+                }
+            })
+        }
+
+        function transferer_bille(id_bille){
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/docbtgu/op/pages_btgu/data/add_lignes/' + id_bille + '/' + index_page,
+                'type': 'POST',
+                success: function(response) {
+                    let retour = JSON.parse(response)
+                        liste_numeros_lje();
+                        initialiser();
+                        affiche_lignes_courante(index_page);
+
+                        //lettres_billes(document.querySelector('#select_numero').value)
+                        document.querySelector('#select_numero').focus();
+                }
+            })
+        }
+
+
+        $('#validate_page').on('click', function (e){
+            if (
+                $('#parc_usine').val() === "" ||
+                $('#destination').val() === "" ||
+                $('#date_chargement').val() === "" ||
+                $('#date_chargement').val() === null
+            ){
+                Swal.fire({
+                    toast: true,
+                    background: '#f8e9e9',
+                    icon: "error",
+                    allowEscapeKey: false,
+                    title: '{% trans %}BRH Loading{% endtrans %}',
+                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
+                    padding: '1em'
+                });
+            }else {
+                validate_pagebtgu();
+            }
+        });
+
+        function validate_pagebtgu()
+        {
+            Swal.fire({
+                html: "<h4 class='alert-success text-dark font-weight-bold p-3'>{% trans %}Validate this Loading ?{% endtrans %}</h4>",
+                imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
+                showCancelButton: true,
+                confirmButtonColor: '#23850a',
+                cancelButtonColor: '#fb0000',
+                background: '#f3f8e9',
+                confirmButtonText: '{% trans %}Yes, Validate{% endtrans %}',
+                cancelButtonText: '{% trans %}Cancel{% endtrans %}',
+                toast: true,
+                padding: '3em'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url:'{{ path('app_portail') }}snvlt/btgu/soumettre_chargement/' + index_page ,
+                        type : 'POST',
+                        data : {id_page: index_page},
+                        success: function(response){
+                            console.log(response);
+                            let valeur = JSON.parse(response);
+
+                            Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                background: '#dffbdd',
+                                timer : 3000,
+                                icon: "success",
+                                title: '{% trans %}The loading is sent to manager!{% endtrans %}',
+                                showConfirmButton: false
+                            });
+                            initialiser_page();
+                            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+                            affiche_page_courante(index_page)
+
+                            affiche_lignes_courante(index_page)
+                        }
+                    });
+
+
+                }
+            });
+        }
+        function initialiser(){
+
+            document.querySelector('#select_numero').value ="";
+            document.querySelector('#x_lignepagebtgu').value ="";
+            document.querySelector('#y_lignepagebtgu').value ="";
+            document.querySelector('#longeur_lignepagebtgu').value ="";
+            document.querySelector('#diametre_lignepagebtgu').value ="";
+            document.querySelector('#cubage_lignepagebtgu').value ="";
+            document.querySelector('#nom_essencebtgu').value = "";
+            document.querySelector('#zh_lignepagebtgu').value = "";
+            document.querySelector('#select_numero').focus();
+
+        }
+
+        function initialiser_page(){
+
+            document.querySelector('#parc_usine').value ="";
+            document.querySelector('#destination').value ="";
+            document.querySelector('#date_chargement').value ="";
+            document.querySelector('#date_depart').value ="";
+            document.querySelector('#date_arrivee').value ="";
+            document.querySelector('#chauffeur').value ="";
+            document.querySelector('#transporteur').value ="";
+            document.querySelector('#immatriculation').value ="";
+            document.querySelector('#mois').value ="";
+            document.querySelector('#annee').value ="";
+            document.querySelector('#lbl_dest').text ="";
+            document.querySelector('#lbl_usine').text ="";
+            document.querySelector('#parc_usine').focus();
+            //initialiser();
+        }
+
+        function chargement_valide(){
+
+            document.querySelector('#parc_usine').setAttribute('disabled', '');
+            document.querySelector('#destination').setAttribute('disabled', '');
+            document.querySelector('#date_chargement').setAttribute('disabled', '');
+            document.querySelector('#chauffeur').setAttribute('disabled', '');
+            document.querySelector('#immatriculation').setAttribute('disabled', '');
+            document.querySelector('#cout').setAttribute('disabled', '');
+            document.querySelector('#village').setAttribute('disabled', '');
+            document.querySelector('#add_data').style = "display:none";
+            document.querySelector('#btn_save').style = "display:none";
+            document.querySelector('#validate_page').style = "display:none";
+            document.querySelector('#data_btgu').setAttribute('disabled', '');
+            document.querySelector('#photo_feuillet').style = "display:none";
+            //document.querySelector('#btn_photo').style = "display:inline;border: 0px; font-size: 16px;background: darkorange;margin-right: 10px;";
+
+        }
+        function chargement_non_valide(){
+
+            document.querySelector('#parc_usine').removeAttribute('disabled');
+            document.querySelector('#destination').removeAttribute('disabled');
+            document.querySelector('#date_chargement').removeAttribute('disabled');
+            document.querySelector('#chauffeur').removeAttribute('disabled');
+            document.querySelector('#immatriculation').removeAttribute('disabled');
+            document.querySelector('#cout').removeAttribute('disabled');
+            document.querySelector('#village').removeAttribute('disabled');
+            document.querySelector('#add_data').style = "display:inline;font-size: 18px;color: white;width: 200px;background: #456805;font-size: 18px;color: white;width: 200px;background: #456805; margin-top: 20px; margin-bottom: 20px;";
+            document.querySelector('#btn_save').style = "background: #ff6f00; font-size: 16px;margin: 10px;";
+            document.querySelector('#photo_feuillet').style = "background: #0022ff; font-size: 16px;margin: 10px;";
+            document.querySelector('#validate_page').style = "display:inline;border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;";
+            document.querySelector('#data_btgu').removeAttribute('disabled');
+            //document.querySelector('#btn_photo').style = "display:none; ";
+
+        }
+        function expand(obj)
+        {
+            obj.size = 5;
+        }
+
+        function unexpand(obj)
+        {
+            obj.size = 1;
+        }
+
+
+        //Liste des usines par ville
+        function charge_usines(id_ville){
+            let contenu_parc_usine = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/usines_cantonnement/l/' + id_ville,
+                type: 'POST',
+                success: function(response){
+                    let liste_usines = JSON.parse(response)
+                    if (liste_usines.length > 0){
+                        contenu_parc_usine = '<option value="0">--{{ 'Select a factory'|trans }}--</option>';
+                        for (let i = 0; i < liste_usines.length ; i++){
+                            contenu_parc_usine = contenu_parc_usine + '<option value="' + liste_usines[i].id_usine + '">' + liste_usines[i].rs + '</option>'
+                        }
+                    }
+                    document.querySelector('#parc_usine').innerHTML = contenu_parc_usine;
+                }
+            })
+        }
+
+        //Liste des lettres_billes
+        function lettres_billes(id_arbre){
+            let contenu_lettres = "";
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numcp/dispo/lettres/' + id_arbre,
+                type: 'POST',
+                success: function(response){
+                    let liste_lettres = JSON.parse(response)
+                    if (liste_lettres.length > 0){
+
+                        for (let i = 0; i < liste_lettres.length ; i++){
+                            contenu_lettres = contenu_lettres + '<option value="' + liste_lettres[i].lettre + '">' + liste_lettres[i].lettre + '</option>'
+                        }
+                    }
+                    document.querySelector('#lettre_lignepagebtgu').innerHTML = contenu_lettres;
+                    affiche_mensurations(id_arbre, $('#lettre_lignepagebtgu').val())
+                }
+            })
+        }
+
+        //Infos sur l'arbre sélectionné
+        function infos_billes(id_bille){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numbille/lje_infos/' + id_bille,
+                type: 'POST',
+                success: function(response){
+                    let infos = JSON.parse(response)
+                    if (infos.length > 0){
+                        $('#nom_essencebtgu').val(infos[0].essence);
+                        $('#zh_lignepagebtgu').val(infos[0].zh);
+                        $('#x_lignepagebtgu').val(infos[0].x);
+                        $('#y_lignepagebtgu').val(infos[0].y);
+                        $('#longeur_lignepagebtgu').val(infos[0].lng);
+                        $('#diametre_lignepagebtgu').val(infos[0].dm);
+                        $('#cubage_lignepagebtgu').val(infos[0].vol);
+                        $('#lbl_typedoc').text(infos[0].type_doc);
+                    }
+                }
+            })
+        }
+
+        //Affiche les mensurations de la bille
+        function affiche_mensurations(id_arbre, lettre){
+
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/numcp/billes/donnees/' + id_arbre + '/' + lettre,
+                type: 'POST',
+                success: function(response){
+                    let infos = JSON.parse(response)
+                    if (infos.length > 0){
+                        $('#longeur_lignepagebtgu').val(infos[0].lng);
+                        $('#diametre_lignepagebtgu').val(infos[0].dm);
+                        $('#cubage_lignepagebtgu').val(infos[0].vol);
+                    }
+                }
+            })
+        }
+
+        function initialiser_numero_select(){
+            //document.querySelector('#lettre_lignepagebtgu').selectIndex = -1;
+            document.querySelector('#nom_essencebtgu').value = "";
+            document.querySelector('#zh_lignepagebtgu').value = "";
+            document.querySelector('#x_lignepagebtgu').value = "";
+            document.querySelector('#y_lignepagebtgu').value = "";
+            document.querySelector('#longeur_lignepagebtgu').value = "";
+            document.querySelector('#diametre_lignepagebtgu').value = "";
+            document.querySelector('#cubage_lignepagebtgu').value = "";
+
+        }
+
+
+        function numStr(a, b) {
+            a = '' + a;
+            b = b || ' ';
+            var c = '',
+                d = 0;
+            while (a.match(/^0[0-9]/)) {
+                a = a.substr(1);
+            }
+            for (var i = a.length-1; i >= 0; i--) {
+                c = (d != 0 && d % 3 == 0) ? a[i] + b + c : a[i] + c;
+                d++;
+            }
+            return c;
+        }
+
+        $("#photo_feuillet").on('click', function (){
+            if (index_page > 0){
+                document.location.href = '{{ path('app_portail') }}snvlt/docbtgu/op/pages/p/' + index_page;
+            }
+
+        })
+    </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - Déchargement Grumes - [ {{ chargement.numeroPagebcbp }} - {{ chargement.codeDocbcbp.codeAutorisationPv.codeExploitant.sigle }}]
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="{% trans %}bcbp{% endtrans %}">  Déchargement Grumes - [ Connaissement N° : {{ chargement.numeroPagebcbp }}]
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            {% if (chargement.photo) %}
+            <a class="btn alert-dark text-dark p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ asset('images/uploads/bcbp') }}/{{ chargement.photo }}" target="_blank"> <img src="{{ asset('assets/images/webapp/photo.png') }}" alt="photo" height="32" style="margin-right: 5px;">{% trans %}Show photo{% endtrans %}</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/resources/libs/leaflet-measure.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/style.css') }}">
+    <link rel="stylesheet" href="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.css">
+
+    </style>
+    {% set volumeTotal = 0 %}
+    {% for ligne in  chargement.lignepagebcbps %}
+        {% set volumeTotal = volumeTotal +  ligne.volume %}
+    {% endfor %}
+    {% set volumeTotal = (volumeTotal) %}
+    <section class="section p-2" style="background:radial-gradient(#f3fbda, #e4fafe); border: 1px lightgrey solid">
+
+        <div class="card " style="border: lightgrey solid 1px;background: #e0ebf7;">
+
+            <div class="card-body p-2" style="background: #f4f2f2">
+                {% if (chargement.confirmationUsine == true) %}
+                    <div class="p-2 m-2 text-white" style="background: #058021; font-size: 22px;">{{ 'Loading of logs accepted by the factory' | trans}} {{ chargement.parcUsine.raisonSocialeUsine }}</div>
+                {% elseif (chargement.motivationRejet) %}
+                    <div class="bg-danger p-2 m-2 text-white" style="font-size: 22px;">{{ 'Loading of logs refused and reported by the factory' | trans}} {{ chargement.parcUsine.raisonSocialeUsine }}</div>
+                {% endif %}
+                <div class="alert-warning mb-3">
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'Logger' }}</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.codeDocbcbp.codeAutorisationPv.codeExploitant.raisonSocialeExploitant }} - {{ chargement.codeDocbcbp.codeAutorisationPv.codeExploitant.marteauExploitant }} </span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'Forest' }}</span>
+                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbcbp.codeAutorisationPv.codeAttributionPv.codeParcelle.denomination }}</span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'Document' }}</span>
+                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbcbp.numeroDocbcbp }}</span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'loading date' }}</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.dateChargement | date('d/m/Y') }}</span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'Destination' }}</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.parcUsine.raisonSocialeUsine }} - {{ chargement.destination }}</span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">Essence</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.essence.nomVernaculaire }}</span>
+                    </div>
+                    <div class="row alert-secondary mb-2">
+                        <span class="col-md-2" style="font-size: 16px;">{{ 'Total volume' }}</span>
+                        <span class="text-white font-weight-bold badge p-2 bg-danger" style="font-size: 16px;margin-left: 10px;">{{ volumeTotal }} m<sup>3</sup></span>
+                    </div>
+                </div>
+                <table class="table table-responsive" id="data_bcbp">
+                    <thead>
+                    <tr class="alert-primary">
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
+                        <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white text-center">
+                    {% for ligne_bcbp in chargement.lignepagebcbps %}
+                        <tr>
+                            <td>{{ ligne_bcbp.numeroBille }}</td>
+                            <td>{{ ligne_bcbp.lettre }}</td>
+                            <td>{{ ligne_bcbp.zhLignepagebcbp.zone }}</td>
+                            <td>{{ ligne_bcbp.x }}</td>
+                            <td>{{ ligne_bcbp.y }}</td>
+                            <td>{{ ligne_bcbp.lng }}</td>
+                            <td>{{ ligne_bcbp.dm }}</td>
+                            <td>
+
+                                {{ ligne_bcbp.volume}}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% if (app.user.codeindustriel and chargement.confirmationUsine == false) %}
+                    <hr>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequest" class="btn btn-sm bg-primary p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-check-circle" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Validate the loading{% endtrans %}</a>
+                    <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-message-alert" style="font-size: 24px;margin-right: 10px;"></i>{% trans %}Report loading{% endtrans %}</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal ACCEPT-->
+    <div class="modal fade" id="acceptRequest" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header alert-success">
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Loading data' | trans}}</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="justify-content-start d-inline-flex">
+                        <div class="m-2">
+                            <img src="{{ asset('assets/images/webapp/attention.png') }}" alt="attention">
+                        </div>
+                        <div class="m-2">
+                            <label for="motif" class="text-dark font-weight-bold">Nous avons besoin de votre approbation</label>
+                            <h6  class="text-danger ">Voulez-vous autoriser ce chargement de grumes sur votre parc usine ?</h6>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="{{ chargement.id }}"  style="font-size: 16px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
+                        </a>
+                        <a type="button" class="btn btn-success accepter font-weight-light  accept_loading" id="{{ chargement.id }}" style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> {{ 'Authorize'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="{{ asset('assets/Js/cartographie/resources/leaflet/leaflet.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/libs/leaflet.browser.print.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/jquery/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/leaflet-providers.js') }}"></script>
+    <script src="{{ asset('assets/Js/cartographie/resources/Leaflet.PolylineMeasure.js') }}"></script>
+    <script src="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="{{ asset('assets/Js/cartographie/main.js') }}"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+        $('.accept_loading').on('click', function (){
+            $.ajax({
+                'url' : '{{ path('app_portail') }}snvlt/detail_bcbp_loading/accept/{{ chargement.id }}',
+                type : 'POST',
+                success : function (){
+                    document.location.reload();
+                }
+            })
+            document.location.reload();
+        })
+    </script>
+
+{% endblock %}

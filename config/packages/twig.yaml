@@ -1,0 +1,11 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    form_themes: ['bootstrap_5_layout.html.twig']
+    globals:
+        locales: '%app.locales%'
+        option_service: '@App\Controller\Services\OptionsService'
+        exercice_en_cours: '@App\Controller\Services\AdministrationService'
+        public_infos: '@App\Controller\Services\PublicInfosService'
+when@test:
+    twig:
+        strict_variables: true

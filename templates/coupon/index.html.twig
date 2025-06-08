@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block Titre %}Coupons SNVLT{% endblock %}
+
+{% block banniere %}
+    <!-- Page Header Start -->
+    <!-- Page Header Start -->
+    <div class="container-fluid page-coupon py-5 mb-5 wow fadeIn" data-wow-delay="0.9s">
+        <div class="container text-center py-5">
+            <h1 class="display-4 text-white animated slideInDown mb-4">Coupons</h1>
+            <h2 class="fw-bold p-2" style="color: #243803">Vérifier la légalité du bois que vous recevez</h2>
+        </div>
+    </div>
+    <!-- Page Header End -->
+{% endblock %}
+{% block Contenu %}
+   {# <link rel="stylesheet" href="{{ asset('assets/bootstrap_twitter/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap_twitter/css/bootstrap-responsive.min.css') }}">#}
+    <div class="container row h-100 border-1 mx-auto">
+        <div class="col-md-4">
+            <div class="">
+                <form action="" class="bg-light w-100 p-1 mx-auto" style="border-radius: 8px;">
+                    <center>
+                        <div class="bg-success text-light p-2">
+                            <label for="coupon_id" class="fw-bold fs-6 s text-light  p-2"><i class="fas fa-tags me-2"></i>Renseignez votre coupon</label>
+                        </div>
+
+                        <div class="p-3">
+                            <input type="text" class="form-control-sm w-75 p-2 m-2 text-center fw-bold fs-5" id="coupon_id">
+                            <br>
+                            <a href="#" id="btn_soumettre" class="btn btn-lg m-2 w-75 mt-2 text-success fw-bold">Soumettre</a>
+                        </div>
+                    </center>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-6">
+           <h1 class="text-primary">Qu'est ce qu'un coupon ?</h1><br>
+            <h5>Le coupon est un ticket sécurisé que vous fournit votre industriel afin de vous assurer de la légalité de celui-ci</h5>
+            <hr>
+            <p class="fst-italic text-success fs-6">
+                Il vous renseigne sur :
+                    <ul class="list-unstyled love fs-7">
+                        <li>
+                            l'évolution de vos contrats
+                        </li>
+                        <li>
+                            la liste de vos colis et leur contenu
+                        </li>
+                        <li>
+                            les documents légaux prouvant l'existance et l'autorisation de votre founisseur relative à son exercice dans la filière bois.
+                        </li>
+                        <li>
+                            la traçabilité du bois ayant confectionné vos colis (inclus la réprésentation cartographique)
+                        </li>
+                    </ul>
+            </p>
+        </div>
+    </div>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $('#btn_soumettre').on('click', function (){
+            let value = $('#coupon_id').val();
+            $.ajax({
+                url : '{{ path('app_portail') }}snvlt/coupon/search/' + value,
+                type: 'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response);
+                    if (reponse[0].code === "ERROR"){
+                        alert("NO COUPON FOUND WITH THIS NUMBER")
+                    } else {
+                        document.location.href = '{{ path('app_portail') }}snvlt/coupon/infos/' + value
+                    }
+                }
+            });
+        })
+    </script>
+    {#<script src="{{ asset('assets/bootstrap_twitter/js/bootstrap-min.js') }}"></script>#}
+{% endblock %}

@@ -1,0 +1,561 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Webmapping{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/carto.png') }}" alt="attribution">  {% trans %}Webmapping{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <span class="font-weight-bold" style="font-size: 18px;">Critère</span>
+        <select class="m-1"  name="critere" id="critere"  style="font-size: 14px;background-color: #9ef5b0; border: 1px solid lightgrey;color: #040404; width:150px;padding: 5px;">
+            <option value="0">--Sélectionnez un critère--</option>
+            <option value="1">Chargement Grumes</option>
+            <option value="2">Bille</option>
+            <option value="3">LAC</option>
+        </select>
+        <select class="m-1"  name="pef" id="pef"  style="font-size: 14px;background-color: #9ef5b0; border: 1px solid lightgrey;color: #040404; width:150px;padding: 5px;">
+
+        </select>
+        <select class="m-1"  name="liste_chargements" id="liste_chargements"  style="font-size: 14px;background-color: #9ef5b0; border: 1px solid lightgrey;color: #040404; width:150px;padding: 5px;">
+
+        </select>
+        <input type="text" placeholder="numero bille" id="numero_bille">
+        <a href="#" id="btn_search" class="btn btn-primary btn-sm">{{ 'Search' | trans}}</a>
+        {# <select class="m-1"  name="critere" id="critere"  style="font-size: 14px;background-color: #9ed7f5; border: 1px solid lightgrey;color: #040404; width:150px;padding: 5px;">
+            <option value="1">--Sélectionnez la forêt--</option>
+        </select>#}
+        <label for="" class="text-danger font-weight-bold" style="margin-left: 5px;" id="lbl_pef"></label>
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/carto/resources/ol/ol.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/carto/resources/layerswitcher/ol-layerswitcher.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('assets/carto/resources/fontawsome/css/all.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/carto/style.css') }}">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+
+    <section class="section">
+        <div id="map">
+            <button id="btnCrosshair" title="Live Location">
+                <i class="fa fa-crosshairs fa-2x"></i>
+            </button>
+        </div>
+
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
+        <div id="layersDiv" class="layersDiv">
+            <div class="headerDiv" id="headerDiv">
+                <label for="">Couches</label>
+            </div>
+            <div id="layerSwitcherContent" class="layer-switcher"></div>
+        </div>
+        <!-- <div class="toggleAttQueryDiv" id="toggleAttQueryDiv"></div> -->
+        <div class="attQueryDiv" id="attQueryDiv">
+            <div class="headerDiv" id="headerDiv">
+                <label for="">Requêtes</label>
+            </div>
+            <!-- <br> -->
+            <label for="">Selectionner une couche</label>
+            <select name="selectLayer" id="selectLayer" class="form-control">
+            </select>
+            <!-- <br><br> -->
+
+            <label for="">Selectionnez un attribut</label>
+            <select name="selectAttribute" id="selectAttribute" class="form-control">
+            </select>
+            <!-- <br><br> -->
+
+            <label for="">Selectionnez un opérateur</label>
+            <select name="selectOperator" id="selectOperator" class="form-control">
+            </select>
+            <!-- <br><br> -->
+
+            <label for="">Entrez une valeur</label>
+            <input type="text" name="enterValue" id="enterValue" class="form-control">
+            </select>
+            <!-- <br><br> -->
+
+            <button type="button" id="attQryRun" class="btn btn-success">Exécuter</button>
+            <button type="button" id="attQryClear" class="btn btn-danger">Effacer</button>
+
+        </div>
+        <!-- <div class="toggleAttributeListDiv" id="toggleAttributeListDiv"></div> -->
+        <div class="attListDiv" id="attListDiv">
+        </div>
+
+        <div class="spQueryDiv" id="spQueryDiv">
+            <div class="headerDiv" id="headerDiv">
+                <label for="">Requêtes spatiales</label>
+            </div>
+            <label for="">Selectionnez les entités </label>
+            <select name="buffSelectLayer" id="buffSelectLayer" class="form-control">
+            </select>
+            <!-- <br><br> -->
+
+            <label for="">qui sont </label>
+            <select name="qryType" id="qryType" class="form-control">
+                <option value="withinDistance">a une distance de</option>
+                <option value="intersecting">tintersectent</option>
+                <option value="completelyWithin">Completement dans </option>
+            </select>
+            <!-- <br><br> -->
+
+            <div class="bufferDiv" id="bufferDiv">
+                <!-- <label for="">Distnace in meter</label> -->
+                <input type="number" name="bufferDistance" id="bufferDistance" placeholder="1000" class="form-control">
+                <select name="distanceUnits" id="distanceUnits" class="form-control">
+                    <option value="meters">Mètres</option>
+                    <option value="kilometers">kilomètres/option>
+                    <option value="feet">Pieds</option>
+                    <option value="nautical miles">Nautiques</option>
+                </select>
+                <!-- <br><br> -->
+
+                <label for="">de</label>
+            </div>
+
+
+            <select name="srcCriteria" id="srcCriteria" class="form-control">
+                <option value="pointMarker">Point</option>
+                <option value="lineMarker">Ligne</option>
+                <option value="polygonMarker">Polygone</option>
+            </select>
+            <!-- <br><br> -->
+
+            <button type="button" id="spUserInput" class="spUserInput"><img src="resources/images/selection.png" alt=""
+                                                                            style="width:17px;height:17px;vertical-align:middle"></img></button>
+
+            <button type="button" id="spQryRun" class="btn btn-success">Exécuter</button>
+
+            <button type="button" id="spQryClear" class="btn btn-danger">Effacer</button>
+        </div>
+
+        <div class="editingControlsDiv" id="editingControlsDiv">
+
+        </div>
+
+        <div class="settingsDiv" id="settingsDiv">
+            <div class="headerDiv" id="headerDiv">
+                <label for="">Configuration</label>
+            </div>
+            <label for="">Info Entités</label><br>
+            <select name="featureInfoLayer" id="featureInfoLayer" class="form-control">
+                <option value="All layers">Toutes les couches</option>
+                <option value="Visible layers">Couches visibles</option>
+            </select>
+            <label for="">Edition de couches</label><br>
+            <select name="editingLayer" id="editingLayer" class="form-control">
+            </select>
+        </div>
+        <div class="attQueryDiv" id="projectsDiv">
+            <div class="headerDiv" id="headerDiv">
+                <label for="">Projections</label>
+            </div>
+            <label for="">PEF</label><br>
+            <select name="pefLayer" id="pefLayer" class="form-control">
+                <option></option>
+                <?php
+        $con = new PDO('pgsql:host=localhost;port=5433;dbname=dpif', 'postgres', '020780');
+        $query = "SELECT * FROM deif.perimetrenu WHERE perimetrenu.denomination='PEF' ORDER BY perimetrenu.numero_perimetrenu ASC";
+
+        $result = $con->prepare($query);
+                $result->execute();
+
+                while ($row = $result->fetch(PDO::FETCH_ASSOC)) { ?>
+                <option><?php echo $row['numero_perimetrenu']; ?></option>
+                <?php
+        }
+        ?>
+            </select>
+
+
+            <label for="">Date de début</label>
+            <input type="date" name="date1" id="date1" placeholder="dd-mm-yyyy" class="form-control">
+            </br>
+            <label for="">Date de fin</label>
+            <input type="date" name="date2" id="date2" placeholder="dd-mm-yyyy" class="form-control">
+            </br>
+            <button type="button" id="attQryRunP" name="attQryRunP" >Valider</button>
+            <button type="button" id="PefClear" class="btn btn-danger">Effacer</button>
+        </div>
+
+        <div class="cntr" id="cntr">
+            <div class="cntr-innr">
+                <label class="search" for="inpt_search">
+                    <input id="inpt_search" type="text" />
+                </label>
+            </div>
+            <div class="liveDataDiv" id="liveDataDiv"></div>
+        </div>
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script>
+        // Simple Datatable
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.4.3/proj4.js"></script>
+    <script src="{{ asset('assets/carto/resources/ol/ol.js') }}"></script>
+    <script src="{{ asset('assets/carto/resources/layerswitcher/ol-layerswitcher.js') }}"></script>
+    <script src="{{ asset('assets/carto/resources/jQuery/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/carto/resources/fontawsome/js/all.js') }}"></script>
+    <script src="{{ asset('assets/carto/resources/main.js')}}"></script>
+
+    <script>
+        let bille = document.querySelector('#numero_bille');
+        let critere = document.querySelector('#critere');
+        let pef = document.querySelector('#pef');
+        let chargements = document.querySelector('#liste_chargements');
+        let btn_search = document.querySelector('#btn_search');
+
+        var element = document.getElementById('popup');
+        let contenu_chr = "";
+       // map.addOverlay(popup);
+
+
+        map.on('click', function (evt) {
+            var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) {
+                return feature;
+            });
+
+            if (feature) {
+                var geometry = feature.getGeometry();
+                var coord = geometry.getCoordinates();
+                var name = feature.get('name'); // Assuming 'name' is a property in your GeoJSON
+
+                popup.setPosition(coord);
+                $(element).popover({
+                    'placement': 'top',
+                    'html': true,
+                    'content': '<p>' + name + '</p>'
+                });
+                $(element).popover('show');
+            } else {
+                $(element).popover('destroy');
+            }
+        });
+
+
+        critere.value = 0;
+
+        bille.style = "display:none"
+        pef.style = "display:none"
+        chargements.style = "display:none"
+        btn_search.style = "display:none"
+
+        critere.addEventListener('change', function (){
+            let valeur = this.value;
+
+            bille.style = "display:none"
+            pef.style = "display:none"
+            chargements.style = "display:none"
+
+            if (valeur === "1"){
+                pef.style = "display:inline"
+                chargements.style = "display:inline"
+            }if (valeur === "2"){
+                bille.style = "display:inline"
+                btn_search.style = "display:inline"
+            }
+        })
+
+     /*   btn_search.addEventListener('change', function (){
+            recherche_bille(bille.value)
+        })*/
+
+        $("#btn_search").on("click", function (event) {
+            recherche_bille(bille.value)
+        });
+
+        liste_pef();
+
+
+
+
+
+
+        $("#pef").on("change", function () {
+            liste_tous_chargements(this.value)
+            map.set("isLoading", 'YES');
+
+            if (featureOverlay) {
+                featureOverlay.getSource().clear();
+                map.removeLayer(featureOverlay);
+            }
+
+            let id_pef = this.value;
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/page/pef/' + id_pef,
+                type: 'POST',
+                success: function (response){
+                    let info = JSON.parse(response)
+                    $('#lbl_pef').text(info[0].exploitant)
+                }
+            })
+
+            var layer =  "SNVLT:exp_pef";
+            var attribute = "numero_perimetre";
+            var operator = "=";
+            var txt = this.options[this.selectedIndex].text;
+
+
+
+            var url =  + serverPort + "/geoserver/" + geoserverWorkspace + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + layer + "&CQL_FILTER=" + attribute + "+" + operator + "+'" + txt + "'&outputFormat=application/json"
+            newaddGeoJsonToMap(url);
+            //newpopulateQueryTable(url);
+            //setTimeout(function () { newaddRowHandlers(url); }, 1000);
+            map.addLayer(clickSelectedFeatureOverlay);
+            map.set("isLoading", 'NO');
+        });
+
+        $("#liste_chargements").on('change', function (){
+            chargement_infos(this.value)
+        })
+
+        function liste_pef(){
+            let contenu = '<option>{{ 'Select Forest' | trans}}</option>';
+            $.ajax({
+                url :'{{ path('app_liste_forets') }}',
+                type : 'POST',
+                success : function (response){
+                    let liste_forets = JSON.parse(response);
+                    for(var i = 0; i< liste_forets.length ; i++){
+                        contenu = contenu + '<option value="' + liste_forets[i].id_foret + '">' + liste_forets[i].numero_foret + '</option>'
+                    }
+                    document.querySelector('#pef').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_tous_chargements(id_pef){
+            let contenu = '<option>{{ 'Select loading' | trans}}</option>';
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/chargements/lst/'+ id_pef,
+                type : 'POST',
+                success : function (response){
+                    let liste_forets = JSON.parse(response);
+                    for(var i = 0; i< liste_forets.length ; i++){
+                        contenu = contenu + '<option value="' + liste_forets[i].pageid + '">' + liste_forets[i].numero_page + '</option>'
+                    }
+                    document.querySelector('#liste_chargements').innerHTML = contenu;
+                }
+            })
+        }
+
+        function chargement_infos(id_page){
+            var IconsPefGroup = [];
+            var iconPef = [];
+            let numero_bille = "";
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/chargement_info/'+ id_page,
+                type : 'POST',
+                success : function (response){
+                    let billes= JSON.parse(response);
+
+                    for(let i = 0; i< billes.length ; i++){
+                        var Zone = billes[i].zh.substring(0, 2);
+                        numero_bille = "";
+                        var urlConvert="https://geodesy.noaa.gov/api/ncat/utm?utmZone=" + Zone + "&northing="+ billes[i].y + "&easting=" + billes[i].x +"&hemi=N&a=6378160.0&invf=298.25";
+                        var http_request;
+
+                        http_request = new XMLHttpRequest();
+                        http_request.onreadystatechange = function () { /* .. */ };
+                        http_request.open("POST", urlConvert);
+                        http_request.withCredentials = true;
+                        //http_request.setRequestHeader("Content-Type", "application/json");
+
+                        //alert(urlConvert);
+                        //alert(urlConvert);
+                        //caption.textContent = 'Essences exploitées : '+ n + "/" + compteur;
+
+                        if (urlConvert) {
+                            setTimeout(5000);
+                            $.getJSON(urlConvert, function (data) {
+                                var srcLat = data.srcLat;
+                                var srcLon = data.srcLon;
+
+
+                                var pos = ol.proj.fromLonLat([srcLon , srcLat]);
+
+                                iconPef[i] = new ol.Feature({
+                                    geometry : new ol.geom.Point(ol.proj.transform([srcLon , srcLat], 'EPSG:4326', 'EPSG:3857')),
+                                    label   : billes[i].numero_bille,
+                                    Zone	 : billes[i].zh,
+                                    essence  : billes[i].essence,
+                                    longueur : billes[i].lng,
+                                    diametre : billes[i].dm,
+                                    volume   : billes[i].vol
+                                });
+                                //var marker = new ol.Feature(new ol.geom.Point(coordinates).transform('EPSG:4326', map.getView().getProjection()));
+                                IconsPefGroup.push(iconPef[i]);
+
+                                var vecteurSourcePef = new ol.source.Vector({
+                                    features : IconsPefGroup
+                                });
+                                numero_bille = billes[i].numero_bille;
+                                var text_feature = "";
+                                text_feature = numero_bille;
+                                var iconPefStyle = new ol.style.Style({
+                                    image: new ol.style.Circle({
+                                        radius: 12,
+                                        fill: new ol.style.Fill({color: '#5df492'}),
+                                        stroke: new ol.style.Stroke({color: '#fe0419', width: 1})
+                                    }),
+
+
+                                    text: new ol.style.Text({
+                                        text: billes[i].numero_bille, // Get the name attribute from the feature
+                                        font: '16px Arial',
+                                        offsetY : 20,
+                                        offsetX : 20,
+                                        fill: new ol.style.Fill({color: '#121212'}),
+                                        stroke: new ol.style.Stroke({color: '#000', width: 0})
+                                    })
+                                })
+
+                                var vectorLayer = new ol.layer.Vector({
+                                    source : vecteurSourcePef,
+                                    style : iconPefStyle,
+                                    visible : true,
+                                    displayInLayerSwitcher: true
+                                });
+
+                                map.addLayer(vectorLayer);
+                                //overlayGroup.addLayer(vectorLayer);
+                                map.getView().setCenter(pos);
+                                map.getView().setZoom(12);
+								//alert(numero_bille)
+                            });
+
+                        }
+                    }
+                }
+            })
+        }
+
+
+
+        function recherche_bille(numero_bille) {
+            let criteres = ""
+            // rechercher les forets associées
+            //let numero_page = $('#search_criteria').val();
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/billes_recherche/'+ numero_bille,
+                type: 'POST',
+                success: function (response){
+                    let forets= JSON.parse(response);
+                    for(let i = 0; i< forets.length ; i++){
+                        criteres = criteres + " numero_perimetre=" + forets[i].foret + " OR"
+                    }
+                    criteres = criteres.slice(0, criteres.length - 3)
+                    //alert(criteres);
+                    //Affichage sur la carte
+
+
+
+                    if (featureOverlay) {
+                        featureOverlay.getSource().clear();
+                        map.removeLayer(featureOverlay);
+                    }
+
+
+                    var layer =  "SNVLT:exp_pef";
+
+
+
+
+                    var url =  serverPort + "/geoserver/" + geoserverWorkspace + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + layer + "&CQL_FILTER=" + criteres + "'&outputFormat=application/json"
+                    alert(url)
+                    newaddGeoJsonToMap(url);
+                    //newpopulateQueryTable(url);
+                    //setTimeout(function () { newaddRowHandlers(url); }, 1000);
+                    map.addLayer(clickSelectedFeatureOverlay);
+                    map.set("isLoading", 'NO');
+                }
+            })
+        }
+
+				//alert(utmToLatLng(29, 660472, 730677, 'N').latitude +", " + utmToLatLng(30, 400508, 686545, 'N').longitude)
+
+        function utmToLatLng(zone, easting, northing, northernHemisphere){
+            if (!northernHemisphere){
+                northing = 10000000 - northing;
+            }
+
+            var a = 6378137;
+            var e = 0.081819191;
+            var e1sq = 0.006739497;
+            var k0 = 0.9996;
+
+            var arc = northing / k0;
+            var mu = arc / (a * (1 - Math.pow(e, 2) / 4.0 - 3 * Math.pow(e, 4) / 64.0 - 5 * Math.pow(e, 6) / 256.0));
+
+            var ei = (1 - Math.pow((1 - e * e), (1 / 2.0))) / (1 + Math.pow((1 - e * e), (1 / 2.0)));
+
+            var ca = 3 * ei / 2 - 27 * Math.pow(ei, 3) / 32.0;
+
+            var cb = 21 * Math.pow(ei, 2) / 16 - 55 * Math.pow(ei, 4) / 32;
+            var cc = 151 * Math.pow(ei, 3) / 96;
+            var cd = 1097 * Math.pow(ei, 4) / 512;
+            var phi1 = mu + ca * Math.sin(2 * mu) + cb * Math.sin(4 * mu) + cc * Math.sin(6 * mu) + cd * Math.sin(8 * mu);
+
+            var n0 = a / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (1 / 2.0));
+
+            var r0 = a * (1 - e * e) / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (3 / 2.0));
+            var fact1 = n0 * Math.tan(phi1) / r0;
+
+            var _a1 = 500000 - easting;
+            var dd0 = _a1 / (n0 * k0);
+            var fact2 = dd0 * dd0 / 2;
+
+            var t0 = Math.pow(Math.tan(phi1), 2);
+            var Q0 = e1sq * Math.pow(Math.cos(phi1), 2);
+            var fact3 = (5 + 3 * t0 + 10 * Q0 - 4 * Q0 * Q0 - 9 * e1sq) * Math.pow(dd0, 4) / 24;
+
+            var fact4 = (61 + 90 * t0 + 298 * Q0 + 45 * t0 * t0 - 252 * e1sq - 3 * Q0 * Q0) * Math.pow(dd0, 6) / 720;
+
+            var lof1 = _a1 / (n0 * k0);
+            var lof2 = (1 + 2 * t0 + Q0) * Math.pow(dd0, 3) / 6.0;
+            var lof3 = (5 - 2 * Q0 + 28 * t0 - 3 * Math.pow(Q0, 2) + 8 * e1sq + 24 * Math.pow(t0, 2)) * Math.pow(dd0, 5) / 120;
+            var _a2 = (lof1 - lof2 + lof3) / Math.cos(phi1);
+            var _a3 = _a2 * 180 / Math.PI;
+
+            var latitude = 180 * (phi1 - fact1 * (fact2 + fact3 + fact4)) / Math.PI;
+
+            if (!northernHemisphere){
+                latitude = -latitude;
+            }
+
+            var longitude = ((zone > 0) && (6 * zone - 183.0) || 3.0) - _a3;
+
+            var obj = {
+                latitude : latitude,
+                longitude: longitude
+            };
+
+
+            return obj;
+        }
+    </script>
+{% endblock %}
+

@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte abonné{% endblock %}
+
+{% block body %}
+    <link rel="stylesheet" href="{{ asset('assets/portail/assets/bootstrap/css/bootstrap.min.css') }}">
+    <div class="bg-dark p-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text mt-100">
+                        <h1 style="font-family: Cursif">Abonnement</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-from-section mt-150 mb-150">
+        <div class="container">
+
+            <div class=" mb-5 mb-lg-0">
+                <div class="form-title">
+                    <h2>je m'abonnes</h2>
+                </div>
+                <div id="form_status"></div>
+                <div class="contact-form">
+
+                    {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                    <div class="container mx-md-auto row">
+                        <div class="col-md-6 mx-md-auto">
+                            <div class="col-md-12">{{ form_row(form.nom) }}</div>
+                            <div class="col-md-12">{{ form_row(form.prenoms) }}</div>
+                            <div class="col-md-12">{{ form_row(form.pseudo) }}</div>
+                            <div class="col-md-12">{{ form_row(form.telephone) }}</div>
+                            <div class="col-md-12">{{ form_row(form.email) }}</div>
+                            <div class="col-md-12">{{ form_row(form.newsletter) }}</div>
+                            <div class="col-md-12">{{ form_row(form.avatar) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5"><input type="submit" value="Soumettre"></div>
+                    {{ form_end(form) }}
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block footer %}
+
+{% endblock %}

@@ -1,0 +1,214 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+<script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+<link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+<link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+<link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css" />
+
+{% if (app.user.isIsresponsable) %}
+<div class="col-md-12 row p-4" style="border: 1px;min-height:500px;">
+
+    <div class="col-md-8 alert-light p-1 chrs_usine">
+
+
+    </div>
+    <div class="col-md-4 p-1 bg-white " style="border-bottom: 2px solid darkblue;">
+        <h4 class="card-title p-2 font-weight-light w-100 bg-primary text-white">Disponibilité du parc</h4>
+        <div class="">
+
+            <div class="p-2 bg-white"  style="max-height: 250px; overflow-y: scroll;">
+
+                <h3 class="card-title text-white font-weight-light w-100 text-center" style="background-color: #fc5402;width:100%;">
+                    Billes
+                </h3>
+                <table class="table tbl_parc mb-2" style="max-height: 200px;">
+                    <thead>
+                    <tr class="alert-secondary text-dark w-100">
+                        <th >Essence</th>
+                        <th class="text-center">Nb Billes</th>
+                        <th class="text-center">Volume</th>
+                    </tr>
+                    </thead>
+                    <tbody style="overflow-y: scroll;">
+
+                    {% for parc in essences_dispo %}
+
+                        <tr class="bg-white">
+                            <td><a class="fw-bold text-dark" href="#" >{{ parc.essence }}</a></td>
+                            <td class="text-center">{{ parc.nb }}</td>
+                            <td class="text-center">{{ parc.volume }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-1" style="max-height: 250px;overflow-y: scroll;">
+                <h3 class="card-title text-dark font-weight-light w-100 text-center" style="background-color: #fcd202;width:100%;">
+                    Billons
+                </h3>
+                <table class="table tbl_parc_billons mb-2" style="height: 200px;overflow-y: scroll;">
+                    <thead>
+                    <tr class="alert-secondary text-dark sticky-top" style="overflow-y: scroll;">
+                        <th >Essence</th>
+                        <th class="text-center">Nb Billons</th>
+                        <th class="text-center">Volume</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for parc in billons_dispo %}
+
+                        <tr class="bg-white">
+                            <td><a class="fw-bold text-dark" href="#" >{{ parc.essence }}</a></td>
+                            <td class="text-center">{{ parc.nb }}</td>
+                            <td class="text-center">{{ parc.volume }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+    <h3 class="p-2 mb-2 alert-primary w-100 text-center" style="max-height: 500px;">Bienvenue dans votre espace de transformateur de bois</h3>
+    <div class="mx-auto mt-2">
+        <img src="{{ asset('assets/images/industriel_bois_wp.png') }}" alt="">
+    </div>
+{% endif %}
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+<script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+<script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+<script>
+
+    {% if(app.user.codeindustriel) %}
+        load_chargements({{ app.user.codeindustriel.id }});
+    {% endif %}
+
+    setInterval(function() {
+        {% if(app.user.codeindustriel) %}
+            load_body_chargements({{ app.user.codeindustriel.id }});
+        {% endif %}
+    }, 20000);
+
+    function load_chargements(id_usine){
+        let contenu = '';
+        document.querySelector('.chrs_usine').innerHTML = '<h4 class="card-title p-2 text-white font-weight-light w-100" style="background-color: #145b04;width:100%;">Chargements Grumes en destination de mon usine </h4><h3 class="p-2 alert-primary m-2 infos_connaissement">Aucun connaissement disponible</h3>'
+        $.ajax({
+            url : '{{ path('app_portail') }}snvlt/admin/chr_usine/' + id_usine,
+            type : 'POST',
+            success: function (response){
+                let reponse = JSON.parse(response);
+                if (reponse.length > 0){
+                    contenu = '<h3 class="card-title p-2 text-white font-weight-light w-100" style="background-color: #145b04;width:100%;">Chargements Grumes en destination de mon usine </h3>';
+                    contenu = contenu + '<div class="bg-white p-2"><div class="text-center"><a class="btn btn-sm alert-secondary font-weight-light p-2 m-2" href="{{ path('accept_loadings') }}" id="btn_accept_chr" style="font-size: 16x²px;border:2px solid black">Accepter tous les chargements</a></div>'
+                    contenu = contenu + '<table class="table table-responsive tbl_chr m-2 bg-white" style="width: 98%;">'
+                    contenu = contenu + '<thead>'
+                    contenu = contenu + '<tr class="alert-light">'
+                    contenu = contenu + '<th class="text-center">N° Feuillet</th>'
+                    contenu = contenu + '<th class="text-center">Date</th>'
+                    contenu = contenu + '<th class="text-center">Document</th>'
+                    contenu = contenu + '<th class="text-center">Source</th>'
+                    contenu = contenu + '<th class="text-center">Immat. Camion</th>'
+                    contenu = contenu + '<th class="text-center">Essences</th>'
+                    contenu = contenu + '<th class="text-center">NB Billes</th>'
+                    contenu = contenu + '<th class="text-center">Volume</th>'
+                    contenu = contenu + '<th>Exploitant</th>'
+                    contenu = contenu + '<th class="text-center">Foret</th>'
+                    contenu = contenu + '</tr>'
+                    contenu = contenu + '</thead>'
+                    contenu = contenu + '<tbody class="body_chargement">';
+
+                        for(var i=0; i < reponse.length; i++){
+                            if (reponse[i].id_source === 2 ){
+                                contenu = contenu + '<tr style="background: lightyellow;">'
+                                contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_brh_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                            } else if (reponse[i].id_source === 3 ){
+                                contenu = contenu + '<tr style="background: #ffffb6;">'
+                                contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbp_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                            } else {
+                                contenu = contenu + '<tr style="background: white;">'
+                            }
+
+                            contenu = contenu + '<td class="text-center">' + reponse[i].date_chr + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].document + '</td>';
+                            contenu = contenu + '<td class="text-center font-weight-bold">' + reponse[i].source + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].immat + '</td>';
+                            contenu = contenu + '<td class="">' + reponse[i].essences + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].nb_billes + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].volume + '</td>';
+                            contenu = contenu + '<td class="">' + reponse[i].exploitant + '</td>';
+                            contenu = contenu + '<td class="text-center">' + reponse[i].foret + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                    contenu = contenu + '</tbody>';
+                    contenu = contenu + '</table></div>';
+
+                    document.querySelector('.chrs_usine').innerHTML = contenu;
+                }
+                    }
+                });
+            }
+
+    function load_body_chargements(id_usine){
+            let contenu = '';
+            let contenu_pied = '';
+            let infos_connaisserment = document.querySelector(".infos_connaissement").innerText;
+
+            if (infos_connaisserment === "Aucun connaissement disponible"){
+                load_chargements(id_usine)
+            } else {
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/admin/chr_usine/' + id_usine,
+                    type : 'POST',
+                    success: function (response){
+                        let reponse = JSON.parse(response);
+                        if (reponse.length > 0){
+                            for(var i=0; i < reponse.length; i++){
+                                if (reponse[i].id_source === 2 ){
+                                    contenu = contenu + '<tr style="background: lightyellow;">'
+                                    contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_brh_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                                } else if (reponse[i].id_source === 3 ){
+                                    contenu = contenu + '<tr style="background: #ffffb6;">'
+                                    contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbp_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                                } else {
+                                    contenu = contenu + '<tr style="background: white;">'
+                                }
+
+                                contenu = contenu + '<td class="text-center">' + reponse[i].date_chr + '</td>';
+                                contenu = contenu + '<td class="text-center">' + reponse[i].document + '</td>';
+                                contenu = contenu + '<td class="text-center font-weight-bold">' + reponse[i].source + '</td>';
+                                contenu = contenu + '<td class="text-center">' + reponse[i].immat + '</td>';
+                                contenu = contenu + '<td class="">' + reponse[i].essences + '</td>';
+                                contenu = contenu + '<td class="text-center">' + reponse[i].nb_billes + '</td>';
+                                contenu = contenu + '<td class="text-center">' + reponse[i].volume + '</td>';
+                                contenu = contenu + '<td class="">' + reponse[i].exploitant + '</td>';
+                                contenu = contenu + '<td class="text-center">' + reponse[i].foret + '</td>';
+                                contenu = contenu + '</tr>';
+                            }
+
+                            document.querySelector('.body_chargement').innerHTML = contenu;
+
+                        }
+                    }
+                });
+            }
+
+        }
+
+
+</script>

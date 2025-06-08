@@ -1,0 +1,79 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Add Cantonment{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/cantonnement.png') }}" alt="attribution">  {% trans %}Cantonments{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+    <section class="section">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-white m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.nom_cantonnement) }}</div>
+                        <div class="">{{ form_row(form.personneRessource) }}</div>
+                        <div class="">{{ form_row(form.emailPersonneRessource) }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.mobilePersonneRessource) }}</div>
+                        <div class="">{{ form_row(form.code_dr) }}</div>
+                        <div class="">{{ form_row(form.code_ddef) }}</div>
+                    </div>
+
+                </div>
+                <br>
+                <a href="{{ path('ref_cantonnements') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+
+                    {% if (new_item == "true") %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Ajouter un cantonnement
+                    {% else %}
+                        <i class="mdi mdi-database-edit" style="font-size: 18px;margin-right: 10px"></i>Editer un cantonnement
+                    {% endif %}
+                </button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+
+    <script>
+
+        $(document).ready(function() {
+
+            $('.code_dr').select2({
+                placeholder: "-- {% trans %}Select RD{% endtrans %} --",
+                clear: true,
+                width: '100%',
+                theme: 'classic'
+            });
+        });
+
+    </script>
+{% endblock %}
+

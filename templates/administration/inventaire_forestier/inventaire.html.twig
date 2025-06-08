@@ -1,0 +1,923 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Forest Prospection{% endtrans %}
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <!-- Latest compiled and minified CSS -->
+
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+
+    <style>
+        .drop-container {
+            position: relative;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px dashed #555;
+            color: #444;
+            cursor: pointer;
+            transition: background .2s ease-in-out, border .2s ease-in-out;
+            width : 300px;
+        }
+
+        .drop-container:hover,
+        .drop-container.drag-active {
+            background: #eee;
+            border-color: #111;
+        }
+
+        .drop-container:hover .drop-title,
+        .drop-container.drag-active .drop-title {
+            color: #222;
+        }
+
+        .drop-title {
+            color: #444;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            transition: color .2s ease-in-out;
+        }
+
+        input[type=file] {
+            width: 300px;
+            max-width: 100%;
+            color: #444;
+            padding: 5px;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #555;
+        }
+
+        input[type=file]::file-selector-button {
+            margin-right: 20px;
+            border: none;
+            background: #084cdf;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: background .2s ease-in-out;
+        }
+
+        input[type=file]::file-selector-button:hover {
+            background: #0d45a5;
+        }
+    </style>
+
+    <section class="section bg-white" style="border: 2px darkgrey solid">
+        <img src="{{ asset('assets/images/banniere_inventaire.png') }}" style="width: 100%" alt="inventaire_forestier">
+        {% if(app.user.codeOperateur.id == 2) %}
+        <div class="d-sm-flex justify-content-between align-items-center transaparent-tab-border m-1 p-2" style="background: #e5e7e5">
+            <ul class="nav nav-tabs tab-transparent" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link alert-warning text-dark active" style="font-size: 16px;color: #0011ff" id="overview-tab" data-toggle="tab" href="#datafichier" role="tab" aria-selected="true"><span class="bg-primary text-white p-2" style="border-radius: 20px;"><i class="mdi mdi-file-excel me-2" style="font-size: 24px;color: white;"></i> Charger l'inventaire depuis un fichier </span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="movements-tab" data-toggle="tab" href="#datainv" role="tab" aria-selected="false"><span class="bg-danger text-white p-2" style="border-radius: 20px;"><i class="mdi mdi-database-import me-2" style="font-size: 24px;color: white;"></i> Charger la LAAC depuis l'inventaire</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="inv-tab" data-toggle="tab" href="#fichierinv" role="tab" aria-selected="false"><span class="text-white p-2" style="background: #4a5f52; border-radius: 20px;"><i class="mdi mdi-file-document-box-check me-2" style="font-size: 24px;color: white;"></i> Mon fichier inventaire</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="archives-tab" data-toggle="tab" href="#archives" role="tab" aria-selected="false"><span class="text-white p-2" style="background: #030303; border-radius: 20px;"><i class="mdi mdi-file-document-box-remove-outline me-2" style="font-size: 24px;color: white;"></i> Archives</span></a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        <div class="tab-content tab-transparent-content m-1 p-2" style="background: #f5f7f5">
+            <div class="tab-pane fade show active" id="datafichier" role="tabpanel" aria-labelledby="business-tab">
+                <div class="row p-2 m-2">
+                    <div class="col-md-3">
+                        {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                        {% if(app.user.codeOperateur.id == 1) %}
+                            <select class="mb-2 w-100" name="operateurs" id="select_operateurs">
+                                <option value="0">Liste des opérateurs</option>
+                                {% for operateur in operateurs %}
+                                    {% if (operateur.sigle) %}
+                                        <option value="{{ operateur.id }}">{{ operateur.sigle }}</option>
+                                    {% else %}
+                                        <option>{{ operateur.raisonSocialeExploitant }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                        {{ form_row(form.code_attribution) }}
+                        <div class="row form-group p-1">
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white" style="height: 24px;">Date</span>
+                                {{ form_row(form.date_inventaire) }}
+                            </div>
+                            <div style="display: none">
+                                {{ form_row(form.fichier) }}
+                            </div>
+
+                            <label for="images" class="drop-container" id="dropcontainer">
+
+                                <input type="file" id="images" accept="text/csv" required>
+                               </label>
+
+                            <span class="bg-dark badge mb-4 mt-4 text-white fichiername " style="font-size: 18px;height: 30px;margin-left: 10px;"></span>
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" id="btn_temp" class="btn alert-light" style="width: 300px; font-size: 16px;border:2px solid darkgreen;"><i class="mdi mdi-upload" style="font-size: 16px;"></i>Lire les données</button>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-xl-flex justify-content-between align-items-start">
+                            <h2 class="text-dark font-weight-bold mb-2 mt-2">
+                                Contenu de votre dernier fichier chargé
+                            </h2>
+                            <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+                                <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+                                    <a href="{{ asset('data/Template_Prospection.zip') }}" style="background: #b55802;color: #fbf8f8;font-size: 16px;border: #fbf8f8 solid 1px;" class="btn btn-warning"><i class="mdi mdi-download" style="margin-right: 5px;"></i>{% trans %}Download template{% endtrans %}</a>
+                                </div>
+                            </div>
+                        </div>
+                        {#<h3 class="p-2 ">{{ 'Temp File details' | trans}}</h3>#}
+                            <table class="table table-responsive" style="height: 250px;border:1px solid lightgrey">
+                                <thead class=" bg-primary text-white">
+                                <tr class="alert-light sticky-top" style="border:1px solid lightgrey">
+                                    <th>{% trans %}No{% endtrans %}</th>
+                                    <th>{% trans %}spices{% endtrans %}</th>
+                                    <th>{% trans %}Zone{% endtrans %}</th>
+                                    <th>{% trans %}X{% endtrans %}</th>
+                                    <th>{% trans %}Y{% endtrans %}</th>
+                                    <th>{% trans %}L{% endtrans %}</th>
+                                    <th>{% trans %}d{% endtrans %}</th>
+                                    <th>{% trans %}Volume{% endtrans %}</th>
+                                    <th>{% trans %}Reason{% endtrans %}</th>
+
+                                </tr>
+                                </thead>
+                                <tbody id ="liste_temp">
+
+                                </tbody>
+                            </table>
+                        <div class="mt-2 mb-4">
+
+
+                            <a class="btn text-dark mt-5 mb-4 w-100"  id="charger_btn" href="#">
+                                <i class="mdi mdi-database" style="font-size: 24px"></i> Charger <i class="mdi mdi-arrow-right" style="font-size: 24px"></i>
+                            </a>
+
+                        </div>
+                    </div>
+                    {#<a href="{{ path('lac_temp') }}" class="btn">Test</a>#}
+                    <div class="row p-2" style="border: 1px solid lightgrey; width: 100%;">
+
+
+                        <div class="" style="border: 1px solid lightgrey; width: 100%;background: #f3fbff">
+                            <h3 class="text-center bg-info text-white p-2">{{ 'Forest Prospection' | trans}}</h3>
+                            <table class="table  table-stripped" style="height: 300px;">
+                                <thead class=" bg-primary text-white">
+                                <tr class="alert-success">
+                                    <th>{% trans %}No{% endtrans %}</th>
+                                    <th>{% trans %}spices{% endtrans %}</th>
+                                    <th>{% trans %}Zone{% endtrans %}</th>
+                                    <th>{% trans %}X{% endtrans %}</th>
+                                    <th>{% trans %}Y{% endtrans %}</th>
+                                    <th>{% trans %}L{% endtrans %}</th>
+                                    <th>{% trans %}d{% endtrans %}</th>
+                                    <th>{% trans %}Volume{% endtrans %}</th>
+                                    <th>{% trans %}Date Inventaire{% endtrans %}</th>
+
+                                </tr>
+                                </thead>
+                                <tbody id ="liste_inv">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-pane fade" id="datainv" style="background: #f1f2f1" role="tabpanel" aria-labelledby="business-tab">
+                <div class="" style="border: 1px solid lightgrey; width: 100%;background: #f5f9fb">
+                    <div class="align-content-md-start d-inline-flex p-1" style="background: #bc3b04;width: 100%">
+                        <select class="m-1" style="background: #f7e0e0" name="liste_forets" id="liste_forets">
+
+                        </select>
+                        <h3 class="text-center text-white p-1 font-weight-light">Liste des arbres absents de la LAAC</h3>
+                    </div>
+                    <div class="row" id ="liste_inv_non_abattus"></div>
+
+                    </div>
+
+            </div>
+            <div class="tab-pane fade" id="fichierinv" style="background: #f1f2f1" role="tabpanel" aria-labelledby="business-tab">
+                <div class="" style="border: 1px solid lightgrey; width: 100%;background: #f5f9fb">
+
+                    <table class="table  table-stripped" id="moninv" style="height: 300px;">
+                        <thead class="text-white">
+                        <tr class="text-white" style="background: #4e4d4d">
+                            <th>{% trans %}No{% endtrans %}</th>
+                            <th>{% trans %}N° Arbre Inventaire{% endtrans %}</th>
+                            <th>{% trans %}N° Arbre CP{% endtrans %}</th>
+                            <th>{% trans %}Forest{% endtrans %}</th>
+                            <th>{% trans %}spices{% endtrans %}</th>
+                            <th>{% trans %}Zone{% endtrans %}</th>
+                            <th>{% trans %}X{% endtrans %}</th>
+                            <th>{% trans %}Y{% endtrans %}</th>
+                            <th>{% trans %}L{% endtrans %}</th>
+                            <th>{% trans %}d{% endtrans %}</th>
+                            <th>{% trans %}Volume{% endtrans %}</th>
+                            <th>{% trans %}Date Inventaire{% endtrans %}</th>
+                            <th>{% trans %}LAAC ?{% endtrans %}</th>
+                            <th>{% trans %}Autorisé ?{% endtrans %}</th>
+
+                        </tr>
+                        </thead>
+                        <tbody id ="mon_inv">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="archives" style="background: #f1f2f1" role="tabpanel" aria-labelledby="archives-tab">
+                <div class="" style="border: 1px solid lightgrey; width: 100%;background: #f5f9fb">
+
+                    <table class="table table-responsive table-stripped w-100" id="tbl_archives" style="">
+                        <thead class="text-white">
+                        <tr class="text-white" style="background: #4e4d4d;width:100px;">
+                            <th>{% trans %}No{% endtrans %}</th>
+                            <th>{% trans %}N° Arbre Inventaire{% endtrans %}</th>
+                            <th>{% trans %}Forest{% endtrans %}</th>
+                            <th>{% trans %}spices{% endtrans %}</th>
+                            <th>{% trans %}Zone{% endtrans %}</th>
+                            <th>{% trans %}X{% endtrans %}</th>
+                            <th>{% trans %}Y{% endtrans %}</th>
+                            <th>{% trans %}L{% endtrans %}</th>
+                            <th>{% trans %}d{% endtrans %}</th>
+                            <th>{% trans %}Volume{% endtrans %}</th>
+                            <th>{% trans %}Date Inventaire{% endtrans %}</th>
+
+                        </tr>
+                        </thead>
+                        <tbody id ="body_archives">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script src="{{ asset('assets/assets_other/js/ui-modals.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+
+            const fileInput = document.getElementById("images");
+            const backupInput = document.getElementById("fiche_prospection_fichier");
+
+            let code_attibution = document.querySelector('#fiche_prospection_code_attribution').value
+            let fichiername = document.querySelector('.fichiername')
+
+            let id_new_fiche = 0;
+
+            document.querySelector('#charger_btn').style = "display:none"
+           // backupInput.style="display:none";
+            {% if (app.user.codeOperateur.id == 2) %}
+                attributions_inventaire();
+                mon_inventaire({{ app.user.codeExploitant.id }})
+            {% else %}
+            document.querySelector('.foret').innerHTML = '<option value="0">--Sélectionnez une forêt--</option>'
+            {% endif %}
+
+
+            $('#select_operateurs').on('change', function(){
+                let valeur = this.value;
+                //alert(valeur)
+                let contenu_att = "";
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/inventaire/admin/s_atributions_inventaire/'+ valeur,
+                    type: 'POST',
+                    data: code_attibution,
+                    success: function(response) {
+                        let liste_att = JSON.parse(response)
+                        if (liste_att.length > 0){
+                            contenu_att = '<option value="0">--{{ 'Select a forest'|trans }}--</option>';
+                            for (let i = 0; i < liste_att.length ; i++){
+                                contenu_att = contenu_att + '<option value="' + liste_att[i].id_attribution + '">' + liste_att[i].denomination + '</option>'
+                            }
+                        }
+                        document.querySelector('.foret').innerHTML = contenu_att;
+                    },
+                    error: function(error) {
+
+                    }
+                });
+            });
+			etatButton();
+            archives_inventaire();
+            $('#fiche_prospection_code_attribution').on('change', function (){
+                actualise_inventaire(this.value)
+            });
+
+            $('.monfichier').on('change', function (){
+                var fn = $(this).val();
+                var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+                fichiername.innerHTML = filename;
+
+                $.ajax({
+                    url: '{{path('app_portail')}}snvlt/admin/prospect/'+ code_attibution,
+                    type: 'POST',
+                    data: code_attibution,
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            })
+
+            function getFileName(elm) {
+                var fn = $(elm).val();
+                var filename = fn.match(/[^\\/]*$/)[0]; // remove C:\fakename
+                fichiername.innerHTML = filename;
+            }
+
+            $('#charger_btn').on('click', function(){
+                let total_rows = document.querySelector('#liste_temp').rows.length;
+
+                Swal.fire({
+                    title: "{{ 'Do you want to upload inventory data ?' | trans}}",
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: "{{ 'Upload' | trans }}",
+                    denyButtonText: "{{ 'Cancel' | trans }}"
+                }).then((result) => {
+                    /* Read more about isConfirmed, isDenied below */
+                    if (result.isConfirmed) {
+
+                        if (total_rows > 0){
+                            charger_inventaire_add();
+                        }
+                    }/* else if (result.isDenied) {
+                        Swal.fire("Changes are not saved", "", "info");
+                    }*/
+                });
+            })
+
+
+
+
+            fileInput.addEventListener("change", function () {
+                const files = this.files;
+                const dataTransfer = new DataTransfer();
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    dataTransfer.items.add(new File([file.slice(0, file.size, file.type)], file.name));
+                }
+
+                backupInput.files = dataTransfer.files;
+                //document.getElementById("#btn_temp").click();
+            });
+
+            function attributions_inventaire() {
+                let contenu_att = "";
+                $.ajax({
+                    url : '{{path('app_portail')}}snvlt/inventaires/l/atributions_inventaire',
+                    type: 'POST',
+                    success: function(response){
+                        let liste_att = JSON.parse(response)
+                        if (liste_att.length > 0){
+                            contenu_att = '<option value="0">--{{ 'Select a forest'|trans }}--</option>';
+                            for (let i = 0; i < liste_att.length ; i++){
+                                contenu_att = contenu_att + '<option value="' + liste_att[i].id_attribution + '">' + liste_att[i].denomination + '</option>'
+                            }
+                        }
+                        document.querySelector('.foret').innerHTML = contenu_att;
+                        document.querySelector('#liste_forets').innerHTML = contenu_att;
+                        affiche_inventaire_temp()
+                        let att = $('.foret').val()
+                        actualise_inventaire(att)
+                    }
+                })
+            }
+            function affiche_inventaire_temp() {
+                let contenu_arbres = "";
+                let code_att = 0;
+                $.ajax({
+                    url : '{{ path('lac_temp') }}',
+                    type: 'POST',
+                    success: function(response){
+                        let liste_arbres = JSON.parse(response)
+                        if (liste_arbres.length > 0){
+
+                            for (let i = 0; i < liste_arbres.length ; i++){
+                                if(liste_arbres[i].erreur === true ){
+                                    contenu_arbres = contenu_arbres + '<tr class="alert-danger">'
+                                }else if(liste_arbres[i].lac === true ){
+                                    contenu_arbres = contenu_arbres + '<tr style="background: #cd8303; color: white;">'
+                                } else {
+                                    contenu_arbres = contenu_arbres + '<tr>'
+                                }
+                                var num = i +1;
+                                contenu_arbres = contenu_arbres + '<td>' + num + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].motif + '</td></tr>'
+                                code_att =  liste_arbres[i].code_att;
+                            }
+                        }
+                        document.querySelector('.foret').value = code_att;
+                        document.querySelector('#liste_temp').innerHTML = contenu_arbres;
+                        actualise_inventaire(code_att)
+                    }
+                })
+            }
+            function actualise_inventaire(code_attibution) {
+                let contenu_arbres = "";
+                let code_att = 0;
+                $.ajax({
+                    url : '{{path('app_portail')}}snvlt/admin/inventaire_list/' + code_attibution,
+                    type: 'POST',
+                    success: function(response){
+                        let liste_arbres = JSON.parse(response)
+                        if (liste_arbres.length > 0){
+
+                            for (let i = 0; i < liste_arbres.length ; i++){
+                                if(liste_arbres[i].lac === true ){
+                                    contenu_arbres = contenu_arbres + '<tr style="background: #cd8303; color: white;">'
+                                } else if (liste_arbres[i].autorise === false ) {
+                                    contenu_arbres = contenu_arbres + '<tr class="bg-danger text-white">'
+                                } else {
+                                    contenu_arbres = contenu_arbres + '<tr>'
+                                }
+                                var num = i +1;
+                                contenu_arbres = contenu_arbres + '<td>' + num + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].date_inv + '</td></tr>'
+                                //code_att =  liste_arbres[i].code_attibution;
+                            }
+                        }
+                        document.querySelector('.foret').value = code_attibution;
+                        document.querySelector('#liste_inv').innerHTML = contenu_arbres;
+                        hideOrShowBtnCharger()
+                    }
+                });
+            }
+
+
+            function mon_inventaire(code_exploitant) {
+                let contenu_arbres = "";
+                let code_att = 0;
+                // $numero_cp_arbre = "";
+                // $cp_arbre = $registry->getRepository(Lignepagecp::class)->findOneBy(['code_inv'=>$donnee->getId()]);
+                //
+                // if ($cp_arbre){
+                //     $numero_cp_arbre = $cp_arbre->getNumeroArbrecp();
+                // }
+                $.ajax({
+                    url : '{{path('app_portail')}}snvlt/admin/mon_inventaire/' + code_exploitant,
+                    type: 'POST',
+                    success: function(response){
+                        let liste_arbres = JSON.parse(response)
+                        if (liste_arbres.length > 0){
+
+                            for (let i = 0; i < liste_arbres.length ; i++){
+                             if (liste_arbres[i].autorise === false ) {
+                                contenu_arbres = contenu_arbres + '<tr class="bg-danger text-white">'
+                            } else {
+                                 if(liste_arbres[i].lac === true ) {
+                                     contenu_arbres = contenu_arbres + '<tr style="background: #fcf3e5; color: blue;">'
+                                 } else {
+                                     contenu_arbres = contenu_arbres + '<tr>'
+                                 }
+                             }
+
+
+                            var num = i +1;
+                            contenu_arbres = contenu_arbres + '<td>' + num + '</td>'
+                            contenu_arbres = contenu_arbres + '<td class="text-center"><span class="badge p-1 alert-success text-dark" style="font-size: 16px;">' + liste_arbres[i].numero + '</span></td>'
+
+                                if(liste_arbres[i].cp){
+                                    contenu_arbres = contenu_arbres + '<td class="text-center"><span class="badge p-1 bg-white text-dark font-weight-bold" style="font-size: 16px;">' + liste_arbres[i].cp_arbre + '</span></td>'
+                                } else {
+                                    contenu_arbres = contenu_arbres + '<td class="text-center">-</td>'
+                                }
+
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].foret + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].date_inv + '</td>'
+
+                            if (liste_arbres[i].lac === true ) {
+                                contenu_arbres = contenu_arbres + '<td><span class="bg-success text-white badge p-1 rounded-5">OUI</span></td>'
+                            }
+
+                            if (liste_arbres[i].autorise === false ) {
+                                contenu_arbres = contenu_arbres + '<td><span class="bg-white text-danger badge p-1 rounded-5">NON</span></td>'
+                            } else {
+                                contenu_arbres = contenu_arbres + '<td><span class="bg-success text-white badge p-1 rounded-5">OUI</span></td>'
+                            }
+                        }
+                    }
+
+                    document.querySelector('#mon_inv').innerHTML = contenu_arbres;
+                    hideOrShowBtnCharger()
+                }
+            })
+            }
+            function archives_inventaire() {
+                let contenu_arbres = "";
+
+                $.ajax({
+                    url : '{{path('archives_list')}}',
+                    type: 'POST',
+                    success: function(response){
+                        let liste_arbres = JSON.parse(response)
+                        if (liste_arbres.length > 0){
+
+                            for (let i = 0; i < liste_arbres.length ; i++){
+                                contenu_arbres = contenu_arbres + '<tr>'
+
+
+                            var num = i +1;
+                            contenu_arbres = contenu_arbres + '<td>' + num + '</td>'
+                            contenu_arbres = contenu_arbres + '<td class="text-center"><span class="badge p-1 alert-success text-dark" style="font-size: 16px;">' + liste_arbres[i].numero + '</span></td>'
+
+
+
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].foret + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td>'
+                            contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].date_inv + '</td>'
+
+                        }
+                    }
+
+                    document.querySelector('#body_archives').innerHTML = contenu_arbres;
+                        // let table = new DataTable('#tbl_archives', {
+                        //     responsive: true,
+                        //     pageLength: 50,
+                        //     layout: {
+                        //         topStart: {
+                        //             buttons: [
+                        //                 {
+                        //                     extend: 'excelHtml5',
+                        //                     title: 'Archives Inventaire'
+                        //                 }
+                        //             ]
+                        //         }
+                        //     },
+                        //     colReorder: true,
+                        //     language: {
+                        //         processing:     "Traitement en cours...",
+                        //         search:         "Rechercher&nbsp;:",
+                        //         lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                        //         info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                        //         infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                        //         infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                        //         infoPostFix:    "",
+                        //         loadingRecords: "Chargement en cours...",
+                        //         zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                        //         emptyTable:     "Aucune donnée disponible dans le tableau",
+                        //         paginate: {
+                        //             first:      "Premier",
+                        //             previous:   "Pr&eacute;c&eacute;dent",
+                        //             next:       "Suivant",
+                        //             last:       "Dernier"
+                        //         },
+                        //         aria: {
+                        //             sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                        //             sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                        //         }
+                        //     }
+                        // });
+                }
+            })
+            }
+
+
+            function charger_inventaire_add() {
+                let contenu_att = "";
+                $.ajax({
+                    url : '{{ path('app_inventaire_add') }}',
+                    type: 'POST',
+                    success: function(response){
+                        let liste_att = JSON.parse(response)
+                        if (liste_att[0].code === "FILE_ERROR"){
+                            Swal.fire({
+                                toast: true,
+                                background: '#f8e9e9',
+                                icon: "error",
+                                allowEscapeKey: false,
+                                title: '{% trans %}Your file contains errors. Please Fix it{% endtrans %}',
+                                padding: '1em'
+                            });
+                             } else {
+                            Swal.fire({
+                                toast: true,
+                                background: '#f0f8e9',
+                                icon: "success",
+                                allowEscapeKey: false,
+                                title: '{% trans %}Congratulations! Your file has been uploaded successfully{% endtrans %}',
+                                padding: '1em'
+                            });
+                            actualise_inventaire(document.querySelector('#fiche_prospection_code_attribution').value)
+                            affiche_inventaire_temp()
+                        }
+
+                    }
+                })
+            }
+
+            function hideOrShowBtnCharger() {
+                //let contenu_att = "";
+                $.ajax({
+                    url : '{{ path('app_inventaire_check') }}',
+                    type: 'POST',
+                    success: function(response){
+                        let liste_att = JSON.parse(response)
+
+                        if (liste_att[0].code === "FILE_SUCCESS"){
+                            document.querySelector('#charger_btn').style = "display:inline;width:99%;background:lightgreen;color:white;margin-top:10px;margin-bottom:10px;"
+
+
+                        } else {
+                            document.querySelector('#charger_btn').style = "display:none"
+
+                             }
+
+                    }
+                })
+            }
+
+            $('#liste_forets').on('change', function (){
+                affiche_arbres_no_lac(this.value)
+            })
+
+            //Charge la liste des arbres non encore dans la LAAC
+            function affiche_arbres_no_lac(id_attribution) {
+                let contenu_arbres = "";
+                document.querySelector('#liste_inv_non_abattus').innerHTML = contenu_arbres;
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/admin/arbres/no_lac/' + id_attribution,
+                    type: 'POST',
+                    success: function(response){
+                        let liste_arbres = JSON.parse(response)
+                        contenu_arbres = '<div class="col-md-9 p-1"><h3 class="alert-danger p-2 mb-2">Arbres disponibles</h3><table class="table" id="tbl_inv_no_lac" style="border:solid 1px lightgrey;">' +
+                                            '<thead class=" bg-primary text-white">' +
+                                            '<tr class="alert-success">' +
+                                            '<th>{% trans %}No{% endtrans %}</th>' +
+                                            '<th>{% trans %}spices{% endtrans %}</th>' +
+                                            '<th>{% trans %}Zone{% endtrans %}</th>' +
+                                            '<th>{% trans %}X{% endtrans %}</th>' +
+                                            '<th>{% trans %}Y{% endtrans %}</th>' +
+                                            '<th>{% trans %}L{% endtrans %}</th>' +
+                                            '<th>{% trans %}d{% endtrans %}</th>' +
+                                            '<th>{% trans %}Volume{% endtrans %}</th>' +
+                                            '</tr></thead>' +
+                                            '<tbody>';
+                        if (liste_arbres.length > 0){
+
+                            for (let i = 0; i < liste_arbres.length ; i++){
+                                contenu_arbres = contenu_arbres + '<tr class="bg-white">'
+                                contenu_arbres = contenu_arbres + '<td><a href="#" class="badge p-1 bg-dark text-white numero_arbre" style="font-size: 20px;" id="' + liste_arbres[i].id_inv +'">' + liste_arbres[i].numero + '</a></td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].essence + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].zh + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].x + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].y + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].lng + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].dm + '</td>'
+                                contenu_arbres = contenu_arbres + '<td>' + liste_arbres[i].volume + '</td></tr>';
+                            }
+                        } else {
+                            contenu_arbres = contenu_arbres + '<span class="text-danger" style="font-size: 20px;">Aucun arbre retrouvé</span>'
+                        }
+
+                        contenu_arbres = contenu_arbres + '</tbody></table></div>';
+
+                        //Ajout de la liste des éléments sélectionnés
+
+                        contenu_arbres = contenu_arbres + '<div class="col-md-3 p-1"><h3 class="alert-danger p-2 mb-2">Arbres sélectionnés</h3>' +
+                            '<ul class="list-group alert-light-primary list_arbres"  style="max-height: 500px;overflow-y: auto;"></ul>' +
+                            '<a href="#" class="btn btn-primary font-weight-light p-2 mt-2 mb-2" id="btn_ajouter_element"  style="width: 100%"></a>' +
+                            '</div>';
+                        document.querySelector('#liste_inv_non_abattus').innerHTML = contenu_arbres;
+
+                        // Simple Datatable
+                        let table1 = document.querySelector('#tbl_inv_no_lac');
+                        let dataTable = new simpleDatatables.DataTable(table1);
+                    }
+                })
+            }
+
+            $('body').on('click', '.numero_arbre', function (){
+                let contenu = '<li class="list-group-item  text-center font-weight-bold" value="' + this.id + '"><a href="#" class="li_arbre p-1 badge bg-dark text-white" id="' + this.id + '" style="font-size: 20px;">' + this.text + "</a></li>"
+                $('.list_arbres').append(contenu)  ;
+                $('#btn_ajouter_element').text("Créer la fiche LAAC");
+            })
+
+            $('body').on('click', '.list_arbres li', function (e){
+                $(e.target).remove();
+            })
+
+            $('body').on('click', '#btn_ajouter_element', function (){
+                ajouter_fiche_lac($('#liste_forets').val())
+            })
+
+            function ajouter_fiche_lac(code_attibution){
+                //Création de la fiche LAAC
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/inv/add/fiche_lac/' + code_attibution,
+                    type: 'POST',
+                    success : function (response){
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+
+
+                            id_new_fiche = reponse[0].id_fiche;
+
+                            //Parcours la liste
+                            let taille_lst = $('.list_arbres li').length;
+
+                            if (taille_lst > 0){
+                                for (var i = 0 ; i <  taille_lst; i++){
+                                    ajouter_element_lac_from_inv($('.list_arbres li').val(), id_new_fiche)
+                                }
+                                envoyer_notif_new_fiche_lac(id_new_fiche)
+                            } else {
+
+                            }
+
+
+                        }
+                    }
+                })
+            }
+
+            function ajouter_element_lac_from_inv(id_arbre, id_fiche){
+                //Création de la fiche LAAC
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/inv/edit/tonewlac/' + id_arbre + '/' + id_fiche,
+                    type: 'POST',
+                    success : function (response){
+                        let reponse = JSON.parse(response);
+
+                    }
+                })
+            }
+
+            function envoyer_notif_new_fiche_lac(id_fiche){
+                //Création de la fiche LAAC
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/inv/edit/inv/tonewlac/sendnotif/'  + id_fiche,
+                    type: 'POST',
+                    success : function (response){
+                        let reponse = JSON.parse(response);
+                        if (reponse[0].CODE === "SUCCESS"){
+                            Swal.fire({
+                                toast: true,
+                                background: '#ecf8e9',
+                                icon: "success",
+                                allowEscapeKey: false,
+                                title: 'Fiche LAAC envoyée aux administrateurs',
+                                padding: '1em'
+                            });
+                            document.location.reload();
+                        } else {
+                            Swal.fire({
+                                toast: true,
+                                background: '#f8e9e9',
+                                icon: "error",
+                                allowEscapeKey: false,
+                                title: 'Erreur dans l\'envoi de la fiche',
+                                padding: '1em'
+                            });
+                        }
+                    }
+                })
+            }
+			
+			
+			$('#fiche_prospection_code_attribution').on('change', function(){
+				etatButton();
+			});
+			
+			$('#fiche_prospection_date_inventaire').on('change', function(){
+				etatButton();
+			});
+
+
+			$('#images').on('change', function(){
+				etatButton();
+			});
+
+
+		function etatButton(){
+		let codeAttribution = document.querySelector('#fiche_prospection_code_attribution').value;
+		let dateInventaire = document.querySelector('#fiche_prospection_date_inventaire').value;
+		let fichier = document.querySelector('#images');
+		let btnValider = document.querySelector('#btn_temp');
+		//alert(fichier.files.length);
+		
+			if (codeAttribution === "0" ||
+				codeAttribution === "" ||
+				dateInventaire === "" ||
+				fichier.files.length < 1) {
+					btnValider.style = "display:none";
+					//alert(false)
+				} else {
+				//alert(true)
+					btnValider.style = "display:inline;width: 300px; font-size: 16px;border:2px solid darkgreen;";
+				}
+		}
+
+            {#let table = new DataTable('#moninv', {#}
+            {#    responsive: true,#}
+            {#    pageLength: 50,#}
+            {#    layout: {#}
+            {#        topStart: {#}
+            {#            buttons: [#}
+            {#                {#}
+            {#                    extend: 'excelHtml5',#}
+            {#                    title: 'Inventaire {% if(app.user.codeOPerateur.id == 3) %}#}
+            {#                    {{ app.user.codeExploitant.raisonSocialeExploitant }}#}
+            {#                    {% endif %}'#}
+            {#                }#}
+            {#            ]#}
+            {#        }#}
+            {#    },#}
+            {#    colReorder: true,#}
+            {#    language: {#}
+            {#        processing:     "Traitement en cours...",#}
+            {#        search:         "Rechercher&nbsp;:",#}
+            {#        lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",#}
+            {#        info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",#}
+            {#        infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",#}
+            {#        infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",#}
+            {#        infoPostFix:    "",#}
+            {#        loadingRecords: "Chargement en cours...",#}
+            {#        zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",#}
+            {#        emptyTable:     "Aucune donnée disponible dans le tableau",#}
+            {#        paginate: {#}
+            {#            first:      "Premier",#}
+            {#            previous:   "Pr&eacute;c&eacute;dent",#}
+            {#            next:       "Suivant",#}
+            {#            last:       "Dernier"#}
+            {#        },#}
+            {#        aria: {#}
+            {#            sortAscending:  ": activer pour trier la colonne par ordre croissant",#}
+            {#            sortDescending: ": activer pour trier la colonne par ordre décroissant"#}
+            {#        }#}
+            {#    }#}
+            {#});#}
+    </script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Manage Stock{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/stock.png') }}" alt="{% trans %}stock{% endtrans %}">  {% trans %}Manage Stock{% endtrans %} - {% trans %}Add{% endtrans %}
+    </h2>
+
+{% endblock %}
+
+{% block notifs %}
+    {% include 'base/notifs.html.twig' %}
+{% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('assets/select2/select2.min.css') }}" rel="stylesheet" />
+
+
+    <section class="section">
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
+                <div class="row p-3 bg-warning m-1">
+                    <div class="col-md-4">
+                        <div class="">{{ form_row(form.codeTypeDocStat) }}</div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="">{{ form_row(form.code_imprimeur) }}</div>
+                    </div>
+                    <div class="col-md-3  text-center">
+                        <div class="">{{ form_row(form.qte) }}</div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <div class="">{{ form_row(form.lettre) }}</div>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        <div class="text-warning">{{ nb }}</div>
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ path('ref_stockdocs') }}" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white" style="font-weight: lighter"><i class="mdi mdi-backspace" style="font-size: 18px;margin-right: 10px;"></i>{% trans %}Back to list{% endtrans %}</a>
+                <button type="submit"  class="btn btn-sm bg-primary text-white p-2" style="margin-left: 10px;font-weight: lighter">
+                    <i class="mdi mdi-database-edit  me-2"></i>{% trans %}Add Stock{% endtrans %}
+                </button>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+
+        <!--Modification de l'dr -->
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+
+        $(document).ready(function() {
+            $('.codetype').select2({
+                placeholder: "--{% trans %}Select Regional Direction...{% endtrans %}",
+                theme: "bootstrap-5"
+            });
+
+        });
+
+    </script>
+    <script src="{{ asset('assets/webapp/assets/js/main.js') }}"></script>
+
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}2nd/3rd Transformation{% endtrans %}
+{% endblock %}
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/palette.png') }}" height="92" alt="transformation_palette">  {% trans %}2nd/3rd Transformation{% endtrans %}
+    </h2>
+    {#<div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <h5 class="mt-2">Période : </h5><input type="date" id="date_debut" style="background-color: lightyellow; margin-right: 5px;">
+            <input type="date" id="date_fin" style="background-color: lightyellow; margin-right: 25px;">
+            <a href="#" style="font-size: 16px; font-weight: bold" id="export_data"><img src="{{ asset('assets/icons/export.png') }}" alt="export" style="margin-right: 10px;">{{ 'Export data' | trans }}</a>
+        </div>
+    </div>#}
+{% endblock %}
+
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+    <section class="section">
+        <div class="card">
+            <div class="p-2 m-2" id="fiche" style="border: 1px solid lightgrey">
+                <div class="row mb-2">
+                    <select class="col-2"  name="produits" id="produits"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+
+                    </select>
+                    <span style="margin-left: 25px;margin-right: 5px;">{{ 'Transformation date' | trans }}</span><input type="date" name="date_transfo" id="date_transfo" placeholder="{{ 'Transformation date' | trans }}" style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 200px;">
+                    <span style="margin-left: 25px;margin-right: 5px;">{{ 'Quantity' | trans }}</span><input class="text-center" type="number" name="qte" id="qte"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 100px;">
+                    <button  style="margin-left: 25px;margin-right: 5px;" id="save_fichier">{{ 'Save' | trans }}</button>
+                </div>
+            </div>
+            <div class="p-2" id="fiches2tr" style="border: 1px solid lightgrey">
+
+            </div>
+        </div>
+
+        {#Ajouter les éléments du colis#}
+        <div class="modal fade" id="ajout_element" data-bs-backdrop="static" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <form class="modal-content">
+                    <div class="modal-header  alert-secondary">
+                        <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Edit Elements' | trans}}</h5>
+                        <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert-light  bg-white">
+                            <h4 class="text-primary p-1 alert-success" id="lbl_colis"></h4>
+                            <div class="align-content-lg-start">
+                                <select   name="essences" id="essences"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 250px;">
+
+                                </select>
+                                <span style="margin-left: 25px;margin-right: 5px;">{{ 'L' | trans }}</span><input class="text-center" type="number" name="lng" id="lng"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 75px;">
+                                <span style="margin-left: 25px;margin-right: 5px;">{{ 'l' | trans }}</span><input class="text-center" type="number" name="lrg" id="lrg"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 75px;">
+                                <span style="margin-left: 25px;margin-right: 5px;">{{ 'ep' | trans }}</span><input class="text-center" type="number" name="ep" id="ep"  style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;width: 75px;">
+                                <a href="#"  class="btn btn-primary" style="margin-left: 25px;margin-right: 50px;" id="btn_recherche_elt" style="font-size: 16px;">{{ 'Search...' | trans }}</a>
+                                <span class="text-danger font-weight-bold" id="lbl_elt_remaining" style="font-size: 20px;margin-left: 10px;"></span>
+
+                            </div>
+
+
+                            <div class="m-4">
+                                <h5 class="col-md-3 text-dark" style="font-size: 15px;color:orangered;">{{ 'Number' | trans}}</h5>
+                                <input class="text-center text-dark font-weight-bold" id="nb" type="number" style="width: 200px;font-size: 32px;background-color: #f1f1ef;border: 0px;">
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer alert-secondary">
+
+                        <a href="#"  class="btn btn-primary mt-3" id="save_elt" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+
+        let fiche_elt = 0;
+        liste_produits();
+
+        $('#save_fichier').on('click', function (){
+            if ( document.querySelector('#produits').value === "0" ||
+                document.querySelector('#produits').value === "" ||
+                document.querySelector('#date_transfo').value === "" ||
+                document.querySelector('#qte').value === "0" ||
+                document.querySelector('#qte').value === "" )
+            {
+                alert("Merci de renseigner les informations en entête")
+            } else {
+                save_fiche( document.querySelector('#produits').value,
+                    document.querySelector('#date_transfo').value,
+                    document.querySelector('#qte').value)
+            }
+        })
+
+        $('#produits').on('change', function (){
+            liste_fiches(this.value)
+                })
+
+            $('body').on('click','.fiche_detail', function (){
+                fiche_elt = this.id;
+                    liste_essence()
+                })
+         $('body').on('click','#btn_recherche_elt', function (){
+             let essence =  document.querySelector('#essences').value;
+             let lng =  document.querySelector('#lng').value;
+             let lrg =  document.querySelector('#lrg').value;
+             let ep =  document.querySelector('#ep').value;
+                    rechercher_element(fiche_elt, lng, lrg, ep, essence)
+                })
+        $('body').on('click','#save_elt', function (){
+            let essence =  document.querySelector('#essences').value;
+            let lng =  document.querySelector('#lng').value;
+            let lrg =  document.querySelector('#lrg').value;
+            let ep =  document.querySelector('#ep').value;
+            let nb =  document.querySelector('#nb').value;
+
+            if ( essence === "0" ||
+                lng === "" ||
+                ep === "" ||
+                lrg === "0" ||
+                nb === "" )
+            {
+                alert("Merci de renseigner les informations sur les éléments")
+            } else {
+                save_elt(fiche_elt, lng, lrg, ep, essence, nb)
+                alert('Elément ajouté')
+            }
+
+        })
+
+
+
+        function save_fiche(produit, date_transfo, qte){
+            $.ajax({
+                url : '{{path('app_login' ) }}snvlt/fiche2transfo*/add/' + produit + "/" + date_transfo + "/" + qte,
+                type :  'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response)
+                    if (reponse[0].code === "SUCCESSS"){
+                        alert('Fiche Produit sauvegardée')
+                    } else {
+                        alert('Renseignez tous les champs SVP')
+                        liste_fiches(produit)
+                    }
+                }
+            })
+        }
+
+        function save_elt(id_fiche, lng, lrg, ep, id_essence, qte){
+            $.ajax({
+                url : '{{path('app_login' ) }}snvlt/fiche2transfo*/add_elts/' + id_fiche + "/" + lng + "/" + lrg + "/" + ep + "/" + id_essence + '/' + qte,
+                type :  'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response)
+                    if (reponse[0].code === "SUCCESSS"){
+                        alert('Elements ajoutés')
+                    } else {
+                        alert('Renseignez tous les champs SVP')
+
+                    }
+                }
+            })
+        }
+
+        function liste_produits(){
+            let contenu = '<option value="0">-- Sélectionnez un produit---</option>'
+            $.ajax({
+                url : '{{ path('app_transformation_2_transfo_listing') }}',
+                type :  'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response)
+
+                    for (let i = 0; i < reponse.length; i++){
+                        contenu = contenu + '<option value="' + reponse[i].id_pdt + '">' + reponse[i].produit + '</option>'
+                    }
+                    document.querySelector('#produits').innerHTML = contenu;
+                }
+            })
+        }
+
+        function liste_essence(){
+            $.ajax({
+                'url': '{{ path('essences.json') }}',
+                'type': 'POST',
+                success: function(response) {
+                    let liste_essence = JSON.parse(response)
+                    var contenu = '<option>Sélectionnez l\'essence</option>';
+
+                    for (var i = 0; i< liste_essence.length ; i++){
+                        contenu = contenu + '<option value="' + liste_essence[i].essence_id + '">' + liste_essence[i].nom_vernaculaire + '</option>'
+                    }
+                    document.querySelector('#essences').innerHTML = contenu;
+                }
+            })
+        }
+
+        // Liste des fiches
+        function liste_fiches(id_produit){
+            let contenu_colis= '<table class="table table-responsive" id="tbl_fiches"><thead>';
+            contenu_colis = contenu_colis + '<tr class="text-center" style="background: #e0e0de;color: black">';
+            contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Product name.{% endtrans %}</th>';
+            contenu_colis = contenu_colis +  '<th class="text-center">{% trans %}Type of Transformation{% endtrans %}</th>';
+            contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Date{% endtrans %}</th>';
+            contenu_colis = contenu_colis + '<th class="text-center">{% trans %}Number of Elements{% endtrans %}</th>';
+            contenu_colis = contenu_colis + '<th class="text-center">{% trans %}volume{% endtrans %}</th>';
+            contenu_colis = contenu_colis + '</tr>';
+            contenu_colis = contenu_colis + '</thead>';
+            contenu_colis = contenu_colis + '<tbody>';
+
+            $.ajax({
+                'url': '{{path('app_portail')}}snvlt/contrats/fiche2tr/list/' + id_produit,
+                'type': 'POST',
+                success: function(response) {
+                    let liste_fiches = JSON.parse(response)
+                    if (liste_fiches.length === 0) {
+                        contenu_colis = '<h3>{{ 'No record' | trans }}</h3>';
+                    }else {
+                        for (var i = 0; i< liste_fiches.length ; i++){
+                            if (liste_fiches[i].nb_elts > 0){
+                                contenu_colis = contenu_colis + '<tr class="alert-warning text-dark" >';
+                            } else if (liste_fiches[i].cloture === true){
+                                contenu_colis = contenu_colis + '<tr class="alert-success text-dark" >';
+                            } else {
+                                contenu_colis = contenu_colis + '<tr>';
+                            }
+                            let ref_colis_link = "/transformation/colis/details/" + liste_fiches[i].id_colis;
+
+                            contenu_colis = contenu_colis + '<td class="text-center"><a class="font-weight-bold fiche_detail" href="#" data-bs-toggle="modal" data-bs-target="#ajout_element" id = "' +  liste_fiches[i].id_pdt + '">' + liste_fiches[i].produit + '</a></td>'
+                            contenu_colis = contenu_colis + '<td class="text-center">' + liste_fiches[i].transfo + '</td>'
+                            contenu_colis = contenu_colis + '<td class="text-center">' + liste_fiches[i].date_fiche + '</td>'
+                            contenu_colis = contenu_colis + '<td class="text-center">' + liste_fiches[i].nb_elts + '</td>'
+                            contenu_colis = contenu_colis + '<td class="text-center">' + liste_fiches[i].vol_elts + '</td>'
+                        }
+                    }
+                    contenu_colis = contenu_colis + '<tbody><table>';
+
+                    document.querySelector('#fiches2tr').innerHTML = contenu_colis;
+
+                    // Simple Datatable
+                    let table1 = document.querySelector('#tbl_fiches');
+                    let dataTable = new simpleDatatables.DataTable(table1);
+
+                    //document.querySelector("#roller").style="display:none";
+
+
+                },
+                error: function (erreur){
+                    console.log(erreur)
+                    //document.querySelector("#roller").style="display:none";
+                }
+            })
+        }
+
+        function rechercher_element(id_fiche, lng, lrg, ep, id_essence){
+           // let contenu = '<option value="0">-- Sélectionnez un produit---</option>'
+            $.ajax({
+                url : '{{path('app_portail')}}snvlt/contrats/fiche2tr/recherche/' + id_fiche + '/' + lng + '/' + lrg + '/' + ep + '/' + id_essence ,
+                type :  'POST',
+                success : function (response){
+                    let reponse = JSON.parse(response)
+
+
+                    if (reponse.length > 0 ){
+                        document.querySelector('#lbl_elt_remaining').innerHTML = reponse[0].nb + " éléments";
+                    }else {
+                        document.querySelector('#lbl_elt_remaining').innerHTML = "Aucun élément disponible";
+                    }
+
+                }
+            })
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="{{ app.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Point de Situation</title>
+
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/bt/css/bootstrap.min.css') }}" />
+    <link href="{{ asset('assets/portail/css/bootstrap.min.css') }}" rel="stylesheet">
+
+	<script src=" https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/scripts/verify.min.js "></script>
+    <link href=" https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css " rel="stylesheet">
+    <style>
+        body {
+            background-image: url("{{ asset('assets/images/wp_situation.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .badge_snvlt {
+            border-radius: 10px;
+            background: #efecec;
+            font-size: 24px;
+            color: #0d5e42;
+            min-width: 300px;
+            margin-bottom: 35px;
+        }
+        .chiffre {
+            font-size: 36px;
+        }
+    </style>
+</head>
+<body class="p-2">
+<div class="" style="">
+    <h1 class="p-2"><span class="p-1" style="color:#e5fad4;text-shadow: #0a430c 2px 0 8px; margin-top:15px;font-size: 60px;">Point de situation SNVLT</span><span class="text-center ms-4 badge bg-white" style="border-radius:25px;color:#0a430c">Exercice {{ exercice }}</span></h1>
+    <div class="p-1 mb-1" style="background: linear-gradient(#5a9f49,orange);width: 92%;"></div>
+</div>
+    <div class="row p-2">
+            <div class="col-md-2">
+                <div class="text-center mb-5 text-white" style="background: orangered"><span style="font-size: 32px;text-shadow: #0a5f78;text-decoration: underline">Informations clés</span></div>
+                <div style="max-height: 400px;">
+                    <a href="#" class="badge m-2 badge_snvlt w-100" style="background: #fae5db">
+                        <span>Reprises Activités</span><br>
+                        <span class="mdi mdi-leaf text-danger chiffre"></span>
+                       <span class="text-danger reprises fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                    <br>
+                    <a href="#" class="badge m-2 badge_snvlt w-100">
+
+
+                        <span>Exploitants Agréés</span><br>
+                        <span class="mdi mdi-account-hard-hat text-danger chiffre"></span>
+                        <span class="text-danger exploitants fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                    <a href="#" class="badge m-2 badge_snvlt w-100">
+                        <span>Industriels Agréés</span><br>
+                        <span class="mdi mdi-account-hard-hat text-danger chiffre"></span>
+                        <span class="text-danger usines fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                    <a href="#" class="badge m-2 badge_snvlt w-100">
+
+                        <span>Exportateurs Agréés</span><br>
+                        <span class="mdi mdi-application-export text-danger chiffre"></span>
+                        <span class="text-danger exportateurs fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                    <a href="#" class="badge m-2 badge_snvlt w-100">
+
+                        <span>Observateurs Indépendants</span><br>
+                        <span class="mdi mdi-application-export text-danger chiffre"></span>
+                        <span class="text-danger ois fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                    <br>
+                    <a href="#" class="badge m-2 badge_snvlt w-100" style="background: #e1fadb">
+                        <span>Directions Régionales</span><br>
+                        <span class="mdi mdi-home-city text-danger"></span>
+                        <span class="text-danger  drs fw-bold" style="font-size: 32px;"></span>
+                    </a>
+
+                    <a href="#" class="badge m-2 badge_snvlt w-100" style="background: #e1fadb">
+                        <span>Directions Départementales</span><br>
+                        <span class="text-danger ddefs fw-bold" style="font-size: 32px;"></span>
+                    </a><a href="#" class="badge m-2 badge_snvlt w-100" style="background: #e1fadb">
+                        <span>Cantonnements forestiers</span><br>
+                        <span class="text-danger cefs fw-bold" style="font-size: 32px;"></span>
+                    </a><a href="#" class="badge m-2 badge_snvlt w-100" style="background: #e1fadb">
+                        <span>Postes Forestiers</span><br>
+                        <span class="text-danger pfs fw-bold" style="font-size: 32px;"></span>
+                    </a>
+                </div>
+            </div>
+        <div class="col-md-3 text-center " style="max-height: 400px;">
+            <div class="text-center mb-5 text-white" style="background: darkgreen"><span  style="font-size: 24px;text-shadow: #0a5f78;text-decoration: underline">Volumes</span></div>
+				<a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                    <div class="d-inline-flex ">
+                        <img src="{{ asset('assets/images/webapp/fut.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                        <div class="ms-2">
+                            <span>Volume Fûts</span><br><br>
+                            <span class="p-1 badge bg-danger" style="border-radius: 10px;font-size: 35px;"><span class="p-1 mt-3 text-white volume_fut">-</span><span class="p-1 mt-3 text-white"></span></span>
+                        </div>
+                    </div>
+                </a>
+
+            <br>
+			<a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                    <div class="d-inline-flex ">
+                        <img src="{{ asset('assets/images/webapp/wood truck.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                        <div class="ms-2">
+                            <span>Volume Exploités</span><br><br>
+                            <span class="p-1 badge bg-danger" style="border-radius: 10px;font-size: 35px;"><span class="p-1 mt-3 text-white volume_brh">...</span><span class="p-1 mt-3 text-white">m<sup>3</sup></span></span>
+                        </div>
+                    </div>
+                </a>
+
+            <br>
+			<a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                    <div class="d-inline-flex ">
+                        <img src="{{ asset('assets/images/webapp/usine_1.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                        <div class="ms-2">
+                            <span>Volume Entrées Usine</span><br><br>
+                            <span class="p-1 badge bg-danger" style="border-radius: 10px;font-size: 35px;"><span class="p-1 mt-3 text-white volume_entree">-</span><span class="p-1 mt-3 text-white"></span></span>
+                        </div>
+                    </div>
+                </a>
+
+            <br>
+			
+            <a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                <div class="d-inline-flex ">
+                    <img src="{{ asset('assets/images/webapp/billons.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                    <div class="ms-2">
+                        <span>Volume Transformé</span><br><br>
+                        <span class="p-1 badge bg-primary" style="border-radius: 10px;font-size: 35px;"><span class="p-1 m-1 text-white volume_transfo">-</span><span class="p-1 mt-3 text-white"></span></span>
+                    </div>
+                </div>
+            </a>
+			
+            <br>
+            <a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                <div class="d-inline-flex ">
+                    <img src="{{ asset('assets/images/webapp/exportation.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                    <div class="ms-2">
+                        <span>Volume Exporté</span><br><br>
+                        <span class="p-1 badge bg-success" style="border-radius: 10px;font-size: 35px;"><span class="p-1 m-1 text-white volume_exportation">-</span><span class="p-1 mt-3 text-white"></span></span>
+                    </div>
+                </div>
+            </a>
+            <br>
+            <a href="#" class="badge m-2 badge_snvlt justify-center mx-auto w-100" style="background: #f5fcec;font-size: 24px;width:450px;">
+                <div class="d-inline-flex ">
+                    <img src="{{ asset('assets/images/webapp/marche_local.png') }}" class="my-auto" alt="bois" style="height: 92px;margin-right: 15px;">
+                    <div class="ms-2">
+                        <span>Volume Marché local</span><br><br>
+                        <span class="p-1 badge bg-success" style="border-radius: 10px;font-size: 35px;">-<span class="p-1 m-1 text-white volume_marche"></span><span class="p-1 mt-3 text-white"></span></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+				<div class="bg-white  mb-5 text-center"><span  style="color: #021f02;font-size: 32px;text-shadow: #0a5f78;text-decoration: underline">Documents</span></div>
+				<div class="bg-light " style="height: 650px;border-radius: 25px;">
+					<h2 class="bg-light m-3">documents générés et saisis</h2>
+					<div class="badge badge_snvlt p-2"  id="docs" style="width:100%;font-size: 18px;background: #fcbd91;"> </div>
+				</div>
+			</div>
+        <div class="col-md-3">
+            <div class="text-center mb-5 text-white" style="background: #0a5f78"><span  style="font-size: 32px;text-shadow: #0a5f78;text-decoration: underline">Autres Informations</span></div>
+            <div class="div_agents bg-light p-2" style="height: 600px;border-radius: 25px;">
+            <h2 class="t_saisie alert-success p-1 mb-2">Saisies en cours...</h2>
+			<div><span class="bg-warning text-dark p-1" style="font-size:32px;">attente > 30min</span><span class="ms-2 bg-danger text-white" style="font-size:32px;p-1"> attente > 2h</span></div>
+            <table class="table table-responsive  overflow-y-scroll mx-auto" style="width:95%;border-radius: 25px;">
+                
+                <tbody class="agents">
+                    <tr style="font-size: 18px;">...</tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+    </div>
+
+
+<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="{{ asset('assets/webapp/assets/vendors/jqueryassets/css/bt/js/bootstrap.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+<script>
+
+		let data_doc = '';
+        let data_nb_delivres = '';
+        let data_nb_saisis = '';
+
+
+    //Reprises
+    document.querySelector('.div_agents').style = "height:" + screen.height * 0.6 + "px;"
+    date_du_jour = new Date();
+    let mois = "";
+    let jour = "";
+    let formattedToday = "";
+	getDateFormatted();
+    if (date_du_jour.getMonth().toString().length === 1){mois = "0"+date_du_jour.getMonth()}else{mois = date_du_jour.getMonth()}
+    if (date_du_jour.getDay().toString().length === 1){jour = "0"+date_du_jour.getDay()}else{jour = date_du_jour.getDay()}
+
+    let date_format = date_du_jour.getFullYear() + "-" + mois + "-" + jour;
+	//alert(formattedToday)
+    getReprises();
+    getDocs();
+    getOperateurs();
+    getAgents(formattedToday)
+    getVolumes();
+
+    setInterval(function() {
+        getReprises();
+        getOperateurs();
+    }, 30000);
+
+    setInterval(function() {
+        getVolumes();
+        getAgents(formattedToday)
+    }, 5000);
+	
+    setInterval(function() {
+        getDocs();
+    }, 30000);
+
+    function getReprises(){
+        $.ajax({
+            url :'{{ path('app_portail') }}snvlt/p/st/pt_reprises',
+            type : 'POST',
+            success : function (response){
+                let reponse = JSON.parse(response);
+                $('.reprises').text(reponse[0].value)
+            }
+        })
+    }
+    function getOperateurs(){
+        $.ajax({
+            url :'{{ path('app_portail') }}snvlt/p/st/pt_operateurs',
+            type : 'POST',
+            success : function (response){
+                let reponse = JSON.parse(response);
+                $('.exploitants').text(reponse[0].exploitants)
+                $('.usines').text(reponse[0].usines)
+                $('.exportateurs').text(reponse[0].exportateurs)
+                $('.ois').text(reponse[0].ois)
+                $('.drs').text(reponse[0].drs)
+                $('.ddefs').text(reponse[0].ddefs)
+                $('.cefs').text(reponse[0].cefs)
+                $('.pfs').text(reponse[0].pfs)
+            }
+        })
+    }
+
+    function getVolumes(){
+        $.ajax({
+            url :'{{ path('app_portail') }}snvlt/p/st/pt_volume',
+            type : 'POST',
+            success : function (response){
+                let reponse = JSON.parse(response);
+                $('.volume_brh').text(reponse[0].exploitation.toLocaleString())
+                $('.volume_transfo').text("-")
+            }
+        })
+    }
+
+    function getAgents(date_performance){
+        let contenu_agents = "";
+		let nb_agents = 0;
+		let nb_docs = 0;
+		let nb_lignes = 0;
+        //document.querySelector('.agents').innerHTML = '<h6 class="text-danger">Chargement! Patientez...</h6>';
+        $.ajax({
+            url : '{{ path('app_portail') }}snvlt/p/st/pt_users/' + date_performance ,
+            type : 'POST',
+            success : function (response){
+                let liste_agents = JSON.parse(response);
+
+                if (liste_agents.length > 0){
+
+
+                    for(var i=0; i < liste_agents.length; i++){
+						var nbsec = parseInt(liste_agents[i].nb_sec);
+                        if (nbsec <= 1800 ){
+                            contenu_agents = contenu_agents + '<tr class="p-1">';
+                        }
+						if (nbsec > 1800 ){
+                            contenu_agents = contenu_agents + '<tr class="bg-warning p-1">';
+                        }
+						if (nbsec > 7200 ){
+                            contenu_agents = contenu_agents + '<tr class="bg-danger p-1">';
+                        }
+						
+						
+                        contenu_agents = contenu_agents + '<td><span class="fw-bold badge p-1 text-white" style="background: #0c5460;border-radius: 25px;font-size:20px;">' + liste_agents[i].created_by + '</span><span class="fw-bold badge p-1 text-white ms-2" style="background: #fa4100;border-radius: 25px;font-size:20px;">' + liste_agents[i].nb_ligne + ' bille(s)</span><span class="fw-bold badge p-1 text-white ms-2" style="background: #3e7009;border-radius: 25px;font-size:20px;">' + liste_agents[i].nb_brh  + ' BRH(s)</span></td>';
+                        contenu_agents = contenu_agents + '</tr>';
+						nb_agents = nb_agents + 1;
+						nb_docs = nb_docs + liste_agents[i].nb_brh;
+						nb_lignes = nb_lignes + liste_agents[i].nb_ligne;
+                    }
+
+                    document.querySelector('.agents').innerHTML = contenu_agents;
+                    document.querySelector('.t_saisie').innerText ="Saisies DPIF : " + nb_agents + " agents - " + nb_docs + " BRHs - " + nb_lignes + " lignes";
+                } else {
+					document.querySelector('.agents').innerHTML = '<h3 class="text-danger font-weight-bold">La saisie n\'a pas encore débuté</h3>'
+				}
+
+            }
+        })
+    }
+    function getDateFormatted(){
+	const today = new Date();
+	const yyyy = today.getFullYear();
+	let mm = today.getMonth() + 1; // Months start at 0!
+	let dd = today.getDate();
+
+	if (dd < 10) dd = '0' + dd;
+	if (mm < 10) mm = '0' + mm;
+
+	formattedToday = dd + '-' + mm + '-' + yyyy;
+
+	}
+	
+	function getDocs(){
+        data_doc = '';
+        data_nb_delivres = '';
+        data_nb_saisis = '';
+        let contenu = '';
+        $.ajax({
+            url : '{{ path('pt_docs_generated') }}' ,
+            type : 'POST',
+            success : function (response){
+                let liste_docs = JSON.parse(response);
+
+                if (liste_docs.length > 0){
+					contenu = contenu + '<div class="mb-1 p-2 text-left d-inline-flex"><h2 class="p-1 font-weight-bold" style="font-size:24px;width:200px;"></h2><h2 class="p-1 ms-2 font-weight-bold" style="font-size:24px;width:150px;">Générés</h2><h2 class="p-1 ms-2 font-weight-bold" style="font-size:24px;width:150px;">Saisis</h2></div><br>'
+                    for(var i=0; i < liste_docs.length; i++){
+                        contenu = contenu + '<div class="mb-1 p-2 text-left d-inline-flex"><h2 class="p-1 alert-light font-weight-bold" style="border-radius: 4px; border: 1px solid lightgrey;border-bottom: 2px solid darkgreen;font-size:24px;width:200px;">'+  liste_docs[i].doc +'</h2><h2 class="p-1 ms-2 alert-warning font-weight-bold" style="font-size:24px;width:150px;">' + liste_docs[i].generes + '</h2><h2 class="p-1 ms-2 alert-success font-weight-bold" style="font-size:24px;width:150px;">' + liste_docs[i].utilises + '</h2></div><br>'
+                        data_doc = data_doc + '"' +  liste_docs[i].doc +  '",';
+                        data_nb_delivres = data_nb_delivres  +  liste_docs[i].generes +  ',';
+                        data_nb_saisis = data_nb_saisis +  liste_docs[i].utilises +  ',';
+                    }
+                    document.querySelector('#docs').innerHTML = contenu;
+                }
+
+            }
+        })
+
+
+    }
+</script>
+</body>
+</html>

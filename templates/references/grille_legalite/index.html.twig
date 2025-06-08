@@ -1,0 +1,293 @@
+{% extends 'template_base.html.twig' %}
+
+{% block Title %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Legality Grid{% endtrans %}
+{% endblock %}
+
+
+{% block titre_page %}
+    <h2 class="text-dark font-weight-bold mb-2">
+        <img src="{{ asset('assets/images/webapp/grille_legalite.png') }}" alt="attribution">  {% trans %}Legality Grid{% endtrans %}
+    </h2>
+    <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+        <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
+            <a class="btn btn-inverse-danger p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('grille_legalite.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block notifs %}
+     {% include 'base/notifs.html.twig' %}
+ {% endblock %}
+
+ {% block menu %}
+     {% include 'base/menu.html.twig' %}
+ {% endblock %}
+
+{% block page_content %}
+
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap-5.3.2/dist/css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
+
+    <section class="section">
+        <div class="card">
+
+
+            <div class="card-body">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-expl" type="button" role="tab" aria-controls="nav-expl" aria-selected="true">Exploitants</button>
+                        <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-ind" type="button" role="tab" aria-controls="nav-ind" aria-selected="false">Transformateurs de bois</button>
+                        <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-expo" type="button" role="tab" aria-controls="nav-expo" aria-selected="false">Exportateurs</button>
+                    </div>
+                </nav>
+                <div class="tab-content  alert-success" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-expl" role="tabpanel" aria-labelledby="nav-expl-tab" tabindex="0">
+                        <h5 class="font-weight-bold text-danger m-2">Documentation Exploitants</h5>
+                        <table class="table" id="grille_legalite_expl">
+                            <thead>
+                            <tr style="background: #3f6801;color: #fcf8f8">
+                                <th>{% trans %}Document{% endtrans %}</th>
+                                <th>{% trans %}Periodicity{% endtrans %}</th>
+                                <th>{% trans %}Elapsed time{% endtrans %}</th>
+                                <th>{% trans %}Status{% endtrans %}</th>
+                                <th>{% trans %}Operator{% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for grille_legalite in liste_gl_exp %}
+                                <tr class="fw-bold" style="background-color: #e6f8e7">
+                                    <td><a class="link editBtn badge  text-dark" style="font-weight: bold;font-size: 16px;" href="{{ path('grille_legalite.edit', {'id_grille_legalite': grille_legalite.id })}}" id="{{ grille_legalite.id }}">{{ grille_legalite.libelleDocument | slice(0, 100, "...") }}</a></td>
+                                    <td>{{ grille_legalite.periodicite }}</td>
+                                    <td>{{ grille_legalite.duree }}</td>
+                                    <td>
+                                        {% if (grille_legalite.statut is same as 'INACTIF') %}
+                                            <span class="badge p-2 bg-danger text-white">{{ grille_legalite.statut}}</span>
+                                        {% else %}
+                                            <span class="badge p-2 bg-dark text-white">{{ grille_legalite.statut}}</span>
+                                        {% endif %}
+
+                                    </td>
+                                    <td>{{ grille_legalite.codeOperateur.libelleOperateur}}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="nav-ind" role="tabpanel" aria-labelledby="nav-ind-tab" tabindex="0">
+                        <h5 class="font-weight-bold m-2 text-danger">Documentation Industriels</h5>
+                        <table class="table" id="grille_ind">
+                            <thead>
+                            <tr style="background: #013568;color: #fcf8f8">
+                                <th>{% trans %}Document{% endtrans %}</th>
+                                <th>{% trans %}Periodicity{% endtrans %}</th>
+                                <th>{% trans %}Elapsed time{% endtrans %}</th>
+                                <th>{% trans %}Status{% endtrans %}</th>
+                                <th>{% trans %}Operator{% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for grille_legalite in liste_gl_ind %}
+                                <tr class="fw-bold" style="background-color: #e6f8e7">
+                                    <td><a class="link editBtn badge  text-dark" style="font-weight: bold;font-size: 16px;" href="{{ path('grille_legalite.edit', {'id_grille_legalite': grille_legalite.id })}}" id="{{ grille_legalite.id }}">{{ grille_legalite.libelleDocument | slice(0, 100, "...") }}</a></td>
+                                    <td>{{ grille_legalite.periodicite }}</td>
+                                    <td>{{ grille_legalite.duree }}</td>
+                                    <td>
+                                        {% if (grille_legalite.statut is same as 'INACTIF') %}
+                                            <span class="badge p-2 bg-danger text-white">{{ grille_legalite.statut}}</span>
+                                        {% else %}
+                                            <span class="badge p-2 bg-dark text-white">{{ grille_legalite.statut}}</span>
+                                        {% endif %}
+
+                                    </td>
+                                    <td>{{ grille_legalite.codeOperateur.libelleOperateur}}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="nav-expo" role="tabpanel" aria-labelledby="nav-expo-tab" tabindex="0">
+                        <h5 class="font-weight-bold m-2 text-danger">Documentation Exportateurs</h5>
+                        <table class="table" id="grille_legalite_expo">
+                            <thead>
+                            <tr style="background: #ce6b02;color: #fcf8f8">
+                                <th>{% trans %}Document{% endtrans %}</th>
+                                <th>{% trans %}Periodicity{% endtrans %}</th>
+                                <th>{% trans %}Elapsed time{% endtrans %}</th>
+                                <th>{% trans %}Status{% endtrans %}</th>
+                                <th>{% trans %}Operator{% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for grille_legalite in liste_gl_expo %}
+                                <tr class="fw-bold" style="background-color: #e6f8e7">
+                                    <td><a class="link editBtn badge  text-dark" style="font-weight: bold;font-size: 16px;" href="{{ path('grille_legalite.edit', {'id_grille_legalite': grille_legalite.id })}}" id="{{ grille_legalite.id }}">{{ grille_legalite.libelleDocument | slice(0, 100, "...") }}</a></td>
+                                    <td>{{ grille_legalite.periodicite }}</td>
+                                    <td>{{ grille_legalite.duree }}</td>
+                                    <td>
+                                        {% if (grille_legalite.statut is same as 'INACTIF') %}
+                                            <span class="badge p-2 bg-danger text-white">{{ grille_legalite.statut}}</span>
+                                        {% else %}
+                                            <span class="badge p-2 bg-dark text-white">{{ grille_legalite.statut}}</span>
+                                        {% endif %}
+
+                                    </td>
+                                    <td>{{ grille_legalite.codeOperateur.libelleOperateur}}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </section>
+
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+
+
+        let table1 = new DataTable('#grille_legalite_expl', {
+            responsive: true,
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            title: 'Grille Légalité Exploitant',
+                            text: 'Exporter en Excel'
+                        }
+                    ]
+                }
+            },
+            colReorder: true,
+            language: {
+                processing:     "Traitement en cours...",
+                search:         "Rechercher&nbsp;:",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                infoPostFix:    "",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                paginate: {
+                    first:      "Premier",
+                    previous:   "Pr&eacute;c&eacute;dent",
+                    next:       "Suivant",
+                    last:       "Dernier"
+                },
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+
+
+        // Table Industriel
+        let table2 = new DataTable('#grille_ind', {
+            responsive: true,
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            title: 'Grille Légalité Industriel',
+                            text: 'Exporter en Excel'
+                        }
+                    ]
+                }
+            },
+            colReorder: true,
+            language: {
+                processing:     "Traitement en cours...",
+                search:         "Rechercher&nbsp;:",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                infoPostFix:    "",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                paginate: {
+                    first:      "Premier",
+                    previous:   "Pr&eacute;c&eacute;dent",
+                    next:       "Suivant",
+                    last:       "Dernier"
+                },
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+
+
+
+        //Table Exportateur
+        let table3 = new DataTable('#grille_legalite_expo', {
+            responsive: true,
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            title: 'Grille Légalité Exportateur',
+                            text: 'Exporter en Excel'
+                        }
+                    ]
+                }
+            },
+            colReorder: true,
+            language: {
+                processing:     "Traitement en cours...",
+                search:         "Rechercher&nbsp;:",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                infoPostFix:    "",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                paginate: {
+                    first:      "Premier",
+                    previous:   "Pr&eacute;c&eacute;dent",
+                    next:       "Suivant",
+                    last:       "Dernier"
+                },
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+    </script>
+
+
+{% endblock %}
+

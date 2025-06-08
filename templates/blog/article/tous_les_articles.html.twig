@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+{% block titre %}La boutique {% endblock %}
+
+{% block body %}
+    <div class="breadcrumb-section breadcrumb-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text">
+                        <h1 style="font-family: Cursif">L'actualité</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end breadcrumb section -->
+
+    <!-- products -->
+    <div class="product-section mt-150 mb-150">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="product-filters">
+                    <ul>
+                        <li class="active" style="font-size: 16px;" data-filter="*">Tous</li>
+                        {% for element in  categories_articles %}
+                            <li style="font-size: 16px;" data-filter=".{{element.name}}">{{element.name}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row product-lists">
+
+            {% for element in  liste_articles %}
+                <div class="col-lg-4 col-md-6 text-center {{element.title}} ">
+                    <div class="single-product-item">
+                        <div class="product-image">
+                            <a href="{{ path('article_blog_show',{'slug': element.slug} )}}"><img src="{{ asset('uploads/media/') }}{{element.featuredImage}}" alt="{{element.slug}} "></a>
+                        </div>
+                        <div class="news-text-box">
+                            <h3><a href="{{ path('article_blog_show',{'slug': element.slug} ) }}">{{ element.title }}</a></h3>
+                            <p class="blog-meta">
+                                <span class="author"><i class="fas fa-user"></i>agridevaf</span>
+                                <span class="date"><i class="fas fa-calendar"></i>{{ element.createdAt|date('d m Y') }}</span>
+                            </p>
+                            <p class="excerpt">{{ element.featuredText ?: element.content | striptags|slice(0, 130) - '...' }}</p>
+                            <a href="{{ path('article_blog_show',{'slug': element.slug} ) }}" class="read-more-btn">Lire l'article <i class="fas fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="pagination-wrap">
+                    <ul>
+                        <li><a href="#">Prev</a></li>
+                        <li><a href="#">1</a></li>
+                        <li><a class="active" href="#">2</a></li>
+                        <li><a href="#">3</a></li>
+                        <li><a href="#">Next</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>#}
+    </div>
+    <!-- end products -->
+{% endblock %}

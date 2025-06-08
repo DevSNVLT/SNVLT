@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% trans %}SNVLT{% endtrans%} - {% trans %} Register Please{% endtrans %}</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/assets/vendors/css/vendor.bundle.base.css') }}/">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{{ asset('assets/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{{ asset('assets/icons/drapeauci.ico') }}" />
+</head>
+<body>
+<div class="container-scroller bg-success">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="content-wrapper d-flex align-items-center auth" style="background-image: path('{{ asset('assets/images/fond_login - Copie.jpg') }}'); background-size: cover; background-repeat: no-repeat;">
+            <div class="row flex-grow">
+                <div class="col-lg-4 mx-auto">
+                    <div class="text-left p-5" style="background-color: rgba(190,254,116,0.3)">
+                        <div class="brand-logo row">
+                            <img class="text-center ms-3" style="height: 96px; width: 96px;" src="{{ asset('assets/images/logo_snvlt.png') }}"   alt="snvlt">
+                            <h3 class="text-danger col-8 justify-content-md-start my-auto" style="text-shadow:#a8e980 10px 10px 10px;">{% trans %}National System for Verification of wood Tracking and Legacy {% endtrans %}</h3>
+                        </div>
+                        <h4 class="text-dark fw-bold" >{% trans %}Register Please.{% endtrans %}</h4>
+                        {{ form_start(registrationForm) }}
+                            {{ form_row(registrationForm.nom_utilisateur) }}
+                            {{ form_row(registrationForm.prenoms_utilisateur) }}
+                            {{ form_row(registrationForm.mobile) }}
+                            {{ form_row(registrationForm.email) }}
+                            {{ form_row(registrationForm.plainPassword) }}
+                            {{ form_row(registrationForm.code_operateur) }}
+                        <div class="codeexploitant"> {{ form_row(registrationForm.codeexploitant) }}</div>
+
+                        <div class="row">
+                            <div class="code_direction col-md-6">{{ form_row(registrationForm.code_direction) }}</div>
+                            <div class="code_service col-md-6">{{ form_row(registrationForm.code_service) }}</div>
+                        </div>
+
+                        <div class="codeindustriel">{{ form_row(registrationForm.codeindustriel) }}</div>
+                        <div class="codeexportateur">{{ form_row(registrationForm.code_exportateur) }}</div>
+
+                        <div class="codedr">{{ form_row(registrationForm.code_dr) }}</div>
+                        <div class="codecantonnement">{{ form_row(registrationForm.code_cantonnement) }}</div>
+                        <div class="d_def"> {{ form_row(registrationForm.code_ddef) }}</div>
+
+                        <div class="p_f">{{ form_row(registrationForm.code_poste_controle) }}</div>
+
+                        {{ form_rest(registrationForm) }}
+
+                        <div class="p-t-20  mb-2">
+                            <input type="submit" class="btn btn-radius btn-primary w-100" value="Soumettre">
+                        </div>
+                        {{ form_end(registrationForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- content-wrapper ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+</div>
+<!-- container-scroller -->
+<!-- plugins:js -->
+<script src="{{ asset('assets/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{{ asset('assets/assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/assets/js/misc.js') }}"></script>
+
+<script
+        src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
+<!-- endinject -->
+{#
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>#}
+<script>
+    const codeexploitant = document.querySelector(".codeexploitant");
+    const codeservice = document.querySelector(".code_service");
+    const codeindustriel = document.querySelector(".codeindustriel");
+    const codedirection = document.querySelector(".code_direction");
+    const codedr = document.querySelector(".codedr");
+    const codecantonnement = document.querySelector(".codecantonnement");
+    const codeddf = document.querySelector(".d_def");
+    const codepc = document.querySelector(".p_f");
+    const codeoperateur = document.querySelector(".codeexploitant");
+    const codeexportateur = document.querySelector(".codeexportateur");
+
+    window.onload = () =>{
+        codeexploitant.style = 'display:none';
+        codeservice.style = 'display:none';
+        codedirection.style = 'display:none';
+        codeindustriel.style = 'display:none';
+        codedr.style = 'display:none';
+        codecantonnement.style = 'display:none';
+        codeddf.style = 'display:none';
+        codepc.style = 'display:none';
+        codeexportateur.style = 'display:none';
+    }
+
+    $(document).ready(function() {
+        /*$('.code_groupe').select2({
+            placeholder: "-- Groupe --",
+            allowClear: true,
+            width: '100%'
+        });
+        $('.role_user').select2({
+            placeholder: "--Vous êtes --",
+            allowClear: true
+        });
+        $('.code_exploitant').select2({
+            placeholder: "-- Exploitants Forestiers --",
+            width: '100%',
+            allowClear: true
+        });
+
+        $('.code_industriel').select2({
+            placeholder: "-- Transformateurs du bois --",
+            allowClear: true
+        });
+
+        $('.exportateur').select2({
+            placeholder: "-- Exportateurs du bois --",
+            width: '100%',
+            allowClear: true
+        });
+
+
+        $('.code_dr').select2({
+            placeholder: "-- Directions Régionale -",
+            allowClear: true
+        });
+
+        $('.code_cantonnement').select2({
+            placeholder: "-- Cantonnements Forestiers --",
+            allowClear: true
+        });
+
+        $('.ddef').select2({
+            placeholder: '-- Direction départementale --',
+            allowClear: true
+        });
+
+        $('.pf').select2({
+            placeholder: '-- Poste Forestier --',
+            allowClear: true,
+        });*/
+
+    });
+    $(".role_user").change(function () {
+        var me = this.value;
+
+        codeexploitant.style = 'display:none';
+        codeservice.style = 'display:none';
+        codedirection.style = 'display:none';
+        codeindustriel.style = 'display:none';
+        codedr.style = 'display:none';
+        codecantonnement.style = 'display:none';
+        codeddf.style = 'display:none';
+        codepc.style = 'display:none';
+
+        $('.code_exploitant').val(null).trigger('change');
+        $('.code_industriel').val(null).trigger('change');
+        $('.code_dr').val(null).trigger('change');
+        $('.code_cantonnement').val(null).trigger('change');
+        $('.ddef').val(null).trigger('change');
+        $('.pf').val(null).trigger('change');
+
+        switch(me) {
+            case "2":
+                codeexploitant.style = 'display:inline';
+                $('.code_exploitant').select2('open');
+
+
+                break;
+            case "3":
+                codeindustriel.style = 'display:inline';
+
+                $('.code_industriel').select2('open');;
+                break;
+
+            case "5":
+                codedr.style = 'display:inline';
+
+                $('.code_dr').select2('open');;
+                break;
+
+            case "7":
+                codecantonnement.style = 'display:inline';
+
+                $('.code_cantonnement').select2('open');;
+                break;
+
+            case "6":
+                codeddf.style = 'display:inline';
+
+                $('.ddef').select2('open');;
+                break;
+
+            case "10":
+                codepc.style = 'display:inline';
+
+                $('.pf').select2('open');;
+                break;
+
+
+            default:
+            // code block
+        }
+    });
+</script>
+</body>
+</html>
