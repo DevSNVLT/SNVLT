@@ -1,4 +1,4 @@
-**# SNVLT**
+SNVLT
 SNVLT est une plateforme collaborative en relation avec l'activité forestière en Côte d'Ivoire. IL inclut différents type d'acteurs à savoir :
 - les exploitants forestiers
 - les transformateurs de bois
