@@ -445,7 +445,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
     <script>
         // Index de la page courante
         let index_page = 0;
@@ -554,20 +554,24 @@
                 $('#immatriculation').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: 'Chargement BCBGFH',
-                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Saisissez SVP les champs étoilés avant de continuer", 2)
             }else {
-                maj_page_brh();
+                let date_jour = new Date();
+                let date_chargement = new Date($('#date_chargement').val())
+                if (calculNbJours(date_chargement, date_jour) < 0){
+                    render_toast_value("Désolé! La date de chargement doit être supérieure ou égale à la date actuelle", 2)
+                } else {
+                    maj_page_brh();
+                }
+
             }
 
         })
+        function calculNbJours(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
 
         function affiche_pages(id_brh){
 

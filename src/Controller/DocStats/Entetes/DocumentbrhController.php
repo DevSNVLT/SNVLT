@@ -763,7 +763,12 @@ class DocumentbrhController extends AbstractController
                        $registry->getManager()->flush();
 
                        // Mise à jour dans SNVLT1
-                       $this->snvlt1->EditPageDocbrh($page);
+                       try {
+                           $this->snvlt1->EditPageDocbrh($page);
+                       }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur de Mise à Jour Pagebrh depuis SNVLT TAMPON");
+                       }
+
 
                        return  new JsonResponse(json_encode(true));
                    } else {
@@ -824,7 +829,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Mise à jour dans SNVLT1
-                        $this->snvlt1->EditPageDocbrh($page);
+                        try {
+                            $this->snvlt1->EditPageDocbrh($page);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour Pagebrh depuis SNVLT TAMPON");
+                        }
 
                         return  new JsonResponse(json_encode(true));
                     } else {
@@ -900,7 +909,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Enregistrement des données dans SNVLT1
-                        $this->snvlt1->EditPageDocbrh($page);
+                        try {
+                            $this->snvlt1->EditPageDocbrh($page);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour Pagebrh depuis SNVLT TAMPON");
+                        }
 
                         return  new JsonResponse(json_encode(true));
                     } else {
@@ -1238,8 +1251,12 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Mise à jour des données dans SNVLT1
-                        $this->snvlt1->AddLignePageDocbrh($lignebrh);
 
+                        try {
+                            $this->snvlt1->AddLignePageDocbrh($lignebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour LignePagebrh depuis SNVLT TAMPON");
+                        }
                         $response = array();
                         $response[] = array(
                             'code_brh'=>Lignepagebrh::LIGNE_BCBGFH_ADDED_SUCCESSFULLY,
@@ -1350,8 +1367,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Mise à jour des données dans SNVLT1
-                        $this->snvlt1->AddLignePageDocbrh($lignebrh);
-
+                        try {
+                            $this->snvlt1->AddLignePageDocbrh($lignebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour LignePagebrh depuis SNVLT TAMPON");
+                        }
                         $response = array();
                         $response[] = array(
                             'code_brh'=>Lignepagebrh::LIGNE_BCBGFH_ADDED_SUCCESSFULLY,
@@ -1497,8 +1517,12 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Enregistrement dans SNVLT1
-                        $this->snvlt1->EditPageDocbrh($pagebrh);
 
+                        try {
+                            $this->snvlt1->EditPageDocbrh($pagebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour Pagebrh depuis SNVLT TAMPON");
+                        }
                         return  new JsonResponse([
                             'code'=>Pagebrh::PAGE_BRH_EDITED_SUCCESSFULLY,
                             'html'=>''
@@ -1597,7 +1621,11 @@ class DocumentbrhController extends AbstractController
                     $registry->getManager()->flush();
 
                     // Mise à jour dans SNVLT1
-                    $this->snvlt1->EditPageDocbrh($pagebrh);
+                    try {
+                        $this->snvlt1->EditPageDocbrh($pagebrh);
+                    }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur de Mise à Jour Pagebrh depuis SNVLT TAMPON");
+                    }
 
                     //Save Log
 
@@ -2336,7 +2364,12 @@ class DocumentbrhController extends AbstractController
                             $registry->getManager()->flush();
 
                             // Mise à jour dans SNVLT1
+
+                        try {
                             $this->snvlt1->EditLignePageDocbrh($bille);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de Mise à Jour LignePagebrh depuis SNVLT TAMPON");
+                        }
 
                         $this->administrationService->save_action(
                                 $user,
@@ -2390,8 +2423,12 @@ class DocumentbrhController extends AbstractController
                     $registry->getManager()->flush();
 
                     // Mise à jour dans SNVLT1
-                    $this->snvlt1->DeleteLignePageDocbrh($bille);
 
+                    try {
+                        $this->snvlt1->DeleteLignePageDocbrh($bille);
+                    }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur de Suppression LignePagebrh depuis SNVLT TAMPON");
+                    }
 
                     $this->administrationService->save_action(
                         $this->getUser(),
@@ -2443,7 +2480,12 @@ class DocumentbrhController extends AbstractController
                     $registry->getManager()->flush();
 
                     // Mise à jour dans SNVLT1
-                    $this->snvlt1->EditPageDocbrh($feuillet);
+                    try {
+                        $this->snvlt1->EditPageDocbrh($feuillet);
+                    }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur de Mise à jour Pagebrh depuis SNVLT TAMPON");
+                    }
+
 
                     $this->administrationService->save_action(
                         $this->getUser(),
@@ -2505,7 +2547,12 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Mise à jour dans SNVLT1
+                    try {
                         $this->snvlt1->AddSinglePageDocbrh($feuillet);
+                    }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur d'ajout de Pagebrh depuis SNVLT TAMPON");
+                    }
+
 
                     $this->administrationService->save_action(
                         $this->getUser(),
@@ -2577,7 +2624,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->remove($lignepagebrh);
 
                         // Mise à jour dans SNVLT1
-                        $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        try {
+                            $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de suppression de lignePagebrh depuis SNVLT TAMPON");
+                        }
                     }
 
                     $registry->getManager()->flush();
@@ -2631,7 +2682,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->remove($lignepagebrh);
 
                         // Mise à jour dans SNVLT1
-                        $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        try {
+                            $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de suppression de lignePagebrh depuis SNVLT TAMPON");
+                        }
                     }
 
                     $registry->getManager()->remove($feuillet);
@@ -2639,7 +2694,11 @@ class DocumentbrhController extends AbstractController
                     $registry->getManager()->flush();
 
                     // Mise à jour dans SNVLT1
-                    $this->snvlt1->DeletePageDocbrh($feuillet);
+                    try {
+                        $this->snvlt1->DeletePageDocbrh($feuillet);
+                    }catch (\Throwable $exception){
+                        $this->addFlash("Error","Erreur de suppression de Pagebrh depuis SNVLT TAMPON");
+                    }
 
                     $this->administrationService->save_action(
                         $this->getUser(),
@@ -2706,7 +2765,11 @@ class DocumentbrhController extends AbstractController
                         $registry->getManager()->flush();
 
                         // Enregistrement dans SNVLT1
-                           $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        try {
+                            $this->snvlt1->DeleteLignePageDocbrh($lignepagebrh);
+                        }catch (\Throwable $exception){
+                            $this->addFlash("Error","Erreur de suppression de lignePagebrh depuis SNVLT TAMPON");
+                        }
 
                         $this->administrationService->save_action(
                             $this->getUser(),

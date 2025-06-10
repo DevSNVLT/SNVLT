@@ -19,11 +19,10 @@
  {% endblock %}
 
 {% block page_content %}
-
-    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
 
 
@@ -67,7 +66,7 @@
                         {% if (arbre.lac) %}
                             <tr class="p-1" style="font-size: 18px;">
                             {% if not (arbre.valide) %}
-                                <tr class="p-1 alert-warning" style="font-size: 18px;">
+                                <tr class="p-1 bg-warning" style="font-size: 18px;">
                             {% endif %}
                             {% if not (arbre.codeEssence.autorisation) %}
                                 <tr class="p-1 bg-danger text-white" style="font-size: 18px;">
@@ -96,13 +95,13 @@
                                     {% if (arbre.valide) %}
                                         <td class="text-center"><a class="refus_arbre" href="#" id="{{ arbre.id }}" title="Cliquez pour refuser" data-bs-target="#refuser_arbre" data-bs-toggle="modal"><span class="bg-primary text-white p-1 rounded-5 m-1" style="font-size: 18px;">OK</span> <img src="{{ asset('assets/icons/16x16/trash.png') }}" height="32" alt="refuser"></a></td>
                                     {% else %}
-                                        <td class="text-center"><a class="accept_arbre" href="#" title="cliquer pour accepter l'arbre dans l'inventaire" id="{{ arbre.id }}" data-bs-target="#accepter_arbre" data-bs-toggle="modal" ><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUSE</span><img src="{{ asset('assets/images/valider.png') }}" alt="valider"></a></td>
+                                        <td class="text-center"><a class="accept_arbre" href="#" title="cliquer pour accepter l'arbre dans l'inventaire" id="{{ arbre.id }}" data-bs-target="#accepter_arbre" data-bs-toggle="modal" ><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUS</span><img src="{{ asset('assets/images/valider.png') }}" alt="valider"></a></td>
                                     {% endif %}
                                 {% else %}
                                     {% if (arbre.valide) %}
                                         <td class="text-center"><span class="bg-primary text-white p-1 rounded-5 m-1" style="font-size: 18px;">VALIDE</span></td>
                                     {% else %}
-                                        <td class="text-center"><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUSE</span></td>
+                                        <td class="text-center"><span class="bg-danger text-white p-1 m-1 " style="font-size: 18px;border-radius: 10px 0 10px 0;">REFUS</span></td>
                                     {% endif %}
                                 {% endif %}
                             {% endif %}
@@ -223,29 +222,25 @@
     </section>
 
 
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
-
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="{{ asset('assets/webapp/assets/vendors/simple-datatables/simple-datatables.js') }}"></script>
     <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
 
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
     <script>
         // Simple Datatable
-        let table1 = document.querySelector('#table_lac_details');
-        let dataTable = new simpleDatatables.DataTable(table1);
-
+        // let table1 = document.querySelector('#table_lac_details');
+        // let dataTable = new simpleDatatables.DataTable(table1);
+        //render_toast_value("OK merci", 3)
 
         let id_arbre = 0;
         let id_fiche = 0;
@@ -254,6 +249,7 @@
 
 
             $('body').on('click','.refuse', function (){
+                alert("OK")
                 let motif = $('#motif').val();
 
                 if (motif){
@@ -264,15 +260,15 @@
                             let reponse = JSON.parse(response);
 
                             if (reponse[0].CODE === "SUCCESS"){
-                                alert("STATUS MIS A AJOUR")
+                                render_toast_value("Statut mis à jour", 3)
                                 document.location.reload()
                             } else {
-                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                                render_toast_value("Problème constaté lors de la mise à jour du statut", 0)
                             }
                         }
                     })
                 } else {
-                    alert('DESOLE! VOUS DEVEZ RENSEIGNER UN MOTIF')
+                    render_toast_value("Attention! Le motif est obligatoire", 2)
                     $('#motif').focus()
                 }
             })
@@ -286,10 +282,10 @@
                             let reponse = JSON.parse(response);
 
                             if (reponse[0].CODE === "SUCCESS"){
-                                alert("STATUS MIS A AJOUR")
+                                render_toast_value("Statut mis à jour", 3)
                                 document.location.reload()
                             } else {
-                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                                render_toast_value("Problème constaté lors de la mise à jour du statut", 0)
                             }
                         }
                     })
@@ -304,10 +300,10 @@
                             let reponse = JSON.parse(response);
 
                             if (reponse[0].CODE === "SUCCESS"){
-                                alert("FICHE INVENTAIRE VALIDEE")
+                                render_toast_value("Fiche Inventaire validée", 1)
                                 document.location.reload()
                             } else {
-                                alert("PROBLEME CONSTATE LORS DE LA MISE A JOUR DU STATUT")
+                                render_toast_value("Problème constaté lors de la mise à jour du statut", 0)
                             }
                         }
                     })
@@ -327,6 +323,6 @@
          $('.btn_valider_fiche').on('click', function (){
            id_fiche = this.id
         })
-
+        dataTableSnvlt("#table_lac_details", "Arbres à valider - fiche N° {{ fiche.id }}", 20)
     </script>
 {% endblock %}

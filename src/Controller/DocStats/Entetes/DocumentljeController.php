@@ -8,6 +8,7 @@ use App\Entity\DocStats\Entetes\Documentbrh;
 use App\Entity\DocStats\Entetes\Documentlje;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
+use App\Entity\DocStats\Pages\Pagebtgu;
 use App\Entity\DocStats\Pages\Pagelje;
 use App\Entity\DocStats\Saisie\Lignepagelje;
 use App\Entity\References\Cantonnement;
@@ -1029,8 +1030,61 @@ class DocumentljeController extends AbstractController
             }
     
         }
-    
 
+    #[Route('snvlt/doc/stats/lje/cmb_chrg_btgu/{id_pagelje}/{numero_feuillet}', name: 'cmb_chargements_a_accepter_btgu')]
+    public function cmb_chargements_a_accepter_btgu(
+        Request $request,
+        UserRepository $userRepository,
+        int $id_pagelje = null,
+        string $numero_feuillet = null,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_DPIF') or $this->isGranted('ROLE_DPIF_SAISIE') or $this->isGranted('ROLE_ADMIN'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                //Recherche de l'usine
+                $usine = $registry->getRepository(Pagelje::class)->find($id_pagelje)->getCodeDoclje()->getCodeUsine();
+                //dd($usine->getId());
+
+                $liste_chargements = array();
+
+                $feuillets = $registry->getRepository(Pagebtgu::class)->findBy([
+                    'confirmation_usine'=>true,
+                    'usine_destinataire'=>$usine,
+                    'fini'=>true,
+                    'entre_lje'=>false,
+                    'numero_pagebtgu'=>$numero_feuillet
+                ],
+                    [
+                        'datechargement'=>'ASC'
+                    ]);
+
+                foreach($feuillets as $feuillet ){
+                    $liste_chargements[] = array(
+                        'reference'=>"[" . $feuillet->getCodeDocbtgu()->getNumeroDocbtgu() . "] - [". $feuillet->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+                        'id_page'=>$feuillet->getId(),
+                        'id_btgu'=>$feuillet->getCodeDocbtgu()->getId(),
+                    );
+                }
+
+
+
+
+                sort($liste_chargements, SORT_NUMERIC );
+                return new JsonResponse(json_encode($liste_chargements));
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+
+    }
     #[Route('snvlt/doc/stats/lje/liste_doc_source_acc/{id_pagelje}', name: 'liste_doc_source_a_accepter')]
     public function liste_doc_source_a_accepter(
         Request $request,
@@ -1582,6 +1636,55 @@ class DocumentljeController extends AbstractController
                         rsort($mes_connaissements_bcbp);
 
                 return new JsonResponse(json_encode($mes_connaissements_bcbp));
+            }else{
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+    #[Route('/snvlt/connaissement/btgu', name: 'lje_connaissement_btgu')]
+    public function lje_connaissement_btgu(
+        Request $request,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notification,
+        DocumentcpRepository $docs_cp,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_DPIF') or $this->isGranted('ROLE_DPIF_SAISIE') or $this->isGranted('ROLE_ADMIN'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $mes_connaissements_btgu = array();
+
+                $connaisseements = $registry->getRepository(Pagebtgu::class)->findBy([
+                    'fini'=>true,
+                    'confirmation_usine'=>true,
+                    'usine_destinataire'=>$user->getCodeindustriel(),
+                    'entre_lje'=>false
+                ]);
+
+                foreach ($connaisseements as $connaisseement){
+                    if ($connaisseement->getUpdatedAt()){$date_cn = $connaisseement->getUpdatedAt()->format('d/m/Y');} else {$date_cn = "-";}
+                    $mes_connaissements_btgu[] = array(
+                        'date_connaissement'=>$connaisseement->getUpdatedAt()->format('d/m/Y'),
+                        'numero'=>$connaisseement->getNumeroPagebtgu(),
+                        'id_page'=>$connaisseement->getId(),
+                        'btgu'=>$connaisseement->getCodeDocbtgu()->getNumeroDocbtgu()
+                    );
+                }
+                rsort($mes_connaissements_btgu);
+
+                return new JsonResponse(json_encode($mes_connaissements_btgu));
             }else{
                 return $this->redirectToRoute('app_no_permission_user_active');
             }

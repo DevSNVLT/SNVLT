@@ -14,6 +14,7 @@ use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Saisie\Lignepagebcbp;
 use App\Entity\DocStats\Saisie\Lignepagebrh;
+use App\Entity\DocStats\Saisie\Lignepagebtgu;
 use App\Entity\DocStats\Saisie\Lignepagecp;
 use App\Entity\References\Cantonnement;
 use App\Entity\References\Essence;
@@ -30,6 +31,7 @@ use App\Repository\DocStats\Entetes\DocumentbcbpRepository;
 use App\Repository\DocStats\Entetes\DocumentbrhRepository;
 use App\Repository\DocStats\Pages\PagebcbpRepository;
 use App\Repository\DocStats\Pages\PagebrhRepository;
+use App\Repository\DocStats\Pages\PagebtguRepository;
 use App\Repository\GroupeRepository;
 use App\Repository\MenuPermissionRepository;
 use App\Repository\MenuRepository;
@@ -1371,6 +1373,69 @@ class DocumentbcbpController extends AbstractController
 
 
                     return  new JsonResponse(json_encode($my_bcbp_page));
+                }
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+    #[Route('/snvlt/docbtgu/op/lignes_btgu/data/{id_page}', name: 'affichage_ligne_btgu_data_btgu_json')]
+    public function affiche_lignes_btgu_courante(
+        Request $request,
+        int $id_page,
+        UserRepository $userRepository,
+        PagebtguRepository $pages_btgu,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_EXPLOITANT') or $this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_DPIF_SAISIE') or $this->isGranted('ROLE_ADMINISTRATIF'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $page_btgu = $pages_btgu->find($id_page);
+                if($page_btgu){
+                    $lignes_btgu = $registry->getRepository(Lignepagebtgu::class)->findBy(['code_pagebtgu'=>$page_btgu]);
+                    $my_btgu_page = array();
+
+
+                    foreach ($lignes_btgu as $lignebtgu){
+                        $zh = "-";
+                        $essence = "-";
+
+                        if($lignebtgu->getZh())
+                        {
+                            $zh = $lignebtgu->getZh()->getZone();
+                        }
+
+                        if($lignebtgu->getEssence())
+                        {
+                            $essence = $lignebtgu->getEssence()->getNomVernaculaire();
+                        }
+
+                        $my_btgu_page[] = array(
+                            'id_ligne'=>$lignebtgu->getId(),
+                            'numero_ligne'=>$lignebtgu->getNumeroArbre(),
+                            'lettre'=>$lignebtgu->getLettreBille(),
+                            'essence'=>$essence,
+                            'x'=>$lignebtgu->getX(),
+                            'y'=>$lignebtgu->getY(),
+                            'zh'=>$zh,
+                            'lng'=>$lignebtgu->getLng(),
+                            'dm'=>$lignebtgu->getDm(),
+                            'volume'=>$lignebtgu->getVolume(),
+                            'fini'=>$page_btgu->isFini(),
+                            'utilisateur'=>$lignebtgu->getCreatedBy(),
+                        );
+                    }
+
+
+                    return  new JsonResponse(json_encode($my_btgu_page));
                 }
             } else {
                 return $this->redirectToRoute('app_no_permission_user_active');

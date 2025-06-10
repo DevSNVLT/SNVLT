@@ -564,6 +564,12 @@
             <form class="modal-content">
                 <div class="modal-header alert-success">
                     <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/billons.png.png') }}" alt="bille" style="margin-right: 10px; height: 32px;"> Retrait Arbre</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
                 </div>
                 <div class="modal-body">
                     <div class="justify-content-start d-inline-flex">
@@ -581,8 +587,8 @@
                         <a type="button" class="btn btn-success revenir font-weight-light  accept_loading" data-bs-dismiss="modal" style="font-size: 16px;">
                             <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i>Annuler
                         </a>
-                        <a type="button" class="btn btn-danger text-white font-weight-light delete_arbre"  style="font-size: 16px;margin-left: 15px;">
-                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i> Supprimer
+                        <a type="button" class="btn btn-danger text-white font-weight-light delete_arbre" id="retirer_fut" style="font-size: 16px;margin-left: 15px;">
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i> Retirer
                         </a>
                     </div>
                 </div>
@@ -893,6 +899,34 @@
             })
         }
 
+        function retirer_fut(){
+
+            $.ajax({
+                url: '{{ path('app_portail') }}snvlt/doccp/retirer/pages_cp/' + id_arbre ,
+                type: 'POST',
+                success: function(response) {
+
+                    let reponse = JSON.parse(response);
+
+                    if (reponse[0].code === "ERROR"){
+                        render_toast_value('Vous ne pouvez pas supprimer ce fût', 0)
+                    } else if (reponse[0].code === "SUCCESS"){
+
+                        render_toast_value('Fût supprimé', 1)
+                    }else {
+                        render_toast_value('Fût supprimé', 1)
+                        render_toast_value('Fût supprimé!!\n\n Mise à  jour non effectuée dans la base tampon!', 2)
+                    }
+                    $('#modal_supprimer .btn-close').click();
+                    affiche_lignes_courante(index_page)
+                },
+                error: function(error) {
+                    console.log(error);
+                    $('#modal_supprimer .btn-close').click();
+                }
+            })
+        }
+
         function affiche_pages(id_cp){
 
             $.ajax({
@@ -1018,7 +1052,7 @@
                                                             '<td><span>' + lignes[i].cubage_billec  + '</span></td>';
                                                     }
                                                         if(lignes[i].charge !== true ){
-                                                            contenu = contenu + '<td><a class="btn btn-sm btn-primary text-center deplacer m-1" data-bs-toggle="modal" data-bs-target="#modal_deplacer" id="' + lignes[i].id_ligne + '">DEPLACER</a><a class="btn btn-sm btn-danger text-center supp_ligne  m-1"  data-bs-toggle="modal" data-bs-target="#modal_supprimer"  id="' + lignes[i].id_ligne + '">SUPPRIMER</a></td>'
+                                                            contenu = contenu + '<td><a class="btn btn-sm btn-primary text-center deplacer m-1" data-bs-toggle="modal" data-bs-target="#modal_deplacer" id="' + lignes[i].id_ligne + '">DEPLACER</a><a class="btn btn-sm btn-danger text-center supp_ligne  m-1"  data-bs-toggle="modal" data-bs-target="#modal_supprimer"  id="' + lignes[i].id_ligne + '">RETIRER</a></td>'
                                                         }
 
                                                     contenu = contenu + '</tr>';
@@ -1041,8 +1075,14 @@
             id_arbre = this.id;
             liste_feuillets()
         });
+        $('body').on('click', '.supp_ligne', function(){
+            id_arbre = this.id;
+        });
         $('#deplacer_fut').on('click', function(){
             deplacer_fut()
+        });
+        $('#retirer_fut').on('click', function(){
+            retirer_fut()
         });
 
         function liste_essence(){

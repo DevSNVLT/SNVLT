@@ -29,12 +29,11 @@
 
 {% block page_content %}
 
-    {#<link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">#}
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.dataTables.css">
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css" />
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="{{ asset('assets/assets_other/vendor/fonts/boxicons.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/assets/css/modal.css') }}" />
-
 
     <!-- Latest compiled and minified CSS -->
 
@@ -87,36 +86,21 @@
     </section>
 
 
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
 
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.dataTables.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src=" https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
-
-
+    <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
 
     <script>
-        {% set url_lng = "" %}
-
-        {% if (app.locale == "fr") %}
-        {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/fr-FR.json' %}
-        {% else %}
-        {% set url_lng = '//cdn.datatables.net/plug-ins/2.0.3/i18n/en-EN.json' %}
-        {% endif %}
-
-        new DataTable('#table_inventaire', {
-            language: {
-                url: '{{ url_lng }}',
-            }
-        });
+        dataTableSnvlt("#table_inventaire", "Fiches LAAC", 20)
     </script>
 {% endblock %}

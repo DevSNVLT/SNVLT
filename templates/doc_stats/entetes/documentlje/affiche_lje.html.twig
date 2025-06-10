@@ -13,7 +13,7 @@
     </h2>
     <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
         <div class="btn-group p-1 rounded-5 justify-content-end" role="group" aria-label="Basic example">
-            <button class="btn text-dark p-2 " style="border: 0px; font-size: 14px;background: linear-gradient(#4bf4c3, #d1f8bf)" id="charger_donnees" data-bs-toggle="modal" data-bs-target="#load_source"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}Load data from BRH, BCBP, BTGU, ...{% endtrans %}</button>
+            <button class="btn text-dark p-2 " style="border: 0px; font-size: 14px;background: linear-gradient(#4bf4c3, #d1f8bf)" id="charger_donnees" data-bs-toggle="modal" data-bs-target="#load_source"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>Déchargements...</button>
         </div>
     </div>
 {% endblock %}
@@ -113,7 +113,7 @@
                 <div class="modal-body">
 
                     <div>
-                        <h4 class="text-danger">{{ 'Select the source please and search loading number' | trans}}</h4>
+                        <h4 class="text-danger">Sélectionnez la source et cliquez sur le connaissement</h4>
                         <div class="">
                             <select name="source" id="source"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
                                 {% for doc in docs %}
@@ -247,6 +247,8 @@
                     recherche_connaissement_brh()
                 } else if (value === "3"){
                     recherche_connaissement_bcbp()
+                }else if (value === "6"){
+                    recherche_connaissement_btgu()
                 }
 
                 if (numero_chargement){
@@ -262,6 +264,8 @@
                     combo_chargements_brh(numero_chargement)
                 } else if(source === "3"){
                     combo_chargements_bcbp(numero_chargement)
+                }  else if(source === "6"){
+                    combo_chargements_btgu(numero_chargement)
                 } else {
                     render_toast_value("SVP, Veuillez sélectionner une source", 0)
                 }
@@ -777,6 +781,58 @@
                 }
             })
         }
+        function rechercher_chargement_btgu(id_page){
+            let contenu = "";
+            document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-bold"></h3>'
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/docbtgu/op/lignes_btgu/data/' +id_page,
+                type: 'POST',
+                data: {'id_btgu': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    donnees_btgu = lignes;
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-lighter bg-transparent">{{ 'No Data Available' | trans }}</h3>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr style="background-color: #ebe9e9"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu_brh').innerHTML = contenu;
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+                        document.querySelector('#btn_save_lje').classList.add('w-100');
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
         function liste_chargements_brh(){
             let contenu = "";
             $.ajax({
@@ -843,6 +899,34 @@
                             bcbp_page_id = liste[0].id_page;
 
                             rechercher_chargement_bcbp(bcbp_page_id);
+                        } else {
+                            render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
+                        }
+                    }
+                })
+            } else {
+                render_toast_value('Merci de renseigner le N° du feuillet en premier.', 2)
+            }
+
+        }
+        
+        function combo_chargements_btgu(numero_chargement){
+            let contenu = "";
+
+            if(numero_chargement){
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/doc/stats/lje/cmb_chrg_btgu/' + index_page + '/' + numero_chargement,
+                    type : 'POST',
+                    success : function (response){
+                        let liste = JSON.parse(response);
+                        if(liste.length > 0){
+                            for (var i = 0; i < liste.length; i++){
+                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                            }
+                            document.querySelector('#chargements').innerHTML = contenu
+                            btgu_page_id = liste[0].id_page;
+
+                            rechercher_chargement_btgu(btgu_page_id);
                         } else {
                             render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
                         }
@@ -924,6 +1008,29 @@
             document.querySelector('#body_connaissement').innerHTML = contenu;
             $.ajax({
                 url : '{{ path('lje_connaissement_bcbp') }}',
+                type : 'POST',
+                success : function(response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        for(var i=0 ; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_connaissement').innerHTML = contenu;
+                    }
+                }
+            })
+        }
+        function recherche_connaissement_btgu(){
+            let contenu = '';
+            reinitialise_table();
+            $('#numero_page').val('');
+            document.querySelector('#body_connaissement').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('lje_connaissement_btgu') }}',
                 type : 'POST',
                 success : function(response){
                     let reponse = JSON.parse(response);

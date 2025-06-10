@@ -103,7 +103,7 @@
         {% if(app.user.codeindustriel) %}
             load_body_chargements({{ app.user.codeindustriel.id }});
         {% endif %}
-    }, 20000);
+    }, 10000);
 
     function load_chargements(id_usine){
         let contenu = '';
@@ -127,8 +127,8 @@
                     contenu = contenu + '<th class="text-center">Essences</th>'
                     contenu = contenu + '<th class="text-center">NB Billes</th>'
                     contenu = contenu + '<th class="text-center">Volume</th>'
-                    contenu = contenu + '<th>Exploitant</th>'
-                    contenu = contenu + '<th class="text-center">Foret</th>'
+                    contenu = contenu + '<th>Fournisseur</th>'
+                    contenu = contenu + '<th class="text-center">Provenance</th>'
                     contenu = contenu + '</tr>'
                     contenu = contenu + '</thead>'
                     contenu = contenu + '<tbody class="body_chargement">';
@@ -140,10 +140,13 @@
                             } else if (reponse[i].id_source === 3 ){
                                 contenu = contenu + '<tr style="background: #ffffb6;">'
                                 contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbp_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                            }  else if (reponse[i].id_source === 6 ){
+                                contenu = contenu + '<tr style="background: #d2f0f6;">'
+                                contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_btgu_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
                             } else {
                                 contenu = contenu + '<tr style="background: white;">'
                             }
-
+                            contenu = contenu + '<td class="text-center">' + reponse[i].numero + '</td>';
                             contenu = contenu + '<td class="text-center">' + reponse[i].date_chr + '</td>';
                             contenu = contenu + '<td class="text-center">' + reponse[i].document + '</td>';
                             contenu = contenu + '<td class="text-center font-weight-bold">' + reponse[i].source + '</td>';
@@ -185,6 +188,9 @@
                                 } else if (reponse[i].id_source === 3 ){
                                     contenu = contenu + '<tr style="background: #ffffb6;">'
                                     contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbp_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                                }  else if (reponse[i].id_source === 6 ){
+                                    contenu = contenu + '<tr style="background: #ebf7fa;">'
+                                    contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_btgu_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
                                 } else {
                                     contenu = contenu + '<tr style="background: white;">'
                                 }

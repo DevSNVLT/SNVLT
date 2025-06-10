@@ -36,11 +36,13 @@ use App\Entity\DocStats\Entetes\Documentpdtdrv;
 use App\Entity\DocStats\Entetes\Documentrsdpf;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
+use App\Entity\DocStats\Pages\Pagebtgu;
 use App\Entity\DocStats\Pages\Pagecp;
 use App\Entity\DocStats\Pages\Pagelje;
 use App\Entity\DocStats\Saisie\Lignepagebcbgfh;
 use App\Entity\DocStats\Saisie\Lignepagebcbp;
 use App\Entity\DocStats\Saisie\Lignepagebrh;
+use App\Entity\DocStats\Saisie\Lignepagebtgu;
 use App\Entity\DocStats\Saisie\Lignepagecp;
 use App\Entity\DocStats\Saisie\Lignepagelje;
 use App\Entity\Observateur\PublicationRapport;
@@ -1191,6 +1193,63 @@ class TdbAdminController extends AbstractController
                             'id_source'=>$id_doc_abv
                         );
                     }
+
+                    // Chargement des BTGU
+                    $chrs_usine_btgu = $registry->getRepository(Pagebtgu::class)->findBy([
+                        'usine_destinataire'=>$usine,
+                        'confirmation_usine'=>false,
+                        'fini'=>true
+                    ]);
+                    //dd($chrs_usine_btgu);
+                    foreach ($chrs_usine_btgu as $chr){
+                        $exp = $chr->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine();
+                        if ($chr->getCodeDocbtgu()->getCodeUsine()->getSigle()){
+                            $exp = $chr->getCodeDocbtgu()->getCodeUsine()->getSigle();
+                        }
+
+                        $nb_billes = 0;
+                        $volume_billes = 0;
+                        $ess = "-";
+
+                        $billes_chr = $registry->getRepository(Lignepagebtgu::class)->findBy(['code_pagebtgu'=>$chr]);
+                        foreach ($billes_chr as $bille){
+                            $nb_billes = $nb_billes + 1;
+                            $volume_billes = $volume_billes + $bille->getVolume();
+                        }
+                        foreach ($registry->getRepository(Essence::class)->findAll() as $essence){
+                            foreach ($billes_chr as $bille){
+                                if ($bille->getEssence()){
+                                    if ($essence->getId() == $bille->getEssence()->getId()){
+                                        $ess = $ess . " - " . $bille->getEssence()->getNomVernaculaire();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if ($registry->getRepository(TypeDocumentStatistique::class)->find(6)){
+                            $doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(6)->getAbv();
+                            $id_doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(6)->getId();
+                        } else {
+                            $doc_abv = "SOURCE_INCONNUE";
+                            $id_doc_abv = 0;
+                        }
+
+                        $liste_chr_industriel[] = array(
+                            'date_chr'=>$chr->getDatechargement()->format('d/m/Y'),
+                            'id'=>$chr->getId(),
+                            'numero'=>$chr->getNumeroPagebtgu(),
+                            'immat'=>$chr->getImmatriculation(),
+                            'foret'=>$chr->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine(),
+                            'document'=>$chr->getCodeDocbtgu()->getNumeroDocbtgu(),
+                            'exploitant'=>$exp,
+                            'essences'=>$ess,
+                            'nb_billes'=>$nb_billes,
+                            'volume'=>round($volume_billes,3),
+                            'source'=>$doc_abv,
+                            'id_source'=>$id_doc_abv
+                        );
+                    }
+
                     rsort($liste_chr_industriel);
                 }
 
@@ -1202,6 +1261,58 @@ class TdbAdminController extends AbstractController
 
         }
     }
+
+    #[Route('/snvlt/detail_btgu_loading/details/{id_page}', name:'app_my_btgu_loadings')]
+    public function my_btgu_loadings(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_page,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        UserRepository $userRepository,
+        NotificationRepository $notifications
+    ){
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or
+                $this->isGranted('ROLE_ADMIN') or
+                $this->isGranted('ROLE_ADMINISTRATIF' ) or
+                $this->isGranted('ROLE_INDUSTRIEL' ) ){
+
+
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+
+                //dd($notification->getRelatedToId());
+                $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($id_page);
+                if ($pagebtgu) {
+
+
+                    return $this->render('doc_stats/entetes/documentbtgu/details_chargement.html.twig',
+                        [
+                            'liste_menus'=>$menus->findOnlyParent(),
+                            "all_menus"=>$menus->findAll(),
+                            'menus'=>$permissions->findBy(['code_groupe_id'=>$code_groupe]),
+                            'mes_notifs'=>$notifications->findBy(['to_user'=>$user, 'lu'=>false],[],5,0),
+                            'groupe'=>$code_groupe,
+                            'chargement'=>$pagebtgu,
+                            'liste_parent'=>$permissions
+                        ]);
+
+                } else {
+                    return new JsonResponse(json_encode(false));
+                }
+
+
+            }else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
     #[Route('/snvlt/admin/stats_auto', name: 'stats_auto')]
     public function stats_auto(
         Request $request,
