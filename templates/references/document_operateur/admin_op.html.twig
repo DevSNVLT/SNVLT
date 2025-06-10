@@ -135,20 +135,19 @@
                                 contenu_op = contenu_op + '<tr>'
                                 contenu_op = contenu_op + '<td>' + liste_op[i].document + '</td>'
 
-                            } else if (liste_op[i].ecart >= 30){
-                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #bffac7;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
-                              } else if (liste_op[i].ecart < 30 && liste_op[i].ecart > 0){
-                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #f8b91b;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
-                            } else if (liste_op[i].ecart <= 0){
-                                contenu_op = contenu_op + '<tr class="bg-danger" style="background: #fd0000;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:white;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
+                            } else if (liste_op[i].date_etablissement &&  liste_op[i].date_expiration) {
+                                let ecart = getNbJours(new Date(liste_op[i].date_etablissement), new Date(liste_op[i].date_expiration));
+                                if (ecart >= 30) {
+                                    contenu_op = contenu_op + '<tr class="alert-info" style="background: #bffac7;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                } else if (ecart < 30 && ecart > 0) {
+                                    contenu_op = contenu_op + '<tr class="alert-info" style="background: #f8b91b;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                } else if (ecart <= 0) {
+                                    contenu_op = contenu_op + '<tr class="bg-danger" style="background: #fd0000;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:white;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                }
                             }
-
                                 if (liste_op[i].date_etablissement === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
                                 contenu_op = contenu_op + '<td>' + new  Date(liste_op[i].date_etablissement).toLocaleDateString("fr-FR") + '</td>'}
                                 if (liste_op[i].date_expiration === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
