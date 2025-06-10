@@ -166,15 +166,11 @@ class GrilleLegaliteController extends AbstractController
     #[Route('snvlt/grille/{type_grille?0}/{id_operateur?0}', name: 'display_doc_op')]
     public function display_doc_op(
 
-        MenuRepository $menus,
-        MenuPermissionRepository $permissions,
-        User $user = null,
         int $type_grille,
         int $id_operateur,
         UserRepository $userRepository,
         ManagerRegistry $doctrine,
-        Request $request,
-        NotificationRepository $notification
+        Request $request
     ): Response
     {
         if(!$request->getSession()->has('user_session')){
@@ -188,7 +184,16 @@ class GrilleLegaliteController extends AbstractController
 
                 $reponse = array();
                 $has_doc = false;
-                $docs = $doctrine->getRepository(GrilleLegalite::class)->findBy(['code_operateur'=>$type_grille]);
+                $type_op = $doctrine->getRepository(TypeOperateur::class)->find($type_grille);
+                $docs = $doctrine->getRepository(GrilleLegalite::class)->findBy(['code_operateur'=>$type_op]);
+                //dd($docs);
+//                $doc_op = $doctrine->getRepository(DocumentOperateur::class)->findBy(
+//                    [
+//                        'codeOperateur'=>$id_operateur,
+//                        'type_operateur'=>$type_op,
+//                    ]
+//                );
+
                 foreach ($docs as $doc){
 
                     $doc_op = $doctrine->getRepository(DocumentOperateur::class)->findOneBy(
@@ -198,6 +203,7 @@ class GrilleLegaliteController extends AbstractController
                         ]
                     );
 
+                    //dd($doc_op);
                     $fichier = "-";
                     $date_etablissement = '-';
                     $date_expiration = '-';
@@ -207,8 +213,8 @@ class GrilleLegaliteController extends AbstractController
                         $id_doc = $doc_op->getId();
                         $has_doc = true;
                         $fichier = $doc_op->getImageName();
-                        $date_etablissement = $doc_op->getDateEtablissement()->format('d/m/Y');
-                        $date_expiration = $doc_op->getDateExpiration()->format('d/m/Y');
+                        $date_etablissement = $doc_op->getDateEtablissement()->format('Y-m-d');
+                        $date_expiration = $doc_op->getDateExpiration()->format('Y-m-d');
                         $ecart_date = date_diff($doc_op->getDateExpiration(), $doc_op->getDateEtablissement())->days ;
 
                     }
@@ -216,7 +222,7 @@ class GrilleLegaliteController extends AbstractController
                             'id'=>$id_doc,
                             'document'=>$doc->getLibelleDocument(),
                              'expire'=>$doc->getDuree(),
-                                'fichier'=>$fichier,
+                             'fichier'=>$fichier,
                                 'date_etablissement'=>$date_etablissement,
                                 'date_expiration'=>$date_expiration,
                                 'ecart'=>$ecart_date,

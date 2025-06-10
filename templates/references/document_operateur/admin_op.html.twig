@@ -98,10 +98,9 @@
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
     <script>
-
-
-
 
         $('#type_op').on('change', function (){
             charge_operateurs();
@@ -150,12 +149,15 @@
 
                             }
 
+                                if (liste_op[i].date_etablissement === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
+                                contenu_op = contenu_op + '<td>' + new  Date(liste_op[i].date_etablissement).toLocaleDateString("fr-FR") + '</td>'}
+                                if (liste_op[i].date_expiration === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
+                                contenu_op = contenu_op + '<td>' + new  Date(liste_op[i].date_expiration).toLocaleDateString("fr-FR") + '</td>'}
 
-                                contenu_op = contenu_op + '<td>' + liste_op[i].date_etablissement + '</td>'
-                                contenu_op = contenu_op + '<td>' + liste_op[i].date_expiration + '</td>'
-                                
                                 if (liste_op[i].ecart > 0){
-                                    contenu_op = contenu_op + '<td>' + liste_op[i].ecart + ' <img class="btn_editer" id="' + liste_op[i].id + '" src="{{ asset('assets/icons/16x16/edit.png') }}" alt="editer" style="margin-left:5px;cursor:pointer;height:16px;width:16px;" data-bs-toggle="modal" data-bs-target="#doc_operateur"></td></tr>'
+
+                                    contenu_op = contenu_op + '<td>' + getNbJours(new Date(liste_op[i].date_etablissement), new Date(liste_op[i].date_expiration))  + ' <img class="btn_editer" id="' + liste_op[i].id + '" src="{{ asset('assets/icons/16x16/edit.png') }}" alt="editer" style="margin-left:5px;cursor:pointer;height:16px;width:16px;" data-bs-toggle="modal" data-bs-target="#doc_operateur"></td></tr>'
+
                                 } else {
                                     contenu_op = contenu_op + '<td>0</td></tr>'
                                 }
@@ -325,6 +327,13 @@
                 }
             })
 
+        }
+
+        function getNbJours(date1, date2){
+
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+                return differenceInDays;
         }
     </script>
 

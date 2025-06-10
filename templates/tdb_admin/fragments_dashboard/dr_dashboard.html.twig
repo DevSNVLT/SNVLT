@@ -42,7 +42,6 @@
             <div class="card-title p-2 text-white font-weight-light mt-3" style="background-color: #0479af">
                 Données Exploitation
             </div>
-
                     <table class="table-responsive table table-striped tbl_point">
                         <thead>
                             <tr class="fw-bold alert-success">
@@ -58,25 +57,8 @@
                                 <th>Volume billes acheminés</th>
                             </tr>
                         </thead>
-                        <tbody>
-                        {% for point in point_dr %}
-                        {% if point.decision_reprise == "-" %}
-                            <tr class="text-danger fw-bold">
-                        {% else %}
-                                    <tr>
-                        {% endif %}
-                                <td><h2 class="p-1 badge" style="background: #0a430c;color:white;">{{ point.foret }}</h2></td>
-                                <td><h2 class="p-1 badge" style="background: #c55405;color:white;">{{ point.cantonnement }}</h2></td>
-                                <td>{{ point.exploitant }}</td>
-                                <td>{{ point.decision_attribution }}</td>
-                                <td>{{ point.decision_reprise }}</td>
-                                <td>{{ point.nb_cp }}</td>
-                                <td>{{ point.nb_brh }}</td>
-                                <td>{{ point.nb_brh }}</td>
-                                <td>{{ point.volume_abattage }}</td>
-                                <td>{{ point.volume_brh }}</td>
-                            </tr>
-                        {% endfor %}
+                        <tbody id="body_point_dr">
+                            <tr><td><img src="{{ asset('assets/icons/loading_snvlt.gif') }}" height="16"><span class="font-weight-bold ms-2 text-danger"> chargement...</span></td></tr>
                         </tbody>
                     </table>
         </div>
@@ -85,7 +67,7 @@
 <div class="col-md-3">
     <div class="card mb-2" style="border: 1px;height: 250px;">
         <div class="card-title p-1 text-dark font-weight-light" style="background-color: #d0f8c1; ">
-            <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" height="24" style="margin-right: 5px;"> {{ 'Last loadings' | trans}}
+            <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" height="24" style="margin-right: 5px;"> Chargements en cours
         </div>
         <div class="alert-light mb-2" style="margin-left: 5px; margin-right: 5px;height: 230px;">
             <table class="table table-responsive" style="border: 1px solid lightgrey">
@@ -99,20 +81,20 @@
                 </tr>
                 </thead>
                 <tbody>
-                    {% for chargement in chrs %}
-                        <tr>
-                            <td>{{ chargement.numeroPagebrh }}</td>
-                            <td>
-                                {% set volume = 0 %}
-                                {% for ligne in chargement.lignepagebrhs %}
-                                    {% set volume = volume + (ligne.cubageLignepagebrh) %}
-                                {% endfor %}
-                                {{ volume }}
-                            </td>
-                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</td>
-                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</td>
-                        </tr>
-                    {% endfor %}
+{#                    {% for chargement in chrs %}#}
+{#                        <tr>#}
+{#                            <td>{{ chargement.numeroPagebrh }}</td>#}
+{#                            <td>#}
+{#                                {% set volume = 0 %}#}
+{#                                {% for ligne in chargement.lignepagebrhs %}#}
+{#                                    {% set volume = volume + (ligne.cubageLignepagebrh) %}#}
+{#                                {% endfor %}#}
+{#                                {{ volume }}#}
+{#                            </td>#}
+{#                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeForet.denomination }}</td>#}
+{#                            <td>{{ chargement.codeDocbrh.codeReprise.codeAttribution.codeExploitant.raisonSocialeExploitant }}</td>#}
+{#                        </tr>#}
+{#                    {% endfor %}#}
                 </tbody>
             </table>
         </div>
@@ -158,8 +140,7 @@
 <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
 
 <script>
-    //let table1 = new DataTable('.sasies_brh');
-
+    point_dr();
     let table = new DataTable('.tbl_point', {
         responsive: true,
         layout: {
@@ -199,4 +180,44 @@
             }
         }
     });
+    function point_dr(){
+        let contenu = '';
+        $.ajax({
+            url : '{{path('app_portail')}}snvlt/dr/PointDr/{{ app.user.codeDr }}',
+            type: 'POST',
+            success: function(response){
+                let reponse = JSON.parse(response)
+                if (reponse[0].info === "SUCCESS"){
+
+                    for(var i = 0; i < reponse.length;  i++){
+                        if (reponse[i].decision_reprise ==="-"){
+                            contenu = contenu + '<tr class="text-danger font-weight-bold">'
+                        } else {
+                            contenu = contenu + '<tr>'
+                        }
+
+                        contenu = contenu + '<td><h2 class="p-1 badge" style="background: #0a430c;color:white;">' + reponse[i].foret + '</h2></td>';
+                        contenu = contenu + '<td><h2 class="p-1 badge" style="background: #c55405;color:white;">' + reponse[i].cantonnement + '</h2></td>';
+                        contenu = contenu + '<td>' + reponse[i].exploitant + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].decision_attribution + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].decision_reprise + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].nb_cp + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].nb_brh + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].nb_arbres_abattus + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].volume_abattage + '</td>';
+                        contenu = contenu + '<td>' + reponse[i].volume_brh + '</td>';
+                        contenu = contenu + '</tr>';
+                    }
+
+                    document.querySelector('#body_point_dr').innerHTML = contenu;
+                } else {
+                    document.querySelector('#body_point_dr').innerHTML = 'Aucune info disponible';
+                }
+
+                //Chart Essences Administrator
+
+
+            }
+        })
+    }
 </script>
