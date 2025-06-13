@@ -10,7 +10,7 @@
     </h2>
     <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
         <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
-           <a class="btn btn-primary font-weight-light p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('contrat_bcbgfh.edit') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
+           <a class="btn btn-primary font-weight-light p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ path('edit_contrat_bcbgfh') }}"> <i class="mdi mdi-plus-circle me-2" style="font-size: 20px;"></i>{% trans %}Add{% endtrans %}</a>
         </div>
     </div>
 {% endblock %}
@@ -43,7 +43,7 @@
 
                         <tr>
 
-                                <td class="text-center"><a class="text-primary editBtn" href="{{ path('contrat_bcbgfh.edit', {'id_bcbgfh': contrat.id })}}" id="{{ contrat.id }}">{{ contrat.numeroContrat }} du {{ contrat.dateContrat | date('d/m/Y') }}</a></td>
+                                <td class="text-center"><a class="text-primary editContrat" href="#" data-bs-toggle="modal" data-bs-target="#modif_contrat" id="{{ contrat.id }}">{{ contrat.numeroContrat }} du {{ contrat.dateContrat | date('d/m/Y') }}</a></td>
                                 <td class="text-center">{{ contrat.duree }}</td>
                                 <td class="text-center">{{ contrat.nbTiges }}</td>
                                 <td class="text-center">{{ contrat.volumeCumul }}</td>
@@ -60,6 +60,71 @@
             </div>
         </div>
     </section>
+
+    <div class="modal fade" id="modif_contrat"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-white">
+                <div class="modal-header alert-success">
+                    <h3 class="modal-title" id="backDropModalTitle">Modifier un contrat</h3>
+
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body text-center" style="border: 3px solid #004803">
+                    <h3 class="text-danger loading">Chargement...</h3>
+
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">N° Contrat</span>
+                        <input type="text" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="num_contrat"  aria-label="N° de la décision" aria-describedby="N° de la décision">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Date Signature</span>
+                        <input type="date" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="date_signature"  aria-label="Date de la décision" aria-describedby="Date de la décision">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Durée (mois)</span>
+                        <input type="number" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="duree"  aria-label="Date de la décision" aria-describedby="Durée du contrat">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Nombre de tiges</span>
+                        <input type="number" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="nb_tiges"  aria-label="Date de la décision" aria-describedby="Nombre de tiges">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Forêt</span>
+                        <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="foret"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                            <option value="0">Sélectionnez la forêt</option>
+                            {% for foret in forets %}
+                                {% if (foret.codeTypeForet.id == 2) %}
+                                    <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Exploitant</span>
+                        <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="exploitant"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                            <option value="0">Sélectionnez l'exploitant</option>
+                            {% for exploitant in exploitants %}
+                                {% if (exploitant.sigle) %}
+                                    <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                                {% else %}
+                                    <option value="{{ exploitant.id }}">{{ exploitant.raisonSocialeExploitant }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <a href="#" class="btn btn-primary p-2" id="btn_add_att"><i class="bi bi-back me-2"></i>Ajouter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
     <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -72,9 +137,9 @@
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>#}
     <script>
-        // Simple Datatable
+       let id_contrat = 0;
 
 
         let table = new DataTable('#contrat_bcbgfh', {
@@ -109,6 +174,99 @@
                 }
             }
         });
+        $('.editContrat').on('click', function (){
+            select_contrat(this.id);
+            id_contrat = this.id;
+        })
+        function select_contrat(id_contrat){
+            $('.loading').text("Chargement...");
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/contrat/gcbgfh/search/' + id_contrat,
+                'type': 'POST',
+                success: function(response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        //let date_signature = moment(reponse[0].date_contrat).format("DD/MM/YYYY")
+                        //alert(date_signature);
+                        $(".modal-title").text("Modifier le contrat [" + reponse[0].numero_contrat + " du " + reponse[0].date_contrat + "]")
+                        $('#num_contrat').val(reponse[0].numero_contrat);
+                        $('#date_signature').val(reponse[0].date_contrat);
+                        $('#duree').val(reponse[0].duree);
+                        $('#nb_tiges').val(reponse[0].nb_tiges);
+                        $('#foret').val(reponse[0].foret);
+                        $('#exploitant').val(reponse[0].exploitant);
+                        $('.loading').text("");
+                    } else {
+                        render_toast_value("Erreur serveur", 0);
+                        $('.loading').text("");
+                    }
+
+                }
+            })
+
+        }
+
+        $('#btn_add_att').on('click', function(){
+            let date_signature = new Date($("#date_signature").val()).toISOString().split("T")[0]; // Format YYYY-MM-DD
+            if ( $("#num_decision").val() === "" ||
+                $("#date_signature").val() === "" ||
+                $("#duree").val() === "0" ||
+                $("#duree").val() === "" ||
+                $("#foret").val() === "0" ||
+                $("#exploitant").val() === "0"
+            ) {
+                render_toast_value("Merci de renseigner correctement toutes les informationbs requises", 2)
+            } else {
+                if (getNbJoursContrat(new Date(date_signature), new Date()) < 0) {
+                    render_toast_value("La date de signature ne peut postérieure à la date du jour ", 2)
+                } else {
+                    mise_a_jour_contrat();
+                }
+
+            }
+        })
+
+        function mise_a_jour_contrat(){
+            var obj = {};
+            let numero_contrat = $("#num_contrat").val()
+            obj.foret =  $("#foret").val();
+            obj.exploitant =  $("#exploitant").val();
+            obj.numero_contrat =  numero_contrat.replaceAll('/', '-');
+            obj.date_signature =  $("#date_signature").val();
+            obj.duree =  $("#duree").val();
+            obj.nb_tiges =  $("#nb_tiges").val();
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/contrat/gcbgfh/edit/' + id_contrat + "/" + data,
+                'type': 'POST',
+                success: function(response) {
+
+                    restaure()
+                    render_toast_value('Contrat BCBGFH modifié avec succès', 1)
+                    $('#modif_contrat .btn-close').click();
+                    document.location.reload();
+                }
+            })
+        }
+        function restaure(){
+
+
+            $("#foret").val("0");
+            $("#exploitant").val("0");
+            $("#num_contrat").val("");
+            $("#date_signature").val("");
+            $("#date_signature").val("");
+            $("#duree").val("");
+            $("#nb_tiges").val("");
+            $("#num_contrat").focus();
+        }
+        function getNbJoursContrat(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
     </script>
 
 {% endblock %}

@@ -358,11 +358,11 @@ class RegistrationController extends AbstractController
                     $user->setNomUtilisateur(strtoupper($this->util->removeSpecialCharacters($arraydata->nom)));
                     $user->setPrenomsUtilisateur(strtoupper($this->util->removeSpecialCharacters($arraydata->prenoms)));
                     $user->setFonction(strtoupper($this->util->removeSpecialCharacters($arraydata->fonction)));
-
+                    $passwd = str_replace("|||","#", $arraydata->mpd);
                     $user->setPassword(
                         $userPasswordHasher->hashPassword(
                             $user,
-                            $arraydata->mpd
+                            $passwd
                         )
                     );
 
@@ -398,12 +398,12 @@ class RegistrationController extends AbstractController
                     if ($responsable){
 
                         if($responsable->getEmail()){
-                            dd($responsable->getEmail());
+                            //dd($responsable->getEmail());
                             //App Notification
                             $this->util->envoiNotification(
                                 $registry,
                                 $this->translator->trans("Vous avez une nouvelle demande à valider"),
-                                "Bonjour ". $responsable .". ". $user ." vous a envoyé une demande d'accès. Connectez-vous SVP à SNVLT en suivant ce lien https://boislegal.ci/snvlt",
+                                "<h1 class='mb-3'>Bonjour ". $responsable ."</h1><br>".$user->getTitre(). " ". $user ." vous a envoyé une demande d'accès.",
                                 $responsable,
                                 $user->getId(),
                                 "app_administration_validation_adhesion",
@@ -411,11 +411,19 @@ class RegistrationController extends AbstractController
                                 $user->getId()
                             );
                             //Envoi un email au responsable
-                                $utils->sendEmail(
-                                    $responsable->getEmail(),
-                                    "Vous avez une nouvelle demande d'accès",
-                                    $this->translator->trans("Bonjour "). $responsable . ". Vous avez reçu une demande d'accès de ". $user ." Merci de vous connecter à l'adresse https://boislegal.ci/snvlt afin de valider ou invalider son adhésion à votre organisation."
-                                );
+                                try{
+//
+                                    $utils->sendTemplatedEmail(
+                                        $responsable->getEmail(),
+                                        "Nouvelle demande d'accès",
+                                        "emails/email_template.html.twig",
+                                        $this->translator->trans("Bonjour "). $responsable . ".\n\n Vous avez reçu une demande d'accès de ". $user ." Merci de vous connecter à l'adresse https://boislegal.ci/snvlt afin de valider ou invalider son adhésion à votre organisation."
+                                    );
+
+                            } catch(Throwable $exception){
+                                $this->addFlash('succes', 'Demande envoyée!');
+                                return  new JsonResponse(json_encode("SUCCESS"));
+                            }
 
                         } else {
                             return  new JsonResponse(json_encode("PAS_DE_RESPONSABLE"));
@@ -425,9 +433,7 @@ class RegistrationController extends AbstractController
                     }
 
                     //Maj User dans la base de données SNVLT1
-                    $snvlt1->Ajout_User($user, $arraydata->mpd);
-
-
+                    $snvlt1->Ajout_User($user, $passwd);
 
                     // Envoi d'un email à l'utilisateur pour validation email
                     //try {

@@ -115,7 +115,9 @@
                     <div>
                         <h4 class="text-danger">Sélectionnez la source et cliquez sur le connaissement</h4>
                         <div class="">
+
                             <select name="source" id="source"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+                                <option value="0">-- Source --</option>
                                 {% for doc in docs %}
                                     {% if (doc.id == 2 or doc.id == 3 or doc.id == 2 or doc.id == 6 or doc.id == 16 or doc.id == 21) %}
                                         <option value="{{ doc.id }}">{{ doc.abv }}</option>
@@ -236,9 +238,7 @@
 
 
             $('#charger_donnees').on('click', function (){
-                $('#source').val(null);
-
-
+                $('#source').val("0");
             })
             $('#source').on('change', function (){
                 let numero_chargement = $('#numero_page').val();
