@@ -34,6 +34,7 @@ use App\Entity\DocStats\Entetes\Documentfp;
 use App\Entity\DocStats\Entetes\Documentlje;
 use App\Entity\DocStats\Entetes\Documentpdtdrv;
 use App\Entity\DocStats\Entetes\Documentrsdpf;
+use App\Entity\DocStats\Pages\Pagebcbgfh;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Pages\Pagebtgu;
@@ -1085,6 +1086,7 @@ class TdbAdminController extends AbstractController
                 $liste_chr_industriel = array();
                 $usine = $registry->getRepository(Usine::class)->find($id_usine);
                 if ($usine){
+
                     // Chargement des BRH
                     $chrs_usine = $registry->getRepository(Pagebrh::class)->findBy([
                         'parc_usine_brh'=>$usine,
@@ -1131,6 +1133,61 @@ class TdbAdminController extends AbstractController
                             'immat'=>$chr->getImmatcamion(),
                             'foret'=>$chr->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
                             'document'=>$chr->getCodeDocbrh()->getNumeroDocbrh(),
+                            'exploitant'=>$exp,
+                            'essences'=>$ess,
+                            'nb_billes'=>$nb_billes,
+                            'volume'=>round($volume_billes,3),
+                            'source'=>$doc_abv,
+                            'id_source'=>$id_doc_abv
+                        );
+                    }
+                    // Chargement des BCBGFH-FC
+                    $chrs_usine = $registry->getRepository(Pagebcbgfh::class)->findBy([
+                        'parc_usine_bcbgfh'=>$usine,
+                        'confirmation_usine'=>false,
+                        'fini'=>true
+                    ]);
+
+                    foreach ($chrs_usine as $chr){
+                        $exp = $chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getRaisonSocialeExploitant();
+                        if ($chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle()){
+                            $exp = $chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle();
+                        }
+
+                        $nb_billes = 0;
+                        $volume_billes = 0;
+                        $ess = "-";
+
+                        $billes_chr = $registry->getRepository(Lignepagebcbgfh::class)->findBy(['code_pagebcbgfh'=>$chr]);
+                        foreach ($billes_chr as $bille){
+                            $nb_billes = $nb_billes + 1;
+                            $volume_billes = $volume_billes + $bille->getCubageLignepagebcbgfh();
+                        }
+                        foreach ($registry->getRepository(Essence::class)->findAll() as $essence){
+                            foreach ($billes_chr as $bille){
+								if ($bille->getNomEssencebcbgfh()){
+									if ($essence->getId() == $bille->getNomEssencebcbgfh()->getId()){
+										$ess = $ess . " - " . $bille->getNomEssencebcbgfh()->getNomVernaculaire();
+										break;
+									}
+								}
+                            }
+                        }
+                        if ($registry->getRepository(TypeDocumentStatistique::class)->find(21)){
+                            $doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(21)->getAbv();
+                            $id_doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(21)->getId();
+                        } else {
+                            $doc_abv = "SOURCE_INCONNUE";
+                            $id_doc_abv = 0;
+                        }
+
+                        $liste_chr_industriel[] = array(
+                            'date_chr'=>$chr->getDateChargementbcbgfh()->format('d/m/Y'),
+                            'id'=>$chr->getId(),
+                            'numero'=>$chr->getNumeroPagebcbgfh(),
+                            'immat'=>$chr->getImmatcamion(),
+                            'foret'=>$chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination(),
+                            'document'=>$chr->getCodeDocbcbgfh()->getNumeroDocbcbgfh(),
                             'exploitant'=>$exp,
                             'essences'=>$ess,
                             'nb_billes'=>$nb_billes,

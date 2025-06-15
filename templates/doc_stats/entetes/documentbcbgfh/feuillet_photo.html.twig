@@ -1,14 +1,14 @@
 {% extends 'template_base.html.twig' %}
 
 {% block Title %}
-    {% trans %}SNVLT{% endtrans %} - Photo Feuillet {{ feuillet.numeroPagebrh}}
+    {% trans %}SNVLT{% endtrans %} - Photo Feuillet {{ feuillet.numeroPagebcbgfh}}
 {% endblock %}
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
         <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Pho{% endtrans %}">
 
-            Photo Feuillet BRH N°  {{ feuillet.numeroPagebrh}}
+            Photo Feuillet BRH N°  {{ feuillet.numeroPagebcbgfh}}
 
     </h2>
 {% endblock %}
@@ -28,7 +28,7 @@
         <div class="alert-success" style="height: 40px;"></div>
         <div class="card">
             <div class="card-body">
-                 <img src="{{ asset('images/uploads/brh/') }}{{ feuillet.photo }}" alt="">
+                 <img src="{{ asset('images/uploads/bcbgfh/') }}{{ feuillet.photo }}" alt="">
             </div>
         </div>
 

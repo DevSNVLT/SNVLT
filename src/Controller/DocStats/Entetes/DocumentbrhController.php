@@ -11,10 +11,13 @@ use App\Entity\Administration\ProspectionTemp;
 use App\Entity\Autorisation\Attribution;
 use App\Entity\Autorisation\AttributionPv;
 use App\Entity\Autorisation\AutorisationPv;
+use App\Entity\Autorisation\ContratBcbgfh;
 use App\Entity\Autorisation\Reprise;
+use App\Entity\DocStats\Entetes\Documentbcbgfh;
 use App\Entity\DocStats\Entetes\Documentbcbp;
 use App\Entity\DocStats\Entetes\Documentbrh;
 use App\Entity\DocStats\Entetes\Documentcp;
+use App\Entity\DocStats\Pages\Pagebcbgfh;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Pages\Pagecp;
@@ -153,10 +156,10 @@ class DocumentbrhController extends AbstractController
                 $user = $userRepository->find($this->getUser());
                 $code_groupe = $user->getCodeGroupe()->getId();
 
-                //Liste des pages ou chargements BCBGFH à valider
+                //Liste des pages ou chargements à valider
                 $liste_chargements = array();
 
-                // Les chargements concernent des BCBGFH
+                // Les chargements concernent des BCBGFH-PEF
                 $attributions = $registry->getRepository(Attribution::class)->findBy(['code_exploitant'=>$user->getCodeexploitant()]);
 
                 foreach($attributions as $attribution){
@@ -246,6 +249,50 @@ class DocumentbrhController extends AbstractController
                             }
                         }
                     }
+
+                // Les chargements concernent des BCBGFH-FC
+
+                $contrats = $registry->getRepository(ContratBcbgfh::class)->findBy(['code_exploitant'=>$user->getCodeexploitant()]);
+                foreach ($contrats as $contrat){
+                    $documentbcbgfcs = $registry->getRepository(Documentbcbgfh::class)->findBy(['code_contrat'=>$contrat]);
+                    foreach ($documentbcbgfcs as $documentbcbgfc){
+                        $page_bcbgfhs = $registry->getRepository(Pagebcbgfh::class)->findBy(['fini'=>false, 'soumettre'=>true, 'code_docbcbgfh'=>$documentbcbgfc]);
+                        foreach($page_bcbgfhs as $page){
+
+                            $billes = $registry->getRepository(Lignepagebcbgfh::class)->findBy(['code_pagebcbgfh'=>$page]);
+                            $nb_billes = 0;
+                            $volume = 0;
+
+                            foreach($billes as $bille){
+                                $nb_billes = $nb_billes + 1;
+                                $volume = $volume + $bille->getCubageLignepagebcbgfh();
+                            }
+                            $usine = "-";
+                            if($page->getParcUsineBcbgfh()){
+                                if ($page->getParcUsineBcbgfh()->getSigle()){
+                                    $usine = $page->getParcUsineBcbgfh()->getSigle();
+                                } else {
+                                    $usine = $page->getParcUsineBcbgfh()->getRaisonSocialeUsine();
+                                }
+                            }
+
+                            $liste_chargements[] = array(
+                                'id_page'=>$page->getId(),
+                                'type_doc'=>'BCBGFH-FC',
+                                'numero_page'=>$page->getNumeroPagebcbgfh(),
+                                'numero_brh'=>$page->getCodeDocbcbgfh()->getNumeroDocbcbgfh(),
+                                'foret'=>$page->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination(),
+                                'destination_brh'=>$page->getDestinationPagebcbgfh(),
+                                'usine_dest'=>$usine,
+                                'date_chargement'=>$page->getDateChargementbcbgfh()->format('d m Y'),
+                                'nb_billes'=>$nb_billes,
+                                'volume_brh'=>round($volume, 3),
+                                'immat'=>$page->getImmatcamion(),
+                                'conducteur'=>$page->getChauffeurbcbgfh()
+                            );
+                        }
+                    }
+                }
                     rsort($liste_chargements);
 
 
@@ -653,7 +700,7 @@ class DocumentbrhController extends AbstractController
 
         }
     }
-    
+
     #[Route('/snvlt/docbrh/op/pages_brh/{id_brh}', name: 'affichage_pages_brh_json')]
     public function affiche_pages_brh(
         Request $request,
@@ -1025,22 +1072,22 @@ class DocumentbrhController extends AbstractController
                 if($page_brh){
                     $lignes_brh = $registry->getRepository(Lignepagebrh::class)->findBy(['code_pagebrh'=>$page_brh]);
                     $my_brh_page = array();
-					
-					
+
+
                     foreach ($lignes_brh as $lignebrh){
 						$zh = "-";
 						$essence = "-";
-						
+
 						if($lignebrh->getZhLignepagebrh())
 						{
 							$zh = $lignebrh->getZhLignepagebrh()->getZone();
 						}
-						
+
 						if($lignebrh->getNomEssencebrh())
 						{
 							$essence = $lignebrh->getNomEssencebrh()->getNomVernaculaire();
 						}
-						
+
                         $my_brh_page[] = array(
                             'id_ligne'=>$lignebrh->getId(),
                             'numero_ligne'=>$lignebrh->getNumeroLignepagebrh(),
@@ -1212,7 +1259,7 @@ class DocumentbrhController extends AbstractController
 							$lignebrh->setZhLignepagebrh($zh);
 							}
 						}
-						
+
                         $lignebrh->setLettreLignepagebrh($arraydata->lettre_lignepagebrh);
                         $lignebrh->setXLignepagebrh((float) $arraydata->x_lignepagebrh);
                         $lignebrh->setYLignepagebrh((float)$arraydata->y_lignepagebrh);
@@ -1238,7 +1285,7 @@ class DocumentbrhController extends AbstractController
 								}
                         $registry->getManager()->persist($arbre);
 						}
-                        
+
 
                         $this->administrationService->save_action(
                             $user,
@@ -2085,27 +2132,27 @@ class DocumentbrhController extends AbstractController
                             $usine = $page_brh->getParcUsineBrh()->getRaisonSocialeUsine();
                         }
                     }
-					
-					
-                    
-					
-					
+
+
+
+
+
                     foreach($lignes_brh as $ligne){
-						
+
 						if ($ligne->getNomEssencebrh()){
-                        
+
                             $essence = $ligne->getNomEssencebrh()->getNomVernaculaire();
 							} else {
 								$essence = "-";
 							}
-							
+
 						if ($ligne->getZhLignepagebrh()){
-							
+
 								$zone = $ligne->getZhLignepagebrh()->getZone();
 							} else {
 								$zone = "-";
 							}
-							
+
                         $my_brh_page[] = array(
                             'id_page'=>$page_brh->getId(),
                             'foret'=>$page_brh->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
@@ -2276,7 +2323,7 @@ class DocumentbrhController extends AbstractController
 
         }
     }
-	
+
 	#[Route('snvlt/brh/edit/{id_bille}/B2', name:'edit_bille')]
     public function edit_bille(
         ManagerRegistry $registry,
@@ -2324,7 +2371,7 @@ class DocumentbrhController extends AbstractController
             }
         }
     }
-	
+
 	#[Route('/snvlt/docbrh/op/data/edit_lignes/{data}/{id_bille}', name: 'editdata_brh_json')]
     public function edit_lignes_brh(
         Request $request,
@@ -2391,7 +2438,7 @@ class DocumentbrhController extends AbstractController
                             }
                         return  new JsonResponse(json_encode($response));
                     }
-                
+
 
             } else {
                 return $this->redirectToRoute('app_no_permission_user_active');
@@ -2399,10 +2446,10 @@ class DocumentbrhController extends AbstractController
 
         }
     }
-	
-	
 
-	
+
+
+
 	#[Route('snvlt/brh/del/{id_bille}/B1', name:'del_bille')]
     public function del_bille(
         ManagerRegistry $registry,
@@ -2437,7 +2484,7 @@ class DocumentbrhController extends AbstractController
                         new \DateTimeImmutable(),
                         'La bille N° ' . $bille->getNumeroLignepagebrh(). $bille->getLettreLignepagebrh() . " a été supprimée par ". $this->getUser()
                     );
-					
+
                     $infos_bille[] = array(
                         'valeur'=>"SUCCESS"
                     );

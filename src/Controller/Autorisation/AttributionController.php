@@ -9,6 +9,7 @@ use App\Controller\Services\Utils;
 use App\Entity\Admin\Exercice;
 use App\Entity\Admin\Option;
 use App\Entity\Autorisation\Attribution;
+use App\Entity\Autorisation\ContratBcbgfh;
 use App\Entity\Autorisation\Reprise;
 use App\Entity\References\Ddef;
 use App\Entity\References\DocumentOperateur;
@@ -48,7 +49,7 @@ class AttributionController extends AbstractController
     public function __construct(
         private EventDispatcherInterface $dispatcher,
         private TranslatorInterface $translator,
-        private AdministrationService $utils,
+        private AdministrationService $administrationService,
         private AttributionSnvlt1 $attributionSnvlt1,
         private ForetSnvlt1 $foretSnvlt1,
     )
@@ -57,6 +58,7 @@ class AttributionController extends AbstractController
     #[Route('/snvlt/admin/att', name: 'app_attribution')]
     public function index(AttributionRepository $attributionRepository,
                           MenuRepository $menus,
+                          ManagerRegistry $doctrine,
                           ManagerRegistry $registry,
                           MenuPermissionRepository $permissions,
                           GroupeRepository $groupeRepository,
@@ -88,7 +90,9 @@ class AttributionController extends AbstractController
                 'menus'=>$permissions->findBy(['code_groupe_id'=>$code_groupe]),
                 'groupe'=>$code_groupe,
                 'titre'=>$titre,
-                'liste_parent'=>$permissions
+                'liste_parent'=>$permissions,
+                'exploitants'=>$doctrine->getRepository(Exploitant::class)->findBy([], ['raison_sociale_exploitant'=>'ASC']),
+                'forets'=>$doctrine->getRepository(Foret::class)->findBy(['attribue'=>false], ['denomination'=>'ASC'])
             ]);
         } else {
                 return  $this->redirectToRoute('app_no_permission_user_active');
@@ -198,7 +202,102 @@ class AttributionController extends AbstractController
         }
 
     }
+    #[Route('snvlt/attribution/d/edit/{id_att?0}/{data}', name: 'json_edit_contrat_bcbgfh')]
+    public function json_edit_contrat_bcbgfh(
+        ManagerRegistry $registry,
+        Request $request,
+        UserRepository $userRepository,
+        int $id_att,
+        string $data
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or  $this->isGranted('ROLE_ADMIN'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
 
+                $attribution = $registry->getRepository(Attribution::class)->find((int) id_att);
+                if ($attribution and $data){
+                    $arraydata = json_decode($data);
+                    $response = array();
+
+
+                    $date_creation = new \DateTimeImmutable();
+
+
+                    $attribution->setStatut(true);
+                    $attribution->setUpdatedBy($user);
+                    $attribution->setUpdatedAt($date_creation);
+                    $foret = $registry->getRepository(Foret::class)->find((int) $arraydata->foret);
+                    $exploitant = $registry->getRepository(Exploitant::class)->find((int) $arraydata->exploitant);
+
+                    $attribution->setCodeForet($foret);
+                    $attribution->setCodeExploitant($exploitant);
+                    $numero_att = $arraydata->numero_contrat;
+                    $attribution->setNumeroDecision(str_replace("-", "/", $numero_att) );
+                    $attribution->setDateDecision(\DateTime::createFromFormat('Y-m-d', $arraydata->date_decision));
+
+                    $registry->getManager()->persist($attribution);
+
+
+                    //Enregistrement des transactions
+                    $registry->getManager()->flush();
+
+                    //Log SNVLT1
+                    $this->administrationService->save_action(
+                        $user,
+                        "CONTRAT_BCBGFH",
+                        "MISE A JOUR Contrat BCBGFH",
+                        new \DateTimeImmutable(),
+                        "L'attribution' N% ". $attribution->getNumeroContrat() . " a été mis à jour par " . $user
+                    );
+                    $response[] = array(
+                        'code'=>'SUCCESS'
+                    );
+
+                } else {
+                    $response[] = array(
+                        'code'=>'ERROR'
+                    );
+                }
+                return new JsonResponse(json_encode($response));
+            } else {
+                return  $this->redirectToRoute('app_no_permission_user_active');
+            }
+        }
+    }
+
+    #[Route('snvlt/contrat/attr/search/{id_attr}', name: 'search_attr')]
+    public function search_attr(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_attr
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or  $this->isGranted('ROLE_ADMIN'))
+            {
+                $reponse = array();
+                $attribution = $registry->getRepository(Attribution::class)->find($id_attr);
+                if ($attribution){
+                    $reponse[] = array(
+                        'numero_decision'=>$attribution->getNumeroDecision(),
+                        'date_decision'=>$attribution->getDateDecision()->format('Y-m-d'),
+                        'foret'=>$attribution->getCodeForet()->getId(),
+                        'exploitant'=>$attribution->getCodeExploitant()->getId(),
+                    );
+                }
+                return new JsonResponse(json_encode($reponse));
+            } else {
+                return  $this->redirectToRoute('app_no_permission_user_active');
+            }
+        }
+    }
 
     #[Route('snvlt/docs_op/{id_exploitant}', name: 'docs_op.list')]
     public function affiche_docs_operateur(

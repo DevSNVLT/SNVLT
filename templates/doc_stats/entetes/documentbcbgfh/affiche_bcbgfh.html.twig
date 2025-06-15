@@ -8,7 +8,7 @@
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
-        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}bcbgfh{% endtrans %}">  Mes BCBGFH-FC -
+        <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="BCBGFH-FC">  Mes BCBGFH-FC -
         [
         <span class="alert-success p-2" style="font-size: 16px;">{{ document_name.numeroDocbcbgfh }}</span>
         - <span class="alert-info p-2 ms-2" style="font-size: 16px;">{{ document_name.codeContrat.codeForet.denomination }}</span>
@@ -21,18 +21,8 @@
         <label for="#" class="badge rounded-5 bg-primary p-2 text-white" style="font-size:16px;margin-left: 5px" id = "lbl_usine"></label>
     </h2>
 
-    {% if(app.user.codeOperateur.id == 2) %}
-        <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
-            <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
-                <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_save" style="background: #ff6f00; font-size: 16px;margin: 10px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>Enregistrer entête</a>
-                <a href="#" id="photo_feuillet" class="btn text-white p-2"style="background: #0022ff; font-size: 16px;margin: 10px;"><i class="mdi mdi-image text-white" style="font-size: 18px; margin-right: 5px;"></i>Ajouter une photo</a>
-                    <a class="btn text-white p-2 " style="border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;" href="#" id="validate_page"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}submit to manager{% endtrans %}</a>
-                    {#<a class="btn text-white p-2 " style="border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;" href="#" id="validate_page"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}Validate loading{% endtrans %}</a>#}
-            </div>
-        </div>
-    {% endif %}
     {% for role in app.user.roles %}
-        {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_ADMIN") %}
+        {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_ADMIN" or role == "ROLE_EXPLOITANT") %}
             {% set roleuser = "AGENT_DPIF" %}
             <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
                 <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
@@ -42,6 +32,13 @@
             </div>
         {% endif %}
     {% endfor %}
+    {% if(app.user.codeOperateur.id == 2) %}
+        <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
+            <div class="btn-group p-2 rounded-5 justify-content-end" role="group" aria-label="Basic example">
+                <a class="btn text-white p-2 " style="border: 0px; font-size: 16px;background: linear-gradient(#037a58, #315123);margin: 10px;" href="#" id="validate_page"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>Soumettre au responsable</a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 
@@ -78,11 +75,11 @@
             <div class="row justify-content-start" style="border: rgba(211,211,211,0.31) 1px solid">
                 <div class="col-md-4 " style="width: 100%;">
                     <div class="row mb-2">
-                        <span class="col-6">{{ 'Page No' | trans }}</span><select class="col-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 16px;background-color: #fcc80b; border: 1px solid lightgrey;color: #021959">
+                        <span class="col-6">Feuillet N°</span><select class="col-6"  name="numero_page_select" id="numero_page_select" data-placeholder="Liste des pages" style="font-size: 16px;background-color: #fcc80b; border: 1px solid lightgrey;color: #021959">
                         </select>
                     </div>
                     <div class="row form-group has-error has-feedback mb-2">
-                        <span class="col-5">{{ 'Destination' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="destination" id="destination" data-placeholder="Destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                        <span class="col-5">Destination</span><span class="text-danger col-1">*</span><select class="col-6"  name="destination" id="destination" data-placeholder="Destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                             <option value="0">-- Sélectionnez une ville ---</option>
                             {% for ville in villes %}
                                 <option value="{{ ville.id }}">{{ ville.nomSousprefecture }}</option>
@@ -90,7 +87,7 @@
                         </select>
                     </div>
                     <div class="row form-group has-error has-feedback mb-2">
-                        <span class="col-5">{{ 'Factory park' | trans }} </span><span class="text-danger col-1">*</span><select class="col-6"  name="parc_usine" id="parc_usine" data-placeholder="usine de destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                        <span class="col-5">Parc Usine</span><span class="text-danger col-1">*</span><select class="col-6"  name="parc_usine" id="parc_usine" data-placeholder="usine de destination" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                             {% for usine in usines %}
                                 <option value="{{ usine.id }}">{{ usine.raisonSocialeUsine }}</option>
                             {% endfor %}
@@ -100,24 +97,24 @@
                 </div>
                 <div class="col-md-4" style="width: 100%;">
                     <div class="row mb-2">
-                        <span class="col-5">{{ 'Date Chargement' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="date" name="date_chargement" id="date_chargement"  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                        <span class="col-5">Daye Chargement</span><span class="text-danger col-1">*</span><input class="col-6" type="date" name="date_chargement" id="date_chargement"  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
 
                     </div>
                     <div class="row mb-2">
-                        <span class="col-6">{{ 'Chauffeur' | trans }}</span><input class="col-6" type="text" name="chauffeur" id="chauffeur" placeholder="Nom et prenoms " style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+                        <span class="col-6">Chauffeur</span><input class="col-6" type="text" name="chauffeur" id="chauffeur" placeholder="Nom et prenoms " style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
 
                     </div>
                     <div class="row mb-2">
-                        <span class="col-5">{{ 'Immatriculation' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text" name="immatriculation" id="immatriculation" placeholder="Immatriculation du camion" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+                        <span class="col-5">Immatriculation</span><span class="text-danger col-1">*</span><input class="col-6" type="text" name="immatriculation" id="immatriculation" placeholder="Immatriculation du camion" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
                     </div>
                 </div>
                 <div class="col-md-4" style="width: 100%;">
                     <div class="row mb-2">
-                        <span class="col-6">{{ 'Cost' | trans }}</span><input class="col-6" type="number"  name="cout" id="cout" placeholder="Coût du chargement" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
+                        <span class="col-6">Coût</span><input class="col-6" type="number"  name="cout" id="cout" placeholder="Coût du chargement" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
 
                     </div>
                     <div class="row mb-2">
-                        <span class="col-5">{{ 'Village' | trans }}</span><span class="text-danger col-1">*</span><input class="col-6" type="text"  name="village" id="village" placeholder="Village" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
+                        <span class="col-5">Village</span><span class="text-danger col-1">*</span><input class="col-6" type="text"  name="village" id="village" placeholder="Village" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;text-transform: uppercase;">
 
 
                     </div>
@@ -128,22 +125,21 @@
         </div>
         <div class="card " style="border: lightgrey solid 1px;background: white;">
             <div class="p-3" style="background:white;">
-                {% if( app.user.codeOperateur.id == 1) %}
+                {% if( app.user.codeOperateur.id == 1 or app.user.codeOperateur.id == 2) %}
 
-                    <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiebcbgfh_dpif"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
+                    <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiebcbgfh_dpif"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>Saisir Données</span></a>
                 {% else %}
-                        <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiecp"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>{{ 'Add Data' | trans }}</span></a>
-
+                        <a href="#" class="btn mb-2 btn-sm m-2" id="add_data"  data-bs-toggle="modal" data-bs-target="#saisiecp"   style="font-size: 18px;color: white;width: 200px;background: #456805"><i class="mdi mdi-plus-circle" style="font-size: 24px;color: white;margin-right: 5px;"></i><span>Saisir Données</span></a>
                 {% endif %}
             </div>
             <div class="ms-4 me-4 card-body p-2" style="background: #f7f4f4">
                 <div class="d-sm-flex justify-content-between align-items-center transaparent-tab-border {">
                     <ul class="nav nav-tabs tab-transparent" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link  text-dark active" style="font-size: 16px;color: #0011ff" id="overview-tab" data-toggle="tab" href="#databcbgfh" role="tab" aria-selected="true">Données BCBGFH-FC</a>
+                            <a class="nav-link  text-dark active" style="font-size: 16px;color: #0011ff;background-color: #8dcbcb;" id="overview-tab" data-toggle="tab" href="#databcbgfh" role="tab" aria-selected="true">Données BCBGFH-FC</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff" id="movements-tab" data-toggle="tab" href="#photo_tab" role="tab" aria-selected="false">Photo</a>
+                            <a class="nav-link text-dark" style="font-size: 16px;color: #0011ff;background-color: #8dcbcb;" id="movements-tab" data-toggle="tab" href="#photo_tab" role="tab" aria-selected="false">Photo</a>
                         </li>
                     </ul>
                     <div class="d-md-block d-none">
@@ -160,15 +156,15 @@
                                     <table class="table table-responsive sticky-top" id="data_bcbgfh"  style="height: 400px;">
                                         <thead>
                                         <tr class="" style="background: linear-gradient(#1f3b01,#343435);color:white;">
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Letter' |trans}}</th>
-                                            <th class="font-weight-light" style="font-size: 20px;width: 15%;">{{ 'species' |trans }}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Zone' |trans }}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'X' |trans}}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Y' |trans}}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'length' |trans}}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">{{ 'Diameter' |trans}}</th>
-                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">{{ 'Volume m' |trans}}<sup>3</sup></th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">Arbre N°</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">Lettre</th>
+                                            <th class="font-weight-light" style="font-size: 20px;width: 15%;">Essence</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">Zone</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">X</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">Y</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">Longueur</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 7%;">Diamètre</th>
+                                            <th class="text-center font-weight-light" style="font-size: 20px;width: 10%;">Volume (m<sup>3</sup>)</th>
                                         </tr>
                                         </thead>
                                         <tbody id="body_contenu" class="bg-white">
@@ -211,7 +207,7 @@
 
                         <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
                             <div class="alert-danger p-2 m-2" style="border-radius:10px; width:100%;" id="lbl_alert"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">N° <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
                                 {# <input type="number" value="" id="numero_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;" onload="this.focus()">
                                 #}<select type="number" class="select_numero"  id="select_numero" style="font-size: 16px;background-color: #72d5f9;font-weight: bold; border: 1px solid lightgrey;" onload="this.focus()">
 
@@ -223,7 +219,7 @@
                                     <option value="D">D</option>#}
                                 </select>
                             </div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Essence <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
                                 {#        <select id="nom_essencebcbgfh" readonly  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                                     <option value=0>-- Sélectionnez une essence ---</option>
                                     {% for essence in essences %}
@@ -232,7 +228,7 @@
                                 </select>#}
                                 <input type="text" readonly value="" id="nom_essencebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                             </div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Zone H. <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
                                 {#<select id="zh_lignepagebcbgfh" readonly="true" onFocus="expand(this)" onBlur="unexpand(this)" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                                     <option value=0>-- Sélectionnez une zone ---</option>
                                     {% for zone in zones %}
@@ -241,19 +237,11 @@
                                 </select>#}
                                 <input type="text" readonly value="" id="zh_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                             </div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="x_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="y_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            {#<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
-                                <select  id="lettre_lignepagebcbgfh" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                    <option value="D">D</option>
-                                </select>
-                            </div>#}
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="longeur_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="diametre_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">X <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="x_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Y <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="y_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Longueur (cm)<span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="longeur_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Diamètre (cm) <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input type="number" readonly value="" id="diametre_lignepagebcbgfh" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Volume (m<sup>3</sup>)  </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
                         </div>
 
                     </div>
@@ -262,7 +250,7 @@
                 </div>
                 <div class="modal-footer alert-secondary">
 
-                    <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -287,7 +275,7 @@
 
                         <div  class="row bg-white m-2" style="height: 500px; overflow-y: scroll">
                             
-							<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'species' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+							<div class="col-4 mt-4"><label for="" style="font-weight: bold">Essence <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
                                 <select class="curseur" id="nom_essencebcbgfh_dpif" readonly  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                                     <option value=0>-- Sélectionnez une essence ---</option>
                                     {% for essence in essences %}
@@ -296,11 +284,11 @@
                                 </select>
                             </div>
 							
-							<div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'No' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
+							<div class="col-4 mt-4"><label for="" style="font-weight: bold">N° <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span> </label></div><div class="col-7 mt-3">
                                 <input class="curseur" type="number" value="" id="numero_lignepagebcbgfh_dpif" style="font-size: 16px;background-color: white; border: 1px solid lightgrey;" onload="this.focus()">
                             </div>
 							
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Zone' |trans }} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Zone H. <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
 
                                 <select class="curseur" id="zh_lignepagebcbgfh_dpif"  style="font-size: 16px;background-color: white; border: 1px solid lightgrey;">
                                     <option value=0>-- Sélectionnez une zone ---</option>
@@ -310,10 +298,10 @@
                                 </select>
 
                                 </div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'X' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="x_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Y' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="y_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">X <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="x_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Y <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="y_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
 
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Letter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Lettre <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3">
                                 <select class="curseur" id="lettre_lignepagebcbgfh_dpif" style="font-size: 16px;background-color: #72d5f9; border: 1px solid lightgrey;font-weight: bold;">
                                     <option value="A">A</option>
                                     <option value="B">B</option>
@@ -322,9 +310,9 @@
                                 </select>
                             </div>
 
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Length' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="longeur_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Diameter' |trans}} <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="diametre_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
-                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">{{ 'Volume (m3)' |trans}} </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh_dpif" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Longueur (cm) <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="longeur_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Diamètre (cm) <span class="text-danger" style="font-weight: bold;font-size: 18px;margin-left: 5px;">*</span></label></div><div class="col-7 mt-3"><input class="curseur" type="number"  value="" id="diametre_lignepagebcbgfh_dpif" style="font-weight: bold;font-size: 16px;background-color: white; border: 1px solid lightgrey;"></div>
+                            <div class="col-4 mt-4"><label for="" style="font-weight: bold">Volume (m<sup>3</sup>) </label></div><div class="col-7 mt-3"><input type="number" value="" id="cubage_lignepagebcbgfh_dpif" readonly style="font-weight: bold;background-color: #047104;color: white;"></div>
                         </div>
 
                     </div>
@@ -333,7 +321,7 @@
                 </div>
                 <div class="modal-footer alert-secondary">
 
-                    <button type="button" class="btn btn-primary mt-3" id="save_data_dpif" style="width: 100%; font-size: large;">{{ 'Save' | trans}}</button>
+                    <button type="button" class="btn btn-primary mt-3" id="save_data_dpif" style="width: 100%; font-size: large;">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -371,10 +359,10 @@
         })
 
         $('#numero_page_select').on('change', function (){
-            //document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'Loading data'|trans }}</td></tr>';
+
             index_page = this.value;
             initialiser_page();
-            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+            document.querySelector('#body_contenu').innerHTML = '<h1>Chargement...</h1>'
 
             affiche_page_courante(index_page)
 
@@ -431,15 +419,7 @@
                 $('#immatriculation').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: 'Chargement BCBGFH-FC',
-                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
             }else {
                 maj_page_bcbgfh();
             }
@@ -530,8 +510,7 @@
                     var contenu = '';
                     let cubage_total = 0;
                     if(lignes.length === 0){
-                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
-                        document.querySelector('#body_contenu').innerHTML = '<tr  style="font-size: 20px;"><h6 class="text-danger font-weight-lighter bg-transparent">No Data Available</h6></tr>'
+                       document.querySelector('#body_contenu').innerHTML = '<tr  style="font-size: 20px;"><h4 class="text-danger font-weight-lighter bg-transparent">Aucune donnée disponible</h4></tr>'
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
@@ -591,7 +570,7 @@
                 'type': 'POST',
                 success: function(response) {
                     let liste_numeros = JSON.parse(response)
-                    var contenu = '<option>{{ 'Select tree No' | trans }}</option>';
+                    var contenu = '<option>Sélectionner le N° Arbre</option>';
 
                     for (var i = 0; i< liste_numeros.length ; i++){
                         contenu = contenu + '<option value="' + liste_numeros[i].id_ligne + '">' + liste_numeros[i].num + '</option>'
@@ -626,17 +605,7 @@
                 $('#date_chargement').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    background: '#f5c8b8',
-                    timer : 3000,
-                    icon: "success",
-                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
-                    showConfirmButton: false
-                });
-
-                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+                render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
             }else {
                 if (
                     $('#select_numero').val() === "" ||
@@ -648,32 +617,13 @@
                     $('#diametre_lignepagebcbgfh').val() === "" ||
                     $('#zh_lignepagebcbgfh').val() === null
                 ){
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#f5c8b8',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
-                        showConfirmButton: false
-                    });
-
-                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
-
+                    render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
                 }else if ( $('#longeur_lignepagebcbgfh').val() > 2000 || $('#longeur_lignepagebcbgfh').val() < 0 ||
                     $('#diametre_lignepagebcbgfh').val() > 200 || $('#diametre_lignepagebcbgfh').val() < 0 ||
                     ($('#x_lignepagebcbgfh').val()).length > 7 || ($('#x_lignepagebcbgfh').val()).length  < 6 ||
                     ($('#y_lignepagebcbgfh').val()).length > 7 || ($('#y_lignepagebcbgfh').val()).length  < 6
                 ) {
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#f5c8b8',
-                        timer : 3000,
-                        icon: "success",
-                        title: "{% trans %}The values seem to be invalid{% endtrans %}",
-                        padding: '1em'
-                    });
+                    render_toast_value("Les valeurs saisies semblent incorrectes", 0)
                 } else {
 					
                     add_ligne_bcbgfh();
@@ -692,17 +642,7 @@
                 $('#date_chargement').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    background: '#f5c8b8',
-                    timer : 3000,
-                    icon: "success",
-                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
-                    showConfirmButton: false
-                });
-
-                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+                render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
             }else {
                 if (
                     $('#numero_lignepagebcbgfh_dpif').val() === "" ||
@@ -714,32 +654,14 @@
                     $('#diametre_lignepagebcbgfh_dpif').val() === "" ||
                     $('#zh_lignepagebcbgfh_dpif').val() === null
                 ){
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#f5c8b8',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
-                        showConfirmButton: false
-                    });
-
-                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+                    render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
 
                 }else if ( $('#longeur_lignepagebcbgfh_dpif').val() > 2000 || $('#longeur_lignepagebcbgfh_dpif').val() < 0 ||
                     $('#diametre_lignepagebcbgfh_dpif').val() > 200 || $('#diametre_lignepagebcbgfh_dpif').val() < 0 ||
                     ($('#x_lignepagebcbgfh_dpif').val()).length > 7 || ($('#x_lignepagebcbgfh_dpif').val()).length  < 6 ||
                     ($('#y_lignepagebcbgfh_dpif').val()).length > 7 || ($('#y_lignepagebcbgfh_dpif').val()).length  < 6
                 ) {
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#f5c8b8',
-                        timer : 3000,
-                        icon: "success",
-                        title: "{% trans %}The values seem to be invalid{% endtrans %}",
-                        padding: '1em'
-                    });
+                    render_toast_value("Les valeurs saisies semblent incorrectes", 0)
                 } else {
 					
                     add_ligne_bcbgfh_dpif();
@@ -769,16 +691,7 @@
                 'type': 'POST',
 
                 success: function(response) {
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#dffbdd',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Page header saved !{% endtrans %}',
-                        showConfirmButton: false
-                    });
-
+                    render_toast_value("Entête Page BCBGFH-FC enregistrée", 1)
                 }
             })
         }
@@ -808,9 +721,9 @@
                     //alert(retour)
                     if (retour[0].code_bcbgfh === "SAME_NUMBER") {
                         document.querySelector('#lbl_alert').style = "display:inline";
-                        document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
+                        document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">Attention!! ce numéro de bille existe déjà pour cette forêt</h5>';
                         //alert("Sorry! This number with this forest is already in used");
-
+                        render_toast_value("Attention!! ce numéro de bille existe déjà pour cette forêt",0)
 
                     } else {
 
@@ -853,11 +766,7 @@
 							//alert(retour[0].code_bcbgfh)
 							//alert(retour)
 							if (retour[0].code_bcbgfh === "SAME_NUMBER") {
-								//document.querySelector('#lbl_alert').style = "display:inline";
-								//document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">{{ 'Sorry! This number with this forest is already in used' | trans}}</h5>';
-								alert("Désolé! Cette Numéro de bille a déjà été utilisé pour ce contrat");
-
-
+                                render_toast_value("Attention!! ce numéro de bille existe déjà pour cette forêt",0)
 							} else {
 								initialiser_dpif();
 								affiche_lignes_courante(index_page);
@@ -888,15 +797,7 @@
                 $('#date_chargement').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: 'Chargement BCBGFH-FC',
-                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Saisissez SVP les zones obligatoires avant de continuer", 2)
             }else {
                 validate_pagebcbgfh();
             }
@@ -905,14 +806,14 @@
         function validate_pagebcbgfh()
         {
             Swal.fire({
-                html: "<h4 class='alert-success text-dark font-weight-bold p-3'>{% trans %}Validate this Loading ?{% endtrans %}</h4>",
+                html: "<h4 class='alert-success text-dark font-weight-bold p-3'>Valider le chargement</h4>",
                 imageUrl: '{{ asset('assets/images/SNVLT.png') }}',
                 showCancelButton: true,
                 confirmButtonColor: '#23850a',
                 cancelButtonColor: '#fb0000',
                 background: '#f3f8e9',
-                confirmButtonText: '{% trans %}Yes, Validate{% endtrans %}',
-                cancelButtonText: '{% trans %}Cancel{% endtrans %}',
+                confirmButtonText: 'Oui, Valider',
+                cancelButtonText: 'Annuler',
                 toast: true,
                 padding: '3em'
             }).then((result) => {
@@ -924,18 +825,9 @@
                         success: function(response){
                             console.log(response);
                             let valeur = JSON.parse(response);
-
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                background: '#dffbdd',
-                                timer : 3000,
-                                icon: "success",
-                                title: '{% trans %}The loading is sent to manager!{% endtrans %}',
-                                showConfirmButton: false
-                            });
+                            render_toast_value("Succès! Le chargement a été soumis au responsable", 1)
                             initialiser_page();
-                            document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
+                            document.querySelector('#body_contenu').innerHTML = '<h1>Chargement...</h1>'
                             affiche_page_courante(index_page)
 
                             affiche_lignes_courante(index_page)
@@ -1055,7 +947,7 @@
                 success: function(response){
                     let liste_usines = JSON.parse(response)
                     if (liste_usines.length > 0){
-                        contenu_parc_usine = '<option value="0">--{{ 'Select a factory'|trans }}--</option>';
+                        contenu_parc_usine = '<option value="0">--Sélectionnez une usine--</option>';
                         for (let i = 0; i < liste_usines.length ; i++){
                             contenu_parc_usine = contenu_parc_usine + '<option value="' + liste_usines[i].id_usine + '">' + liste_usines[i].rs + '</option>'
                         }

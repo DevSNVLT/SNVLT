@@ -8,8 +8,7 @@
 {% if (app.user.isIsresponsable) %}
 <div class="col-md-12 row p-4" style="border: 1px;min-height:500px;">
 
-    <div class="col-md-8 alert-light p-1 chrs_usine">
-
+    <div class="col-md-8 alert-light p-1 chrs_usine" style="min-height: 500px;">
 
     </div>
     <div class="col-md-4 p-1 bg-white " style="border-bottom: 2px solid darkblue;">
@@ -94,7 +93,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
 <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
 <script>
-
+    let infos_connaisserment = "";
     {% if(app.user.codeindustriel) %}
         load_chargements({{ app.user.codeindustriel.id }});
     {% endif %}
@@ -113,12 +112,13 @@
             type : 'POST',
             success: function (response){
                 let reponse = JSON.parse(response);
+
                 if (reponse.length > 0){
                     contenu = '<h3 class="card-title p-2 text-white font-weight-light w-100" style="background-color: #145b04;width:100%;">Chargements Grumes en destination de mon usine </h3>';
                     contenu = contenu + '<div class="bg-white p-2"><div class="text-center"><a class="btn btn-sm alert-secondary font-weight-light p-2 m-2" href="{{ path('accept_loadings') }}" id="btn_accept_chr" style="font-size: 16x²px;border:2px solid black">Accepter tous les chargements</a></div>'
                     contenu = contenu + '<table class="table table-responsive tbl_chr m-2 bg-white" style="width: 98%;">'
                     contenu = contenu + '<thead>'
-                    contenu = contenu + '<tr class="alert-light">'
+                    contenu = contenu + '<tr class="bg-secondary">'
                     contenu = contenu + '<th class="text-center">N° Feuillet</th>'
                     contenu = contenu + '<th class="text-center">Date</th>'
                     contenu = contenu + '<th class="text-center">Document</th>'
@@ -143,10 +143,12 @@
                             }  else if (reponse[i].id_source === 6 ){
                                 contenu = contenu + '<tr style="background: #d2f0f6;">'
                                 contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_btgu_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
-                            } else {
+                            } else if (reponse[i].id_source === 21 ){
+                                contenu = contenu + '<tr style="background: #fafffe;">'
+                                contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbgfh_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                            }  else {
                                 contenu = contenu + '<tr style="background: white;">'
                             }
-                            contenu = contenu + '<td class="text-center">' + reponse[i].numero + '</td>';
                             contenu = contenu + '<td class="text-center">' + reponse[i].date_chr + '</td>';
                             contenu = contenu + '<td class="text-center">' + reponse[i].document + '</td>';
                             contenu = contenu + '<td class="text-center font-weight-bold">' + reponse[i].source + '</td>';
@@ -162,6 +164,7 @@
                     contenu = contenu + '</table></div>';
 
                     document.querySelector('.chrs_usine').innerHTML = contenu;
+                    infos_connaisserment = document.querySelector(".infos_connaissement").innerText;
                 }
                     }
                 });
@@ -170,7 +173,7 @@
     function load_body_chargements(id_usine){
             let contenu = '';
             let contenu_pied = '';
-            let infos_connaisserment = document.querySelector(".infos_connaissement").innerText;
+
 
             if (infos_connaisserment === "Aucun connaissement disponible"){
                 load_chargements(id_usine)
@@ -191,6 +194,9 @@
                                 }  else if (reponse[i].id_source === 6 ){
                                     contenu = contenu + '<tr style="background: #ebf7fa;">'
                                     contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_btgu_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
+                                } else if (reponse[i].id_source === 21 ){
+                                    contenu = contenu + '<tr style="background: #fafffe;">'
+                                    contenu = contenu + '<td class="text-center"><a class="fw-bold" href="{{ path('app_portail') }}snvlt/detail_bcbgfh_loading/details/' + reponse[i].id + '" id="' + reponse[i].id + '">' + reponse[i].numero + '</a></td>'
                                 } else {
                                     contenu = contenu + '<tr style="background: white;">'
                                 }

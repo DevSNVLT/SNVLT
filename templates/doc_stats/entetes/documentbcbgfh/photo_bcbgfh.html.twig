@@ -1,13 +1,13 @@
 {% extends 'template_base.html.twig' %}
 
 {% block Title %}
-    {% trans %}SNVLT{% endtrans %} - {% trans %}Photo Feuillet BRH{% endtrans %}
+    {% trans %}SNVLT{% endtrans %} - {% trans %}Photo Feuillet BCBGFH-FC{% endtrans %}
 {% endblock %}
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
         <img src="{{ asset('assets/images/webapp/document_operateur.png') }}" alt="{% trans %}Pho{% endtrans %}">
-        {% trans %}Photo Feuillet BRH{% endtrans %}
+        {% trans %}Photo Feuillet BCBGFH-FC{% endtrans %}
     </h2>
 {% endblock %}
 
@@ -26,7 +26,7 @@
         <div class="alert-success" style="height: 40px;"></div>
         <div class="card">
             <div class="card-body">
-                <h3 class="alert-success">Feuillet N° {{ feuillet.numeroPagebrh }} - [BRH N° {{ feuillet.codeDocbrh.numeroDocbrh }}]</h3>
+                <h3 class="alert-success">Feuillet N° {{ feuillet.numeroPagebcbgfh }} - [BRH N° {{ feuillet.codeDocbcbgfh.numeroDocbcbgfh }}]</h3>
 
                 {{ form_start(form, {'attr': {novalidate: 'novalidate'}}) }}
 

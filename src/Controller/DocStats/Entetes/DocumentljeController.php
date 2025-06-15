@@ -6,6 +6,7 @@ use App\Controller\Services\AdministrationService;
 use App\Controller\Services\Utils;
 use App\Entity\DocStats\Entetes\Documentbrh;
 use App\Entity\DocStats\Entetes\Documentlje;
+use App\Entity\DocStats\Pages\Pagebcbgfh;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Pages\Pagebtgu;
@@ -709,7 +710,7 @@ class DocumentljeController extends AbstractController
 
                             }
                         } else if ($source_id == 3){
-                            // Déchargement BRH
+                            // Déchargement BCBP
                             $pagebcbp = $registry->getRepository(Pagebcbp::class)->find($page_source_id);
                             if ($pagebcbp  && $pagebcbp->isConfirmationUsine() && !$pagebcbp->getEntreLje()){
 
@@ -746,6 +747,48 @@ class DocumentljeController extends AbstractController
                                 }
                                 $pagebcbp->setEntreLje(true);
                                 $registry->getManager()->persist($pagebcbp);
+
+                                $registry->getManager()->flush();
+
+                            }
+                        } else if ($source_id == 21){
+                            // Déchargement BCBGFH-FC
+                            $pagebcbgfh = $registry->getRepository(Pagebcbgfh::class)->find($page_source_id);
+                            if ($pagebcbgfh  && $pagebcbgfh->isConfirmationUsine() && !$pagebcbgfh->isEntreLje()){
+
+                                foreach ($pagebcbgfh->getLignepagebcbgfhs() as $lignebcbgfh){
+
+                                    $ligne_lje = new Lignepagelje();
+
+                                    //Affectation des valeurs à LignLje
+                                    $ligne_lje->setNumeroArbre($lignebcbgfh->getNumeroLignepagebcbgfh());
+                                    $ligne_lje->setEssence($lignebcbgfh->getNomEssencebcbgfh());
+                                    $ligne_lje->setZh($lignebcbgfh->getZhLignepagebcbgfh());
+                                    $ligne_lje->setX($lignebcbgfh->getXLignepagebcbgfh());
+                                    $ligne_lje->setY($lignebcbgfh->getYLignepagebcbgfh());
+                                    $ligne_lje->setLettre($lignebcbgfh->getLettreLignepagebcbgfh());
+                                    $ligne_lje->setLng($lignebcbgfh->getLongeurLignepagebcbgfh());
+                                    $ligne_lje->setDm($lignebcbgfh->getDiametreLignepagebcbgfh());
+                                    $ligne_lje->setVolume($lignebcbgfh->getCubageLignepagebcbgfh());
+                                    $ligne_lje->setDateDechargement( \DateTime::createFromFormat('Y-m-d', $date_dechargement) );
+                                    $ligne_lje->setCreatedAt(new \DateTime());
+                                    $ligne_lje->setCreatedBy($user);
+                                    $ligne_lje->setCodeTypeDoc($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getTypeDocument());
+                                    $ligne_lje->setCodeFeuillet($lignebcbgfh->getId());
+                                    $ligne_lje->setRsOrigine($pagebcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant());
+                                    $ligne_lje->setNumeroDocument($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getNumeroDocbcbgfh());
+                                    $ligne_lje->setDocumentSource($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getNumeroDocbcbgfh());
+                                    $ligne_lje->setForet($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getNumeroForet());
+
+                                    $ligne_lje->setCodePagelje($pagelhje);
+                                    $ligne_lje->setTransforme(false);
+                                    $ligne_lje->setTronconnee(false);
+
+                                    $registry->getManager()->persist($ligne_lje);
+
+                                }
+                                $pagebcbgfh->setEntreLje(true);
+                                $registry->getManager()->persist($pagebcbgfh);
 
                                 $registry->getManager()->flush();
 
@@ -1030,6 +1073,57 @@ class DocumentljeController extends AbstractController
             }
     
         }
+        #[Route('snvlt/doc/stats/lje/cmb_chrg_bcbgfh/{id_pagelje}/{numero_feuillet}', name: 'cmb_chargements_a_accepter_bcbgfh')]
+                public function cmb_chargements_a_accepter_bcbgfh(
+                    Request $request,
+                    UserRepository $userRepository,
+                    int $id_pagelje = null,
+                    string $numero_feuillet = null,
+                    ManagerRegistry $registry
+                ): Response
+                {
+                    if(!$request->getSession()->has('user_session')){
+                        return $this->redirectToRoute('app_login');
+                    } else {
+                        if ($this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_DPIF') or $this->isGranted('ROLE_DPIF_SAISIE') or $this->isGranted('ROLE_ADMIN'))
+                        {
+                            $user = $userRepository->find($this->getUser());
+                            $code_groupe = $user->getCodeGroupe()->getId();
+
+                            //Recherche de l'usine
+                            $usine = $registry->getRepository(Pagelje::class)->find($id_pagelje)->getCodeDoclje()->getCodeUsine();
+                            //dd($usine->getId());
+
+                            $liste_chargements = array();
+
+                            $feuillets = $registry->getRepository(Pagebcbgfh::class)->findBy([
+                                'confirmation_usine'=>true,
+                                'parc_usine_bcbgfh'=>$usine,
+                                'fini'=>true,
+                                'entre_lje'=>false,
+                                'numero_pagebcbgfh'=>$numero_feuillet
+                            ],
+                                [
+                                    'date_chargementbcbgfh'=>'ASC'
+                                ]);
+
+                            foreach($feuillets as $feuillet ){
+                                $liste_chargements[] = array(
+                                    'reference'=>"[" . $feuillet->getCodeDocbcbgfh()->getNumeroDocbcbgfh() . "] - [". $feuillet->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination() . "]",
+                                    'id_page'=>$feuillet->getId(),
+                                    'id_bcbgfh'=>$feuillet->getCodeDocbcbgfh()->getId(),
+                                );
+                            }
+
+                            sort($liste_chargements, SORT_NUMERIC );
+                            return new JsonResponse(json_encode($liste_chargements));
+                        } else {
+                            return $this->redirectToRoute('app_no_permission_user_active');
+                        }
+
+                    }
+
+                }
 
     #[Route('snvlt/doc/stats/lje/cmb_chrg_btgu/{id_pagelje}/{numero_feuillet}', name: 'cmb_chargements_a_accepter_btgu')]
     public function cmb_chargements_a_accepter_btgu(
@@ -1593,7 +1687,50 @@ class DocumentljeController extends AbstractController
 
         }
     }
-    
+
+    #[Route('/snvlt/connaissement/bcbgfh', name: 'lje_connaissement_bcbgfh')]
+    public function lje_connaissement_bcbgfh(
+        Request $request,
+        UserRepository $userRepository,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_DPIF') or $this->isGranted('ROLE_DPIF_SAISIE') or $this->isGranted('ROLE_ADMIN'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $mes_connaissements_bcbgfh = array();
+
+                $connaisseements = $registry->getRepository(Pagebcbgfh::class)->findBy([
+                    'fini'=>true,
+                    'confirmation_usine'=>true,
+                    'parc_usine_bcbgfh'=>$user->getCodeindustriel(),
+                    'entre_lje'=>false
+                ]);
+
+                    foreach ($connaisseements as $connaisseement){
+                        if ($connaisseement->getUpdatedAt()){$date_cn = $connaisseement->getUpdatedAt()->format('d/m/Y');} else {$date_cn = "-";}
+                        $mes_connaissements_bcbgfh[] = array(
+                            'date_connaissement'=>$date_cn,
+                            'numero'=>$connaisseement->getNumeroPagebcbgfh(),
+                            'id_page'=>$connaisseement->getId(),
+                            'brh'=>$connaisseement->getCodeDocbcbgfh()->getNumeroDocbcbgfh()
+                        );
+                     }
+                        rsort($mes_connaissements_bcbgfh);
+
+                return new JsonResponse(json_encode($mes_connaissements_bcbgfh));
+            }else{
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
     #[Route('/snvlt/connaissement/bcbp', name: 'lje_connaissement_bcbp')]
     public function lje_connaissement_bcbp(
         Request $request,

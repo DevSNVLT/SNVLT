@@ -46,7 +46,7 @@
                         <tr class="h3 bg-danger text-white" style="font-size: 20px;">
                         {% endif %}
                             {% if(attribution.statut) %}
-                                <td class="text-dark fw-bold"><a class=" editBtn text-dark" style="font-size: 20px; font-weight: bold;" href="#" id="{{ attribution.id }}">{{ attribution.numeroDecision }} du {{ attribution.dateDecision | date('d/m/Y') }}</a></td>
+                                <td class="text-dark fw-bold"><a class=" editBtn text-dark editAttribution" style="font-size: 20px; font-weight: bold;" href="#" data-bs-toggle="modal" data-bs-target="#modif_attribution" id="{{ attribution.id }}">{{ attribution.numeroDecision }} du {{ attribution.dateDecision | date('d/m/Y') }}</a></td>
                                 <td class="text-dark fw-bold"><a href="#" class="badge p-1 text-white" style="background: #0a430c;font-size: 20px;">{{ attribution.codeForet.denomination }}</a></td>
                                 <td class="text-dark fw-bold" style="font-size: 20px;">
                             {% else %}
@@ -151,6 +151,61 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modif_attribution"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-white">
+                <div class="modal-header alert-success">
+                    <h3 class="modal-title" id="backDropModalTitle">Modifier une atribution</h3>
+
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body text-center" style="border: 3px solid #004803">
+                    <h3 class="text-danger loading">Chargement...</h3>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">N° Décision</span>
+                        <input type="text" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="num_decision"  aria-label="N° de la décision" aria-describedby="N° de la décision">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Date Décision</span>
+                        <input type="date" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="date_decision"  aria-label="Date de la décision" aria-describedby="Date de la décision">
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Forêt</span>
+                        <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="foret"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                            <option value="0">Sélectionnez la forêt</option>
+                            {% for foret in forets %}
+                                {% if (foret.codeTypeForet.id == 1) %}
+                                    <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                        <span class="input-group-text h4 alert-light" style="min-width: 200px;">Exploitant</span>
+                        <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="exploitant"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                            <option value="0">Sélectionnez l'exploitant</option>
+                            {% for exploitant in exploitants %}
+                                {% if (exploitant.sigle) %}
+                                    <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                                {% else %}
+                                    <option value="{{ exploitant.id }}">{{ exploitant.raisonSocialeExploitant }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <a href="{{ path('app_attribution') }}" class="btn btn-danger p-2"><i class="bi bi-back me-2"></i>Retourner à la liste</a>
+                    <a href="#" class="btn btn-primary p-2" id="btn_add_att"><i class="bi bi-back me-2"></i>Ajouter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
@@ -218,6 +273,86 @@
                     }
                 })
         })
+
+        $('.editAttribution').on('click', function (){
+            select_att(this.id);
+            id_attribution = this.id;
+        })
+        function select_att(id_attr){
+            $('.loading').text("Chargement...");
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/contrat/attr/search/' + id_attr,
+                'type': 'POST',
+                success: function(response) {
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        $(".modal-title").text("Modifier l'attribution [" + reponse[0].numero_decision + " du " + reponse[0].date_decision + "]")
+                        $('#num_decision').val(reponse[0].numero_decision);
+                        $('#date_decision').val(reponse[0].date_decision);
+                        $('#foret').val(reponse[0].foret);
+                        $('#exploitant').val(reponse[0].exploitant);
+                        $('.loading').text("");
+                    } else {
+                        render_toast_value("Erreur serveur", 0);
+                        $('.loading').text("");
+                    }
+                }
+            })
+
+        }
+
+        $('#btn_add_att').on('click', function(){
+            let date_decision = new Date($("#date_decision").val()).toISOString().split("T")[0]; // Format YYYY-MM-DD
+            if ( $("#num_decision").val() === "" ||
+                $("#date_decision").val() === "" ||
+                $("#foret").val() === "0" ||
+                $("#exploitant").val() === "0"
+            ) {
+                render_toast_value("Merci de renseigner correctement toutes les informations requises", 2)
+            } else {
+                if (getNbJoursAtt(new Date(date_decision), new Date()) < 0) {
+                    render_toast_value("La date de signature ne peut postérieure à la date du jour ", 2)
+                } else {
+                    ajout_att();
+                }
+
+            }
+        })
+
+        function ajout_att(){
+            var obj = {};
+            let decision = $("#num_decision").val()
+            obj.foret =  $("#foret").val();
+            obj.exploitant =  $("#exploitant").val();
+            obj.numero_decision =  decision.replaceAll('/', '-');
+            obj.date_decision =  $("#date_decision").val();
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/att/edit/' + id_attribution + "/" + data,
+                'type': 'POST',
+                success: function(response) {
+
+                    restaure()
+                    render_toast_value('Attribution enregistrée avec succès', 1)
+                }
+            })
+        }
+
+        function restaure(){
+            $("#foret").val("0");
+            $("#exploitant").val("0");
+            $("#num_decision").val("");
+            $("#date_decision").val("");
+            $("#num_decision").focus();
+        }
+
+        function getNbJoursAtt(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
     </script>
 
 {% endblock %}
