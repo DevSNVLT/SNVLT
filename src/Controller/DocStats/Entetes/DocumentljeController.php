@@ -436,12 +436,14 @@ class DocumentljeController extends AbstractController
                 $exp = "-";
                 $feuillet = "-";
                 $page_lje = $pages_lje->find($id_page);
+
                 if($page_lje){
                     $lignes_lje = $registry->getRepository(Lignepagelje::class)->findBy(['code_pagelje'=>$page_lje]);
+
                     $my_lje_page = array();
                     //dd($lignes_lje);
                     foreach ($lignes_lje as $lignelje){
-                         if(!$lignelje->getCodePagebtgu()){
+                         //if(!$lignelje->getCodePagebtgu()){
 
                         if ($lignelje->getRsOrigine()){
                             $mrt = $lignelje->getRsOrigine()->getMarteauExploitant();
@@ -461,6 +463,12 @@ class DocumentljeController extends AbstractController
                                 }elseif ($lignelje->getCodeTypeDoc()->getId() == 3){
                                     $f = $registry->getRepository(Pagebcbp::class)->find($lignelje->getCodeFeuillet());
                                     if($f){$feuillet = $f->getNumeroPagebcbp();}
+                                }elseif ($lignelje->getCodeTypeDoc()->getId() == 6){
+                                    $f = $registry->getRepository(Pagebtgu::class)->find($lignelje->getCodeFeuillet());
+                                    if($f){$feuillet = $f->getNumeroPagebtgu();}
+                                }elseif ($lignelje->getCodeTypeDoc()->getId() == 21){
+                                    $f = $registry->getRepository(Pagebcbgfh::class)->find($lignelje->getCodeFeuillet());
+                                    if($f){$feuillet = $f->getNumeroPagebcbgfh();}
                                 }
                             }
                         }
@@ -492,7 +500,7 @@ class DocumentljeController extends AbstractController
                             'source'=>$source,
                             'document'=>$lignelje->getNumeroDocument()
                         );
-                       }
+                       //}
 
                     }
 
@@ -806,7 +814,8 @@ class DocumentljeController extends AbstractController
                                     //Affectation des valeurs à l'historique
                                     $lje_historique = new HistoriqueLje();
                                     $lje_historique->setCodeBille($ligne_lje);
-                                    $lje_historique->setLastCodeUsine($ligne_lje->getCodePagelje()->getCodeDoclje()->getCodeUsine());
+                                    //dd($ligne_lje->getCodePagelje()->getCodeDoclje()->getCodeUsine()->getId());
+                                    $lje_historique->setLastCodeUsine($ligne_lje->getCodePagelje()->getCodeDoclje()->getCodeUsine()->getId());
                                     $lje_historique->setCreatedAt(new \DateTimeImmutable());
                                     $lje_historique->setCreatedBy($user);
                                     $registry->getManager()->persist($lje_historique);

@@ -185,10 +185,11 @@
                 success : function (){
                     render_toast_value("Chargement accepté", 1)
                     document.location.reload();
+                },
+                error : function (erreur){
+                    render_toast_value("Chargement refusé", 0)
                 }
             })
-            render_toast_value("Chargement refusé", 0)
-            //document.location.reload();
         })
     </script>
 

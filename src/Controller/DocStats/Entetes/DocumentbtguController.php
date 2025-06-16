@@ -609,7 +609,7 @@ class DocumentbtguController extends AbstractController
                             'zh'=>$lignebtgu->getZh()->getZone(),
                             'lng'=>$lignebtgu->getLng(),
                             'dm'=>$lignebtgu->getDm(),
-                            'volume ²'=>round($lignebtgu->getVolume(),3),
+                            'volume'=>round($lignebtgu->getVolume(),3),
                             'created_at'=>$lignebtgu->getCreatedAt()->format('d/m/Y h:i:s'),
                             'created_by'=>$lignebtgu->getCreatedBy(),
                             'exploitant'=>$registry->getRepository(Exploitant::class)->findOneBy(["numero_exploitant"=>(int) $lignebtgu->getCodeExploitant()])->getSigle()
@@ -1144,4 +1144,57 @@ class DocumentbtguController extends AbstractController
 
         }
     }
+
+    #[Route('/snvlt/detail_btgu_loading/details/{id_page}', name:'app_my_btgu_loadings')]
+    public function my_btgu_loadings(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_page,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        UserRepository $userRepository,
+        NotificationRepository $notifications
+    ){
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or
+                $this->isGranted('ROLE_ADMIN') or
+                $this->isGranted('ROLE_ADMINISTRATIF' ) or
+                $this->isGranted('ROLE_INDUSTRIEL' ) ){
+
+
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+
+                //dd($notification->getRelatedToId());
+                $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($id_page);
+                if ($pagebtgu) {
+
+
+                    return $this->render('doc_stats/entetes/documentbtgu/details_chargement.html.twig',
+                        [
+                            'liste_menus'=>$menus->findOnlyParent(),
+                            "all_menus"=>$menus->findAll(),
+                            'menus'=>$permissions->findBy(['code_groupe_id'=>$code_groupe]),
+                            'mes_notifs'=>$notifications->findBy(['to_user'=>$user, 'lu'=>false],[],5,0),
+                            'groupe'=>$code_groupe,
+                            'chargement'=>$pagebtgu,
+                            'liste_parent'=>$permissions
+                        ]);
+
+                } else {
+                    return new JsonResponse(json_encode(false));
+                }
+
+
+            }else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+
 }

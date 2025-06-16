@@ -224,6 +224,8 @@
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
 
     <script>
         let donnees_brh = "";
@@ -569,30 +571,13 @@
                     'type': 'POST',
 
                     success: function(response) {
-                        Swal.fire({
-                            toast: true,
-                            position: "top-end",
-                            background: '#dffbdd',
-                            timer : 3000,
-                            icon: "success",
-                            title: '{% trans %}Page header saved !{% endtrans %}',
-                            showConfirmButton: false
-                        });
 
+                        render_toast_value("Feuillet LJE enregistré", 1)
                     }
                 })
             } else {
 
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    background: '#fbddde',
-                    timer : 3000,
-                    icon: "error",
-                    title: 'Merci de renseigner le mois et l\'année SVP!',
-                    showConfirmButton: false
-                });
-
+                render_toast_value("Merci de renseigner le mois et l\'année SVP!", 2)
 
             }
 
@@ -707,15 +692,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].cubage_brh ) * 1000)/1000;
                         }
@@ -759,15 +744,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -811,15 +796,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -863,15 +848,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -906,7 +891,7 @@
                     let liste = JSON.parse(response);
                     if(liste.length > 0){
                         for (var i = 0; i < liste.length; i++){
-                            contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
+                            contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
                         }
                         document.querySelector('#chargements').innerHTML = contenu
                         brh_page_id = liste[0].id_page;
@@ -930,7 +915,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             brh_page_id = liste[0].id_page;
@@ -957,7 +942,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             bcbp_page_id = liste[0].id_page;
@@ -985,7 +970,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             bcbgfh_page_id = liste[0].id_page;
@@ -1013,7 +998,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option  style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             btgu_page_id = liste[0].id_page;
@@ -1106,10 +1091,10 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr  style="font-size: 22px;">';
-                            contenu = contenu + '<td><a class="num_connaissement"  href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
-                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].brh + '</td>';
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement"  href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].brh + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
@@ -1130,10 +1115,10 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr  style="font-size: 22px;">';
-                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
-                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].bcbp + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
@@ -1153,10 +1138,10 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr  style="font-size: 22px;">';
-                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
-                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].btgu + '</td>';
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].btgu + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;

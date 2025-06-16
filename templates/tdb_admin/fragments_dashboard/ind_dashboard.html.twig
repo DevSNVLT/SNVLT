@@ -102,7 +102,7 @@
         {% if(app.user.codeindustriel) %}
             load_body_chargements({{ app.user.codeindustriel.id }});
         {% endif %}
-    }, 10000);
+    }, 20000);
 
     function load_chargements(id_usine){
         let contenu = '';
