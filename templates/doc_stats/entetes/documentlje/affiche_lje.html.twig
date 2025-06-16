@@ -648,6 +648,8 @@
                     page_source_id = brh_page_id;
                 } else if (source_id === "3"){
                     page_source_id = bcbp_page_id;
+                } else if (source_id === "6"){
+                    page_source_id = btgu_page_id;
                 } else if (source_id === "21"){
                     page_source_id = bcbgfh_page_id;
                 }
@@ -658,11 +660,12 @@
         })
         function ajoute_donnees(index_page_lje, source_id, chargement_id, date_dechargement){
             if (index_page_lje && source_id && chargement_id && date_dechargement){
+                $('#chargement').modal('show');
                 $.ajax({
                     url: '{{path('app_portail')}}snvlt/lje/save/'+ index_page_lje + '/' + source_id + '/' + chargement_id + '/' + date_dechargement,
                     'type': 'POST',
                     success: function(response) {
-                        $('#chargement').modal('show');
+
                         let liste_essence = JSON.parse(response)
 
                         reinitialise_table();
@@ -677,6 +680,7 @@
                         console.log(error);
                     }
                 })
+                $('#chargement .btn-close').click();
             } else {
                 render_toast_value("Erreur dans l'envoi de données vers le serveur", 0)
 
@@ -1102,8 +1106,8 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr>';
-                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<tr  style="font-size: 22px;">';
+                            contenu = contenu + '<td><a class="num_connaissement"  href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
                             contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
                             contenu = contenu + '<td>' + reponse[i].brh + '</td>';
                             contenu = contenu + '</tr>';
@@ -1126,7 +1130,7 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<tr  style="font-size: 22px;">';
                             contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
                             contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
                             contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
@@ -1149,10 +1153,10 @@
                     let reponse = JSON.parse(response);
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
-                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<tr  style="font-size: 22px;">';
                             contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
                             contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '<td>' + reponse[i].btgu + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;

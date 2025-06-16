@@ -11,6 +11,7 @@ use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Pages\Pagebtgu;
 use App\Entity\DocStats\Pages\Pagelje;
+use App\Entity\DocStats\Saisie\HistoriqueLje;
 use App\Entity\DocStats\Saisie\Lignepagelje;
 use App\Entity\References\Cantonnement;
 use App\Entity\References\Essence;
@@ -789,6 +790,39 @@ class DocumentljeController extends AbstractController
                                 }
                                 $pagebcbgfh->setEntreLje(true);
                                 $registry->getManager()->persist($pagebcbgfh);
+
+                                $registry->getManager()->flush();
+
+                            }
+                        } else if ($source_id == 6){
+                            // Déchargement BTGU
+                            $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($page_source_id);
+                            if ($pagebtgu  && $pagebtgu->isConfirmationUsine() && !$pagebtgu->isEntreLje()){
+
+                                foreach ($pagebtgu->getLignepagebtgus() as $lignebtgu){
+
+                                    $ligne_lje = $registry->getRepository(Lignepagelje::class)->find($lignebtgu->getIdLje());
+
+                                    //Affectation des valeurs à l'historique
+                                    $lje_historique = new HistoriqueLje();
+                                    $lje_historique->setCodeBille($ligne_lje);
+                                    $lje_historique->setLastCodeUsine($ligne_lje->getCodePagelje()->getCodeDoclje()->getCodeUsine());
+                                    $lje_historique->setCreatedAt(new \DateTimeImmutable());
+                                    $lje_historique->setCreatedBy($user);
+                                    $registry->getManager()->persist($lje_historique);
+
+                                   //Mise à jour de la ligne LJE
+                                    $ligne_lje->setCodeTypeDoc($lignebtgu->getCodePagebtgu()->getCodeDocbtgu()->getTypeDocument());
+                                    $ligne_lje->setNumeroDocument($lignebtgu->getCodePagebtgu()->getCodeDocbtgu()->getNumeroDocbtgu());
+                                    $ligne_lje->setCodePagelje($pagelhje);
+                                    $ligne_lje->setTransforme(false);
+                                    $ligne_lje->setTronconnee(false);
+
+                                    $registry->getManager()->persist($ligne_lje);
+
+                                }
+                                $pagebtgu->setEntreLje(true);
+                                $registry->getManager()->persist($pagebtgu);
 
                                 $registry->getManager()->flush();
 
