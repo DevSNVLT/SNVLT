@@ -10,6 +10,7 @@ use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Saisie\Lignepagebrh;
 use App\Entity\Pef;
 use App\Entity\References\Foret;
+use App\Entity\References\Cantonnement;
 use App\Entity\User;
 use App\Repository\Administration\NotificationRepository;
 use App\Repository\DocStats\Pages\PagecpRepository;
@@ -115,6 +116,51 @@ class ProjectionsController extends AbstractController
                     to_number(metier.foret.numero_foret, '999999') = public.pef.numero_pef
                 WHERE 
                     metier.foret.id =:id_foret";
+
+        $stmt = $connection->prepare($sql);
+        $resultSet = $stmt->executeQuery(['id_foret' => $id_foret]);
+        $results = $resultSet->fetchAllAssociative();
+
+        // Si aucun résultat n'est trouvé
+        if (empty($results)) {
+            return $this->json(['success'=>false, 'message' => 'Aucun résultat trouvé pour ce code.'], 404);
+        }
+
+        // Retourner les résultats au format JSON
+        return $this->json([
+            'success'=>true, 
+            'layer' => 'Périmètre trouvé avec succès !',
+            'data' => $results,
+        ]);
+    }
+
+
+    #[Route('api/spacial-data-layer/polygon/numero', name: 'app_spacial_data_layer_polygon_numero')]
+    public function polygon_numero(Request $request,Connection $connection, ManagerRegistry $registry): JsonResponse
+    {
+
+        $id_foret = $request->query->get('id_foret');
+
+
+        if (!$id_foret) {
+            return $this->json(['success'=>false, 'error' => 'Le paramètre "id_foret" est requis.'], 400);
+        }
+
+
+
+        $sql = "SELECT 
+                    metier.foret.id AS id_foret, 
+                    public.pef.numero_pef, 
+                    public.pef.zone_ AS zone_h, 
+                    ST_AsGeoJSON(public.pef.geom) AS geom
+                FROM 
+                    public.pef
+                INNER JOIN 
+                    metier.foret
+                ON 
+                    to_number(metier.foret.numero_foret, '999999') = public.pef.numero_pef
+                WHERE 
+                    metier.foret.numero_foret =:id_foret";
 
         $stmt = $connection->prepare($sql);
         $resultSet = $stmt->executeQuery(['id_foret' => $id_foret]);
@@ -304,7 +350,8 @@ class ProjectionsController extends AbstractController
         }
     }
 
-    //#[Route('snvlt/billes_recherche/{numero_bille}', name: 'recherche_bille_carto')]
+
+
     #[Route('api/spacial-data-layer/billes-recherche/', name: 'recherche_bille_carto')]
     public function recherche_bille_carto(
         Request $request,
@@ -317,23 +364,60 @@ class ProjectionsController extends AbstractController
         PagecpRepository $pages_cp,
         ManagerRegistry $registry,
         Connection $connexion,
-        ProjectionQuery $projectionQuery,
-    ): JsonResponse
+        ProjectionQuery $projectionQuery
+    ):JsonResponse
     {
         if (!$request->getSession()->has('user_session')) {
             return $this->redirectToRoute('app_login');
         } else {
 
             if ($this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMINISTRATIF') or $this->isGranted('ROLE_ADMIN')) {
-                $id_chargement = $request->query->get('id_chargement');
                 $billeNum = $request->query->get('billeNum');
-
-                $numero = substr(strtoupper($billeNum), 0, -1) ;
+                $numero = substr(strtoupper($billeNum), 0, -1);
                 $lettre = substr(strtoupper($billeNum), -1);
 
+                $pef = [];
+                $data = [];
 
-                $billes = $registry->getRepository(Lignepagebrh::class)->findBy(['numero_lignepagebrh'=>$numero, 'lettre_lignepagebrh'=>$lettre]);
-                $numeroForet = $registry->getRepository(pagebrh::class)->find($id_chargement)
+                $billes = $registry->getRepository(Lignepagebrh::class)->findBy([
+                    'numero_lignepagebrh' => $numero, 
+                    'lettre_lignepagebrh' => $lettre
+                ]);
+
+
+
+
+                foreach ($billes as $bille) {
+                    $BilleNumeroForet = $bille->getCodePagebrh()
+                        ->getCodeDocbrh()
+                        ->getCodeReprise()
+                        ->getCodeAttribution()
+                        ->getCodeForet()
+                        ->getNumeroForet();
+
+                    // Éviter les doublons
+                    if (!in_array($BilleNumeroForet, $pef)) {
+                        $pef[] = $BilleNumeroForet;
+                    }
+                }
+
+                
+
+                // Structure alternative plus claire
+                $data = [
+                    'billeNum' => $billeNum,
+                    'pef' => $pef
+                ];
+
+
+                return $this->json([
+                                'success'=>true,
+                                'message' => 'Bille trouvé avec succès !',
+                                'data' => $data
+                            ]);
+                
+
+               /* $numeroForet = $registry->getRepository(pagebrh::class)->find($id_chargement)
                     ->getCodeDocbrh()
                     ->getCodeReprise()
                     ->getCodeAttribution()
@@ -375,7 +459,118 @@ class ProjectionsController extends AbstractController
                     'success'=>false,
                     'message' => 'Bille non trouvé, vérifier le N. de la bille',
                     'data' => $data,
+                ]);*/
+
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+        }
+    }
+
+
+
+    #[Route('api/spacial-data-layer/find-bille/', name: 'recherche_find_bille')]
+    public function recherche_find_bille(
+        Request $request,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notification,
+        PagecpRepository $pages_cp,
+        ManagerRegistry $registry,
+        Connection $connexion,
+        ProjectionQuery $projectionQuery
+    ):JsonResponse
+    {
+        if (!$request->getSession()->has('user_session')) {
+            return $this->redirectToRoute('app_login');
+        } else {
+
+            if ($this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMINISTRATIF') or $this->isGranted('ROLE_ADMIN')) {
+                $billeNum = $request->query->get('billeNum');
+                $foretNum = $request->query->get('id_foret');
+                $numero = substr(strtoupper($billeNum), 0, -1);
+                $lettre = substr(strtoupper($billeNum), -1);
+
+                $data = [];
+
+                $billes = $registry->getRepository(Lignepagebrh::class)->findBy([
+                    'numero_lignepagebrh' => $numero, 
+                    'lettre_lignepagebrh' => $lettre
                 ]);
+
+
+
+                /*$sql = "SELECT metier.essence.*,metier.lignepagebrh.*, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_MakePoint(metier.lignepagebrh.x_lignepagebrh, metier.lignepagebrh.y_lignepagebrh), 32630), 4326 )) AS geom 
+        FROM metier.lignepagebrh 
+        INNER JOIN metier.essence  
+        ON metier.lignepagebrh.nom_essencebrh_id = metier.essence.id
+        WHERE code_pagebrh_id =" . $id_chargement;
+        $stmt = $connection->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+        $results = $resultSet->fetchAllAssociative();*/
+
+
+
+                
+                foreach ($billes as $bille) {
+                    $BilleNumeroForet = $bille->getCodePagebrh()
+                        ->getCodeDocbrh()
+                        ->getCodeReprise()
+                        ->getCodeAttribution()
+                        ->getCodeForet()
+                        ->getNumeroForet();
+
+                        $sql = <<<SQL
+                            SELECT ST_AsGeoJSON(
+                                ST_Transform(
+                                    ST_SetSRID(
+                                        ST_MakePoint(:x, :y),
+                                        32630
+                                    ),
+                                    4326
+                                )
+                            ) AS geojson
+                        SQL;
+
+                        $x = $bille->getXLignepagebrh();
+                        $y = $bille->getYLignepagebrh();
+
+                        $geom = $connexion->fetchOne($sql, ['x' => $x, 'y' => $y]);
+                            
+
+                    if ($BilleNumeroForet == $foretNum) {
+                        $data['numeroForet'] = $BilleNumeroForet;
+                        $data['geom'] = $geom;
+                        $data['y'] = $bille->getYLignepagebrh();
+                        $data['essence'] = $bille->getNomEssencebrh()->getNomVernaculaire();
+                        $data['numeroBille'] = $bille->getNumeroLignepagebrh();
+                        $data['lettre'] = $bille->getLettreLignepagebrh();
+                        $data['long'] = $bille->getLongeurLignepagebrh();
+                        $data['cub'] = $bille->getCubageLignepagebrh();
+                        $data['diam'] = $bille->getDiametreLignepagebrh();
+                        $data['zoneH'] = $bille->getZhLignepagebrh()->getZone();
+                        $data['docBrh'] = $bille->getCodePagebrh()->getCodeDocbrh()->getNumeroDocbrh();
+                        $data['feuillet'] = $numero;
+                    }
+                }
+
+                    
+
+                
+
+
+                
+
+
+                return $this->json([
+                                'success'=>true,
+                                'message' => 'Bille trouvé dans le Périmètre avec succès !',
+                                'data' => $data
+                            ]);
+                
 
             } else {
                 return $this->redirectToRoute('app_no_permission_user_active');
