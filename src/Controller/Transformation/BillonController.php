@@ -347,14 +347,19 @@ class BillonController extends AbstractController
                     foreach ($mes_pages as $page) {
                         $lignes = $registry->getRepository(Lignepagelje::class)->findBy(['code_pagelje'=>$page, 'tronconnee' => false]);
                         foreach ($lignes as $ligne){
-                            $sources_forets[] = array(
+                            if ($ligne->getEssence()){
+                                $ess = $ligne->getEssence()->getNomVernaculaire();
+                            } else {
+                                $ess = "-";
+                            }
 
+                            $sources_forets[] = array(
                                 'numero'=>$ligne->getNumeroArbre() . $ligne->getLettre(),
-                                'foret'=>$registry->getRepository(Pagebrh::class)->find($ligne->getCodeFeuillet())->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
+                                'foret'=>$ligne->getForet() ,
                                 'lng_lje'=>$ligne->getLng(),
                                 'dm_lje'=>$ligne->getDm(),
                                 'vol_lje'=> round($ligne->getVolume()/1000, 3),
-                                'essence'=>$ligne->getEssence()->getNomVernaculaire(),
+                                'essence'=>$ess,
                                 'code_bille_lje'=>$ligne->getId()
                             );
 

@@ -79,7 +79,7 @@
                 </div>
                 <div class="col-md-3" style="width: 100%;">
                     <div class="row mb-2 justify-content-center">
-                        <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_search_data" style="background: #507f87; font-size: 14px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>{{ 'Save' | trans }}</a>
+                        <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_search_data" style="background: #507f87; font-size: 14px;"><i class="mdi mdi-content-save text-white" style="font-size: 20px; margin-right: 5px;"></i>{{ 'Save' | trans }}</a>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header  alert-secondary">
-                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Add LJE Data' | trans}}</h5>
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter des données</h5>
                     <button
                             type="button"
                             class="btn-close"
@@ -116,7 +116,7 @@
                         <h4 class="text-danger">Sélectionnez la source et cliquez sur le connaissement</h4>
                         <div class="">
 
-                            <select name="source" id="source"  style="font-size: 18px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;font-weight: bold;">
+                            <select name="source" id="source"  style="font-size: 20px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;font-weight: bold;">
                                 <option value="0">-- Source --</option>
                                 {% for doc in docs %}
                                     {% if (doc.id == 2 or doc.id == 3 or doc.id == 2 or doc.id == 6 or doc.id == 16 or doc.id == 21) %}
@@ -130,13 +130,13 @@
                                     {% set user_minef = 1 %}
                                 {% endif %}
                             {% endfor %}
-                            <input class="text-center" type="text" id="numero_page" style="background-color: #f4feff; width:100px; font-weight: bold" placeholder="N° Feuillet">
-                            <button  id="btn_search_numero_page" style="margin-right:10px;background: #0b511b" ><i class="mdi mdi-file-search text-white"></i></button>
+                            <input class="text-center" type="text" id="numero_page" style="background-color: #f4feff; width:100px;;font-size:20px; font-weight: bold" placeholder="N° Feuillet">
+                            <button  id="btn_search_numero_page" style="margin-right:10px;background: #0b511b;font-size:20px;" ><i class="mdi mdi-file-search text-white"></i></button>
 
-                            <select name="chargements" id="chargements"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+                            <select name="chargements" id="chargements"  style="font-size: 20px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
                             </select>
 
-                            Déchargé le : <input type="date" id="date_dechargement" style="background-color: #fffff4; font-weight: bold">
+                            Déchargé le : <input type="date" id="date_dechargement" style="background-color: #fffff4; font-weight: bold;font-size: 20px;">
                             {#<a class="btn font-weight-bold" id="searchData" style="color: #4c4402;font-size: 14px;" href="#"><img src="{{ asset('assets/images/webapp/search.png') }}" alt="*search"></a>#}
 
                             <div id="lbl_source"></div>
@@ -184,7 +184,9 @@
                 </div>
                 <div class="modal-footer alert-secondary">
 
-                    <a type="button" class="btn btn-primary mt-3" href="#" id="btn_save_lje" style="width: 100%; font-size: 20px;">{{ 'Transcribe into the LJE' | trans}}</a>
+                    <a class="btn mt-3 text-white h2 bg-danger" href="#" id="btn_save_lje" style="width: 100%; font-size: 32px;background-color: #064d06;">
+                        Enregistrer les données dans le LJE
+                    </a>
                 </div>
             </div>
         </div>
@@ -467,7 +469,7 @@
 
                         contenu = contenu + '</tbody></table>';
                         document.querySelector('#div_contenu').innerHTML = contenu;
-                        document.querySelector('.div_infos').innerHTML = '<span class="text-center font-weight-bold" style="font-size: 18px;"> Volume grumes : <span class="text-danger">' + cubage_total  + ' m<sup>3</sup></span></span>';
+                        document.querySelector('.div_infos').innerHTML = '<span class="text-center font-weight-bold" style="font-size: 20px;"> Volume grumes : <span class="text-danger">' + cubage_total  + ' m<sup>3</sup></span></span>';
                         document.querySelector('#btn_save_lje').style = 'display:inline';
 
                         let table = new DataTable('#data_lje', {
@@ -638,9 +640,13 @@
                 } else if (source_id === "21"){
                     page_source_id = bcbgfh_page_id;
                 }
+                alert(getNbJours(new Date(date_dechargement), dateJour));
+                if (getNbJours(new Date(date_dechargement), dateJour) < 0){
+                    render_toast_value("La date de déchargement ne peut être postérieure à la date d'aujourd'hui", 2)
+                } else {
+                    ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
+                }
 
-                ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
-                //liste_chargements_brh();
             }
         })
         function ajoute_donnees(index_page_lje, source_id, chargement_id, date_dechargement){
@@ -692,15 +698,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh_brh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x_brh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y_brh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng_brh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm_brh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].cubage_brh ) * 1000)/1000;
                         }
@@ -713,7 +719,7 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -744,15 +750,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 20px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="text-dark p-1" style="font-size: 20px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -765,7 +771,7 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -796,15 +802,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -817,7 +823,7 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -848,15 +854,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center" style="font-size: 18px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center" style="font-size: 18px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td style="font-size: 18px;"><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center" style="font-size: 18px;"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold" style="font-size: 18px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -869,7 +875,7 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -891,7 +897,7 @@
                     let liste = JSON.parse(response);
                     if(liste.length > 0){
                         for (var i = 0; i < liste.length; i++){
-                            contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
+                            contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
                         }
                         document.querySelector('#chargements').innerHTML = contenu
                         brh_page_id = liste[0].id_page;
@@ -915,7 +921,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             brh_page_id = liste[0].id_page;
@@ -942,7 +948,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             bcbp_page_id = liste[0].id_page;
@@ -970,7 +976,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             bcbgfh_page_id = liste[0].id_page;
@@ -998,7 +1004,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option  style="font-size: 18px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option  style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             btgu_page_id = liste[0].id_page;

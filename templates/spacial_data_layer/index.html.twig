@@ -12,9 +12,9 @@
             width: 100%;
         }
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
+            width: 90px;
+            margin: 5px auto;
+            padding: 5px;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -548,7 +548,7 @@
         async function ouvrirPopupSelection(numeroBille) {
             try {
                 // 1. Récupération des PEF disponibles pour cette bille
-                const response = await fetch(`{{ path('app_portail') }}api/spacial-data-layer/billes-recherche/?billeNum=${numeroBille}`);
+                const response = await fetch(`{{ path('app_portail') }}api/data_carto/billes/?billeNum=${numeroBille}`);
                 const apiData = await response.json();
 
                 if (!apiData.success || !apiData.data.pef || apiData.data.pef.length === 0) {

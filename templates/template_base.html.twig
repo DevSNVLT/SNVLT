@@ -504,7 +504,19 @@
                     render_toast_value("{{ message }}", 0)
                 {% endfor %}
             });
-    
+            function getNotifs(id_user){
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{path('app_portail')}}snvlt/admin/all/notifs/' + id_user,
+                        data: {id_notification: this.id},
+                        success: function () {
+                            console.log(response);
+                            let reponse = JSON.parse(response);
+                        }
+                    });
+            }
+
+
 </script>
 </body>
 </html>

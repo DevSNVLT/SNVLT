@@ -350,21 +350,116 @@ class ProjectionsController extends AbstractController
         }
     }
 
+    #[Route('api/data_carto/billes/', name: 'recherches_bille_carto')]
+    public function recherches_bille_carto(
+        Request $request,
+        ManagerRegistry $registry
+    ):JsonResponse
+    {
+        if (!$request->getSession()->has('user_session')) {
+            return $this->redirectToRoute('app_login');
+        } else {
 
+            if ($this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMINISTRATIF') or $this->isGranted('ROLE_ADMIN')) {
+                $billeNum = $request->query->get('billeNum');
+                $numero = substr(strtoupper($billeNum), 0, -1);
+                $lettre = substr(strtoupper($billeNum), -1);
+
+                $pef = [];
+                $data = [];
+
+                $billes = $registry->getRepository(Lignepagebrh::class)->findBy([
+                    'numero_lignepagebrh' => $numero,
+                    'lettre_lignepagebrh' => $lettre
+                ]);
+
+
+
+
+                foreach ($billes as $bille) {
+                    $BilleNumeroForet = $bille->getCodePagebrh()
+                        ->getCodeDocbrh()
+                        ->getCodeReprise()
+                        ->getCodeAttribution()
+                        ->getCodeForet()
+                        ->getNumeroForet();
+
+                    // Éviter les doublons
+                    if (!in_array($BilleNumeroForet, $pef)) {
+                        $pef[] = $BilleNumeroForet;
+                    }
+                }
+
+
+
+                // Structure alternative plus claire
+                $data = [
+                    'billeNum' => $billeNum,
+                    'pef' => $pef
+                ];
+
+
+                return $this->json([
+                    'success'=>true,
+                    'message' => 'Bille trouvé avec succès !',
+                    'data' => $data
+                ]);
+
+
+                /* $numeroForet = $registry->getRepository(pagebrh::class)->find($id_chargement)
+                     ->getCodeDocbrh()
+                     ->getCodeReprise()
+                     ->getCodeAttribution()
+                     ->getCodeForet()
+                     ->getNumeroForet();
+
+                 $data = [];
+
+                 $billeGeom = $projectionQuery->getBilleProjectionCoordinate($id_chargement);
+
+                 foreach ($billes as $bille){
+                         $BilleNumeroForet = $bille->getCodePagebrh()->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getNumeroForet();
+                         if ($numeroForet == $BilleNumeroForet){
+                             $data['numeroForet'] = $numeroForet;
+                             $data['x'] = $bille->getXLignepagebrh();
+                             $data['y'] = $bille->getYLignepagebrh();
+                             $data['essence'] = $bille->getNomEssencebrh()->getNomVernaculaire();
+                             $data['numeroBille'] = $bille->getNumeroLignepagebrh();
+                             $data['lettre'] = $bille->getLettreLignepagebrh();
+                             $data['long'] = $bille->getLongeurLignepagebrh();
+                             $data['cub'] = $bille->getCubageLignepagebrh();
+                             $data['diam'] = $bille->getDiametreLignepagebrh();
+                             $data['zoneH'] = $bille->getZhLignepagebrh()->getZone();
+                             $data['docBrh'] = $bille->getCodePagebrh()->getCodeDocbrh()->getNumeroDocbrh();
+                             $data['feuillet'] = $id_chargement;
+
+
+
+                             return $this->json([
+                                 'success'=>true,
+                                 'message' => 'Bille trouvé avec succès !',
+                                 'geom' => $billeGeom,
+                                 'data' => $data,
+                             ]);
+                         }
+
+                     }
+                 return $this->json([
+                     'success'=>false,
+                     'message' => 'Bille non trouvé, vérifier le N. de la bille',
+                     'data' => $data,
+                 ]);*/
+
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+        }
+    }
 
     #[Route('api/spacial-data-layer/billes-recherche/', name: 'recherche_bille_carto')]
     public function recherche_bille_carto(
         Request $request,
-        MenuRepository $menus,
-        MenuPermissionRepository $permissions,
-        GroupeRepository $groupeRepository,
-        UserRepository $userRepository,
-        User $user = null,
-        NotificationRepository $notification,
-        PagecpRepository $pages_cp,
-        ManagerRegistry $registry,
-        Connection $connexion,
-        ProjectionQuery $projectionQuery
+        ManagerRegistry $registry
     ):JsonResponse
     {
         if (!$request->getSession()->has('user_session')) {
@@ -466,19 +561,112 @@ class ProjectionsController extends AbstractController
             }
         }
     }
+    #[Route('api/spacial/sig/', name: 'test_aziz')]
+    public function test_aziz(
+        Request $request,
+        ManagerRegistry $registry,
+        Connection $connexion,
+        ProjectionQuery $projectionQuery
+    ):Response
+    {
+        if (!$request->getSession()->has('user_session')) {
+            return $this->redirectToRoute('app_login');
+        } else {
 
+            if ($this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMINISTRATIF') or $this->isGranted('ROLE_ADMIN')) {
+                $billeNum = $request->query->get('billeNum');
+                $foretNum = $request->query->get('id_foret');
+                $numero = substr(strtoupper($billeNum), 0, -1);
+                $lettre = substr(strtoupper($billeNum), -1);
+
+                $data = [];
+
+                $billes = $registry->getRepository(Lignepagebrh::class)->findBy([
+                    'numero_lignepagebrh' => $numero,
+                    'lettre_lignepagebrh' => $lettre
+                ]);
+
+
+
+                /*$sql = "SELECT metier.essence.*,metier.lignepagebrh.*, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_MakePoint(metier.lignepagebrh.x_lignepagebrh, metier.lignepagebrh.y_lignepagebrh), 32630), 4326 )) AS geom
+        FROM metier.lignepagebrh
+        INNER JOIN metier.essence
+        ON metier.lignepagebrh.nom_essencebrh_id = metier.essence.id
+        WHERE code_pagebrh_id =" . $id_chargement;
+        $stmt = $connection->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+        $results = $resultSet->fetchAllAssociative();*/
+
+
+
+
+                foreach ($billes as $bille) {
+                    $BilleNumeroForet = $bille->getCodePagebrh()
+                        ->getCodeDocbrh()
+                        ->getCodeReprise()
+                        ->getCodeAttribution()
+                        ->getCodeForet()
+                        ->getNumeroForet();
+
+                    $sql = <<<SQL
+                            SELECT ST_AsGeoJSON(
+                                ST_Transform(
+                                    ST_SetSRID(
+                                        ST_MakePoint(:x, :y),
+                                        32630
+                                    ),
+                                    4326
+                                )
+                            ) AS geojson
+                        SQL;
+
+                    $x = $bille->getXLignepagebrh();
+                    $y = $bille->getYLignepagebrh();
+
+                    $geom = $connexion->fetchOne($sql, ['x' => $x, 'y' => $y]);
+
+
+                    if ($BilleNumeroForet == $foretNum) {
+                        $data['numeroForet'] = $BilleNumeroForet;
+                        $data['geom'] = $geom;
+                        $data['y'] = $bille->getYLignepagebrh();
+                        $data['essence'] = $bille->getNomEssencebrh()->getNomVernaculaire();
+                        $data['numeroBille'] = $bille->getNumeroLignepagebrh();
+                        $data['lettre'] = $bille->getLettreLignepagebrh();
+                        $data['long'] = $bille->getLongeurLignepagebrh();
+                        $data['cub'] = $bille->getCubageLignepagebrh();
+                        $data['diam'] = $bille->getDiametreLignepagebrh();
+                        $data['zoneH'] = $bille->getZhLignepagebrh()->getZone();
+                        $data['docBrh'] = $bille->getCodePagebrh()->getCodeDocbrh()->getNumeroDocbrh();
+                        $data['feuillet'] = $numero;
+                    }
+                }
+
+
+
+
+
+
+
+
+
+                return $this->json([
+                    'success'=>true,
+                    'message' => 'Bille trouvé dans le Périmètre avec succès !',
+                    'data' => $data
+                ]);
+
+
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+        }
+    }
 
 
     #[Route('api/spacial-data-layer/find-bille/', name: 'recherche_find_bille')]
     public function recherche_find_bille(
         Request $request,
-        MenuRepository $menus,
-        MenuPermissionRepository $permissions,
-        GroupeRepository $groupeRepository,
-        UserRepository $userRepository,
-        User $user = null,
-        NotificationRepository $notification,
-        PagecpRepository $pages_cp,
         ManagerRegistry $registry,
         Connection $connexion,
         ProjectionQuery $projectionQuery
