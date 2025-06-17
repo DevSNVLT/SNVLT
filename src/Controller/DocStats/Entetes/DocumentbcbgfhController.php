@@ -635,7 +635,7 @@ class DocumentbcbgfhController extends AbstractController
                        $page->setFini(true);
                        $page->setEntreLje(false);
                        $page->setSoumettre(true);
-                       $page->setConfirmationUsine(true);
+                       $page->setConfirmationUsine(false);
 
                        $registry->getManager()->persist($page);
 
@@ -665,8 +665,8 @@ class DocumentbcbgfhController extends AbstractController
         }
     }
 
-    #[Route('/snvlt/bcbgfh/soumettre_chargement/{id_page}', name: 'soumettre_chargement')]
-    public function soumettre_chargement(
+    #[Route('/snvlt/bcbgfh/soumettre_chargement/{id_page}', name: 'soumettre_chargement_bcbgfh')]
+    public function soumettre_chargement_bcbgfh(
         Request $request,
         int $id_page,
         UserRepository $userRepository,
@@ -848,12 +848,12 @@ class DocumentbcbgfhController extends AbstractController
                             'numero_ligne'=>$lignebcbgfh->getNumeroLignepagebcbgfh(),
                             'lettre'=>$lignebcbgfh->getLettreLignepagebcbgfh(),
                             'essence'=>$essence,
-                            'x_bcbgfh'=>$lignebcbgfh->getXLignepagebcbgfh(),
-                            'y_bcbgfh'=>$lignebcbgfh->getYLignepagebcbgfh(),
-                            'zh_bcbgfh'=>$zh,
-                            'lng_bcbgfh'=>$lignebcbgfh->getLongeurLignepagebcbgfh(),
-                            'dm_bcbgfh'=>$lignebcbgfh->getDiametreLignepagebcbgfh(),
-                            'cubage_bcbgfh'=>$lignebcbgfh->getCubageLignepagebcbgfh()
+                            'x'=>$lignebcbgfh->getXLignepagebcbgfh(),
+                            'y'=>$lignebcbgfh->getYLignepagebcbgfh(),
+                            'zh'=>$zh,
+                            'lng'=>$lignebcbgfh->getLongeurLignepagebcbgfh(),
+                            'dm'=>$lignebcbgfh->getDiametreLignepagebcbgfh(),
+                            'volume'=>$lignebcbgfh->getCubageLignepagebcbgfh()
                         );
                     }
 
@@ -1117,8 +1117,8 @@ class DocumentbcbgfhController extends AbstractController
         }
     }
 
-    #[Route('/snvlt/detail_bcbgfh_loading/details/{id_page}', name:'app_my_loadings')]
-    public function details_chargement(
+    #[Route('/snvlt/detail_bcbgfh_loading/details/{id_page}', name:'app_my_loadings_bcbgfh')]
+    public function details_chargement_bcbgfh(
         ManagerRegistry $registry,
         Request $request,
         int $id_page,
@@ -1171,8 +1171,8 @@ class DocumentbcbgfhController extends AbstractController
         }
     }
 
-    #[Route('/snvlt/detail_bcbgfh_loading/accept/{id_page?0}', name:'accept_chargement')]
-    public function accepter_chargement(
+    #[Route('/snvlt/detail_bcbgfh_loading/accept/{id_page?0}', name:'accept_chargement_bcbgfh')]
+    public function accepter_chargement_bcbgfh(
         ManagerRegistry $registry,
         Request $request,
         int $id_page,
@@ -2011,4 +2011,109 @@ class DocumentbcbgfhController extends AbstractController
             }
         }
     }
+    #[Route('/snvlt/docbcbgfh/validate_chargement/page/{id_page}', name: 'affiche_page_bcbgfh_validation')]
+    public function affiche_page_bcbgfh_validation(
+        Request $request,
+        int $id_page,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notification,
+        PagebcbgfhRepository $pages_bcbgfh,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_EXPLOITANT') or $this->isGranted('ROLE_INDUSTRIEL') or $this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_DPIF_SAISIE'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $page_bcbgfh = $pages_bcbgfh->find($id_page);
+                $my_brh_page = array();
+                if($page_bcbgfh){
+                    $parc_usine = "";
+                    if($page_bcbgfh->getDateChargementbcbgfh()) { $date_chargement = $page_bcbgfh->getDateChargementbcbgfh()->format('d/m/Y');} else { $date_chargement = ""; }
+                    //dd($page_brh->getDateChargementbrh()->format('d/m/Y'));
+                    if($page_bcbgfh->getParcUsineBcbgfh()) {
+                        if($page_bcbgfh->getParcUsineBcbgfh()->getSigle()) {
+                            $parc_usine = $page_bcbgfh->getParcUsineBcbgfh()->getSigle();
+                        } else {
+                            $parc_usine = $page_bcbgfh->getParcUsineBcbgfh()->getRaisonSocialeUsine();
+                        }
+                    }
+
+
+                    $lignes_bcbgfh = $registry->getRepository(Lignepagebcbgfh::class)->findBy(['code_pagebcbgfh'=>$page_bcbgfh]);
+                    if ($page_bcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle()){
+                        $exploitant = $page_bcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle();
+                    } else {
+                        $exploitant = $page_bcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getRaisonSocialeExploitant();
+                    }
+
+                    if ($page_bcbgfh->getParcUsineBcbgfh()){
+                        if ($page_bcbgfh->getParcUsineBcbgfh()->getSigle()){
+                            $usine = $page_bcbgfh->getParcUsineBcbgfh()->getSigle();
+                        } else {
+                            $usine = $page_bcbgfh->getParcUsineBcbgfh()->getRaisonSocialeUsine();
+                        }
+                    }
+
+
+
+
+
+                    foreach($lignes_bcbgfh as $ligne){
+
+                        if ($ligne->getNomEssencebcbgfh()){
+
+                            $essence = $ligne->getNomEssencebcbgfh()->getNomVernaculaire();
+                        } else {
+                            $essence = "-";
+                        }
+
+                        if ($ligne->getZhLignepagebcbgfh()){
+
+                            $zone = $ligne->getZhLignepagebcbgfh()->getZone();
+                        } else {
+                            $zone = "-";
+                        }
+
+                        $my_brh_page[] = array(
+                            'id_page'=>$page_bcbgfh->getId(),
+                            'foret'=>$page_bcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination(),
+                            'numero_page'=>$page_bcbgfh->getNumeroPagebcbgfh(),
+                            'numero_doc'=>$page_bcbgfh->getCodeDocbcbgfh()->getNumeroDocbcbgfh(),
+                            'date_chargement'=>$date_chargement,
+                            'destination'=>$parc_usine. " - [".$page_bcbgfh->getDestinationPagebcbgfh()."]" ,
+                            'id_arbre'=>$ligne->getId(),
+                            'numero_arbre'=>$ligne->getNumeroLignepagebcbgfh(),
+                            'lettre_arbre'=>$ligne->getLettreLignepagebcbgfh(),
+                            'essence'=>$essence,
+                            'zone'=>$zone,
+                            'x'=>$ligne->getXLignepagebcbgfh(),
+                            'y'=>$ligne->getYLignepagebcbgfh(),
+                            'lng'=>$ligne->getLongeurLignepagebcbgfh(),
+                            'dm'=>$ligne->getDiametreLignepagebcbgfh(),
+                            'vol'=>$ligne->getCubageLignepagebcbgfh(),
+                            'photo'=>$page_bcbgfh->getPhoto(),
+                            'exploitant'=>$exploitant,
+                            'parc_usine'=>$parc_usine
+                        );
+                    }
+
+
+                    return  new JsonResponse(json_encode($my_brh_page));
+                }
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
 }

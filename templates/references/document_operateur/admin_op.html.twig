@@ -79,7 +79,7 @@
                     </div>
                     <div class="modal-footer alert-secondary">
 
-                        <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">{{ 'Edit' | trans}}</button>
+                        <button type="button" class="btn btn-primary mt-3" id="save_data" style="width: 100%; font-size: large;">Modifier</button>
                     </div>
                 </form>
             </div>
@@ -98,10 +98,9 @@
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
     <script>
-
-
-
 
         $('#type_op').on('change', function (){
             charge_operateurs();
@@ -136,26 +135,28 @@
                                 contenu_op = contenu_op + '<tr>'
                                 contenu_op = contenu_op + '<td>' + liste_op[i].document + '</td>'
 
-                            } else if (liste_op[i].ecart >= 30){
-                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #bffac7;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
-                              } else if (liste_op[i].ecart < 30 && liste_op[i].ecart > 0){
-                                contenu_op = contenu_op + '<tr class="alert-info" style="background: #f8b91b;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
-                            } else if (liste_op[i].ecart <= 0){
-                                contenu_op = contenu_op + '<tr class="bg-danger" style="background: #fd0000;font-weight: bold;font-size:14px;">'
-                                contenu_op = contenu_op + '<td><a style="color:white;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
-
+                            } else if (liste_op[i].date_etablissement &&  liste_op[i].date_expiration) {
+                                let ecart = getNbJours(new Date(liste_op[i].date_etablissement), new Date(liste_op[i].date_expiration));
+                                if (ecart >= 30) {
+                                    contenu_op = contenu_op + '<tr class="alert-info" style="background: #bffac7;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                } else if (ecart < 30 && ecart > 0) {
+                                    contenu_op = contenu_op + '<tr class="alert-info" style="background: #f8b91b;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:black;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                } else if (ecart <= 0) {
+                                    contenu_op = contenu_op + '<tr class="bg-danger" style="background: #fd0000;font-weight: bold;font-size:14px;">'
+                                    contenu_op = contenu_op + '<td><a style="color:white;" target="_blank" href="{{ asset('images/doc_operateurs/') }}' + liste_op[i].fichier + '">' + liste_op[i].document + '</a></td>'
+                                }
                             }
+                                if (liste_op[i].date_etablissement === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
+                                contenu_op = contenu_op + '<td>' + new  Date(liste_op[i].date_etablissement).toLocaleDateString("fr-FR") + '</td>'}
+                                if (liste_op[i].date_expiration === "-") { contenu_op = contenu_op + '<td>-</td>'} else {
+                                contenu_op = contenu_op + '<td>' + new  Date(liste_op[i].date_expiration).toLocaleDateString("fr-FR") + '</td>'}
 
-
-                                contenu_op = contenu_op + '<td>' + liste_op[i].date_etablissement + '</td>'
-                                contenu_op = contenu_op + '<td>' + liste_op[i].date_expiration + '</td>'
-                                
                                 if (liste_op[i].ecart > 0){
-                                    contenu_op = contenu_op + '<td>' + liste_op[i].ecart + ' <img class="btn_editer" id="' + liste_op[i].id + '" src="{{ asset('assets/icons/16x16/edit.png') }}" alt="editer" style="margin-left:5px;cursor:pointer;height:16px;width:16px;" data-bs-toggle="modal" data-bs-target="#doc_operateur"></td></tr>'
+
+                                    contenu_op = contenu_op + '<td>' + getNbJours(new Date(liste_op[i].date_etablissement), new Date(liste_op[i].date_expiration))  + ' <img class="btn_editer" id="' + liste_op[i].id + '" src="{{ asset('assets/icons/16x16/edit.png') }}" alt="editer" style="margin-left:5px;cursor:pointer;height:16px;width:16px;" data-bs-toggle="modal" data-bs-target="#doc_operateur"></td></tr>'
+
                                 } else {
                                     contenu_op = contenu_op + '<td>0</td></tr>'
                                 }
@@ -325,6 +326,13 @@
                 }
             })
 
+        }
+
+        function getNbJours(date1, date2){
+
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+                return differenceInDays;
         }
     </script>
 

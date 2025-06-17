@@ -18,10 +18,12 @@ use App\Entity\References\TypeDocumentStatistique;
 use App\Entity\References\Usine;
 use App\Entity\User;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
@@ -252,6 +254,20 @@ class Utils
         }
     }
 
+    public function sendTemplatedEmail($to, $subject,$url_template, $message){
+        $email = (new TemplatedEmail())
+            ->from(new Address('snvlt@system2is.com', 'SNVLT INFOS'))
+            ->to($to)
+            ->subject($subject)
+            ->htmlTemplate($url_template)
+            ->context([
+                'recipiendaire'=>$to,
+                'message' => $message
+            ])
+        ;
+
+        $this->mailer->send($email);
+    }
     public function getDocsRestants(TypeDocumentStatistique $id_type_docs){
         $i = 0;
         if($id_type_docs){

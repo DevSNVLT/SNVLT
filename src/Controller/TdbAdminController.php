@@ -34,13 +34,16 @@ use App\Entity\DocStats\Entetes\Documentfp;
 use App\Entity\DocStats\Entetes\Documentlje;
 use App\Entity\DocStats\Entetes\Documentpdtdrv;
 use App\Entity\DocStats\Entetes\Documentrsdpf;
+use App\Entity\DocStats\Pages\Pagebcbgfh;
 use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
+use App\Entity\DocStats\Pages\Pagebtgu;
 use App\Entity\DocStats\Pages\Pagecp;
 use App\Entity\DocStats\Pages\Pagelje;
 use App\Entity\DocStats\Saisie\Lignepagebcbgfh;
 use App\Entity\DocStats\Saisie\Lignepagebcbp;
 use App\Entity\DocStats\Saisie\Lignepagebrh;
+use App\Entity\DocStats\Saisie\Lignepagebtgu;
 use App\Entity\DocStats\Saisie\Lignepagecp;
 use App\Entity\DocStats\Saisie\Lignepagelje;
 use App\Entity\Observateur\PublicationRapport;
@@ -121,7 +124,7 @@ class TdbAdminController extends AbstractController
         $liste_essences_vol = array();
         $liste_doc_brh= array();
         $liste_quotas= array();
-        $point_dr = array();
+
         $point_ddef = array();
         $quotas_dr = array();
         $volume_foret = array();
@@ -144,17 +147,10 @@ class TdbAdminController extends AbstractController
         $volume_brh = 0;
         $nb_utilisateurs = 0;
 
-// Interfaces Admin
-        if ($user->getCodeGroupe()->getId() == 1){
-
-
-
-
-
-        }
-
 // Interface DR
         if ($user->getCodeDr()){
+
+            //Chargements DR
             $codedr = $user->getCodeDr();
             $cantonnements = $registry->getRepository(Cantonnement::class)->findBy(['code_dr' => $user->getCodeDr()]);
             foreach ($cantonnements as $cantonnement) {
@@ -174,81 +170,8 @@ class TdbAdminController extends AbstractController
             }
 
 
-            //Point Opérateurs
-
-            $cantons = $registry->getRepository(Cantonnement::class)->findBy(['code_dr'=>$codedr]);
-            foreach ($cantons as $canton ){
-                $forets = $canton->getForets();
-                foreach ($forets as $foret){
-                    $exploitant = "-";
-                    $nb_cp = 0;
-                    $nb_brh = 0;
-                    $arbre_abattus = 0;
-                    $volume_abattage = 0;
-                    $volume_brh = 0;
-                    $decision_reprise = "-";
-                    $decision_attribution = "-";
-
-                    $attributions = $registry->getRepository(Attribution::class)->findBy(['code_foret'=>$foret, 'statut'=>true]);
-                    foreach($attributions as $attribution){
-
-                        if ($attribution->getCodeExploitant()->getSigle()){
-                            $exploitant = $attribution->getCodeExploitant()->getSigle();
-                        } else {
-                            $exploitant = $attribution->getCodeExploitant()->getRaisonSocialeExploitant();
-                        }
-
-                        $decision_attribution = $attribution->getNumeroDecision(). " du ". $attribution->getDateDecision()->format('d/m/Y');
-                        $rep = $registry->getRepository(Reprise::class)->findOneBy(['code_attribution'=>$attribution, 'exercice'=>$exercice]);
-
-                        if ($rep){
-                            $decision_reprise = $rep->getNumeroAutorisation(). " du ". $rep->getDateAutorisation()->format('d/m/Y');
-                        }
-
-                        $doc_cps = $registry->getRepository(Documentcp::class)->findBy(['code_reprise'=>$rep]);
-                        $doc_brhs = $registry->getRepository(Documentbrh::class)->findBy(['code_reprise'=>$rep]);
-                        foreach ($doc_cps as $doc_cp){
-                            $nb_cp = $nb_cp + 1;
-                            $arbres_abattus = $nb_cp;
-                            $pagescp = $registry->getRepository(Pagecp::class)->findBy(['code_doccp'=>$doc_cp]);
-                            foreach ($pagescp as $page){
-                                $lignecps = $registry->getRepository(Lignepagecp::class)->findBy(['code_pagecp'=>$page]);
-                                foreach($lignecps as $lignecp){
-                                    $volume_abattage = $volume_abattage + $lignecp->getVolumeArbrecp();
-                                    $arbre_abattus = $arbre_abattus + 1;
-                                }
-                            }
-                        }
-                        foreach ($doc_brhs as $doc_brh){
-                            $nb_brh = $nb_brh + 1;
-                            $pagesbrh = $registry->getRepository(Pagebrh::class)->findBy(['code_docbrh'=>$doc_brh]);
-                            foreach ($pagesbrh as $page){
-                                $lignebrhs = $registry->getRepository(Lignepagebrh::class)->findBy(['code_pagebrh'=>$page]);
-                                foreach($lignebrhs as $lignebrh){
-                                    $volume_brh = $volume_brh + $lignebrh->getCubageLignepagebrh();
-                                }
-                            }
-                        }
-                        $point_dr[] = array(
-                            'foret'=>$foret->getDenomination(),
-                            'cantonnement'=>$canton,
-                            'exploitant'=>$exploitant,
-                            'decision_attribution'=>$decision_attribution,
-                            'decision_reprise'=>$decision_reprise,
-                            'nb_cp'=>$nb_cp,
-                            'nb_brh'=>$nb_brh,
-                            'nb_arbres_abattus'=>$arbre_abattus,
-                            'volume_abattage'=>round($volume_abattage,3),
-                            'volume_brh'=>round($volume_brh,3)
-                        );
-                    }
-                }
-            }
-
-
             // Quotas DR
 
-            //$codedr = $user->getCodeDr();
             //$cantonnements = $registry->getRepository(Cantonnement::class)->findBy(['code_dr' => $user->getCodeDr()]);
             foreach ($cantonnements as $cantonnement) {
                 $forets = $registry->getRepository(Foret::class)->findBy(['code_cantonnement' => $cantonnement]);
@@ -945,16 +868,9 @@ class TdbAdminController extends AbstractController
                 'nb_reprises'=>$reprises_count,
                 'nb_doc_brh_op'=>$nb_brh_op,
                 'nb_doc_cp_op'=>$nb_cp_op,
-                //'nb_users'=>$nb_users,
-                //'nb_autorisations'=>$nb_autorisations,
-                //'total_volume_exploite'=>round($total_exploitation),
-                //'total_transformation'=>round($total_transformation),
-                //'chargements_en_cours'=>array_slice($liste_chargements, 0, 10),
-                'point_dr'=>$point_dr,
                 'point_ddef'=>$point_ddef,
                 'drs'=>$registry->getRepository(Dr::class)->findAll(),
-                //'total_agreement'=>$total_agreements,
-                //'total_autorisation'=>$total_autorisations,
+
                 'suivi_saisies'=>$registry->getRepository(PerformanceBrhJour::class)->findBy([],['created_at'=>'ASC']),
                 'arbres_abattus'=>$arbres_abattus,
                 'vol_brh'=>round($volume_brh,3),
@@ -1170,6 +1086,7 @@ class TdbAdminController extends AbstractController
                 $liste_chr_industriel = array();
                 $usine = $registry->getRepository(Usine::class)->find($id_usine);
                 if ($usine){
+
                     // Chargement des BRH
                     $chrs_usine = $registry->getRepository(Pagebrh::class)->findBy([
                         'parc_usine_brh'=>$usine,
@@ -1216,6 +1133,61 @@ class TdbAdminController extends AbstractController
                             'immat'=>$chr->getImmatcamion(),
                             'foret'=>$chr->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
                             'document'=>$chr->getCodeDocbrh()->getNumeroDocbrh(),
+                            'exploitant'=>$exp,
+                            'essences'=>$ess,
+                            'nb_billes'=>$nb_billes,
+                            'volume'=>round($volume_billes,3),
+                            'source'=>$doc_abv,
+                            'id_source'=>$id_doc_abv
+                        );
+                    }
+                    // Chargement des BCBGFH-FC
+                    $chrs_usine = $registry->getRepository(Pagebcbgfh::class)->findBy([
+                        'parc_usine_bcbgfh'=>$usine,
+                        'confirmation_usine'=>false,
+                        'fini'=>true
+                    ]);
+
+                    foreach ($chrs_usine as $chr){
+                        $exp = $chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getRaisonSocialeExploitant();
+                        if ($chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle()){
+                            $exp = $chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant()->getSigle();
+                        }
+
+                        $nb_billes = 0;
+                        $volume_billes = 0;
+                        $ess = "-";
+
+                        $billes_chr = $registry->getRepository(Lignepagebcbgfh::class)->findBy(['code_pagebcbgfh'=>$chr]);
+                        foreach ($billes_chr as $bille){
+                            $nb_billes = $nb_billes + 1;
+                            $volume_billes = $volume_billes + $bille->getCubageLignepagebcbgfh();
+                        }
+                        foreach ($registry->getRepository(Essence::class)->findAll() as $essence){
+                            foreach ($billes_chr as $bille){
+								if ($bille->getNomEssencebcbgfh()){
+									if ($essence->getId() == $bille->getNomEssencebcbgfh()->getId()){
+										$ess = $ess . " - " . $bille->getNomEssencebcbgfh()->getNomVernaculaire();
+										break;
+									}
+								}
+                            }
+                        }
+                        if ($registry->getRepository(TypeDocumentStatistique::class)->find(21)){
+                            $doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(21)->getAbv();
+                            $id_doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(21)->getId();
+                        } else {
+                            $doc_abv = "SOURCE_INCONNUE";
+                            $id_doc_abv = 0;
+                        }
+
+                        $liste_chr_industriel[] = array(
+                            'date_chr'=>$chr->getDateChargementbcbgfh()->format('d/m/Y'),
+                            'id'=>$chr->getId(),
+                            'numero'=>$chr->getNumeroPagebcbgfh(),
+                            'immat'=>$chr->getImmatcamion(),
+                            'foret'=>$chr->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination(),
+                            'document'=>$chr->getCodeDocbcbgfh()->getNumeroDocbcbgfh(),
                             'exploitant'=>$exp,
                             'essences'=>$ess,
                             'nb_billes'=>$nb_billes,
@@ -1278,6 +1250,63 @@ class TdbAdminController extends AbstractController
                             'id_source'=>$id_doc_abv
                         );
                     }
+
+                    // Chargement des BTGU
+                    $chrs_usine_btgu = $registry->getRepository(Pagebtgu::class)->findBy([
+                        'usine_destinataire'=>$usine,
+                        'confirmation_usine'=>false,
+                        'fini'=>true
+                    ]);
+                    //dd($chrs_usine_btgu);
+                    foreach ($chrs_usine_btgu as $chr){
+                        $exp = $chr->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine();
+                        if ($chr->getCodeDocbtgu()->getCodeUsine()->getSigle()){
+                            $exp = $chr->getCodeDocbtgu()->getCodeUsine()->getSigle();
+                        }
+
+                        $nb_billes = 0;
+                        $volume_billes = 0;
+                        $ess = "-";
+
+                        $billes_chr = $registry->getRepository(Lignepagebtgu::class)->findBy(['code_pagebtgu'=>$chr]);
+                        foreach ($billes_chr as $bille){
+                            $nb_billes = $nb_billes + 1;
+                            $volume_billes = $volume_billes + $bille->getVolume();
+                        }
+                        foreach ($registry->getRepository(Essence::class)->findAll() as $essence){
+                            foreach ($billes_chr as $bille){
+                                if ($bille->getEssence()){
+                                    if ($essence->getId() == $bille->getEssence()->getId()){
+                                        $ess = $ess . " - " . $bille->getEssence()->getNomVernaculaire();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if ($registry->getRepository(TypeDocumentStatistique::class)->find(6)){
+                            $doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(6)->getAbv();
+                            $id_doc_abv = $registry->getRepository(TypeDocumentStatistique::class)->find(6)->getId();
+                        } else {
+                            $doc_abv = "SOURCE_INCONNUE";
+                            $id_doc_abv = 0;
+                        }
+
+                        $liste_chr_industriel[] = array(
+                            'date_chr'=>$chr->getDatechargement()->format('d/m/Y'),
+                            'id'=>$chr->getId(),
+                            'numero'=>$chr->getNumeroPagebtgu(),
+                            'immat'=>$chr->getImmatriculation(),
+                            'foret'=>$chr->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine(),
+                            'document'=>$chr->getCodeDocbtgu()->getNumeroDocbtgu(),
+                            'exploitant'=>$exp,
+                            'essences'=>$ess,
+                            'nb_billes'=>$nb_billes,
+                            'volume'=>round($volume_billes,3),
+                            'source'=>$doc_abv,
+                            'id_source'=>$id_doc_abv
+                        );
+                    }
+
                     rsort($liste_chr_industriel);
                 }
 
@@ -1289,6 +1318,7 @@ class TdbAdminController extends AbstractController
 
         }
     }
+
     #[Route('/snvlt/admin/stats_auto', name: 'stats_auto')]
     public function stats_auto(
         Request $request,
@@ -1517,6 +1547,109 @@ class TdbAdminController extends AbstractController
                 return  new JsonResponse(json_encode($liste_documents));
 
             } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+    #[Route('/snvlt/dr/PointDr/{id_dr?0}', name: 'point_dr')]
+    public function point_dr(
+        Request $request,
+        int $id_dr,
+        UserRepository $userRepository,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_DR') or $this->isGranted('ROLE_MINEF'))
+            {
+                $dr = $registry->getRepository(Dr::class)->find($id_dr);
+                $point_dr = array();
+                $exercice = $this->administrationService->getAnnee();
+                if ($dr) {
+
+                    $cantons = $registry->getRepository(Cantonnement::class)->findBy(['code_dr'=>$dr]);
+                    foreach ($cantons as $canton ){
+                        $forets = $canton->getForets();
+                        foreach ($forets as $foret){
+                            $exploitant = "-";
+                            $nb_cp = 0;
+                            $nb_brh = 0;
+                            $arbre_abattus = 0;
+                            $volume_abattage = 0;
+                            $volume_brh = 0;
+                            $decision_reprise = "-";
+                            $decision_attribution = "-";
+
+                            $attributions = $registry->getRepository(Attribution::class)->findBy(['code_foret'=>$foret, 'statut'=>true]);
+                            foreach($attributions as $attribution){
+
+                                if ($attribution->getCodeExploitant()->getSigle()){
+                                    $exploitant = $attribution->getCodeExploitant()->getSigle();
+                                } else {
+                                    $exploitant = $attribution->getCodeExploitant()->getRaisonSocialeExploitant();
+                                }
+
+                                $decision_attribution = $attribution->getNumeroDecision(). " du ". $attribution->getDateDecision()->format('d/m/Y');
+                                $rep = $registry->getRepository(Reprise::class)->findOneBy(['code_attribution'=>$attribution, 'exercice'=>$exercice]);
+
+                                if ($rep){
+                                    $decision_reprise = $rep->getNumeroAutorisation(). " du ". $rep->getDateAutorisation()->format('d/m/Y');
+                                }
+
+                                $doc_cps = $registry->getRepository(Documentcp::class)->findBy(['code_reprise'=>$rep]);
+                                $doc_brhs = $registry->getRepository(Documentbrh::class)->findBy(['code_reprise'=>$rep]);
+
+                                foreach ($doc_cps as $doc_cp){
+                                    $nb_cp = $nb_cp + 1;
+                                    $arbres_abattus = $nb_cp;
+                                    $pagescp = $registry->getRepository(Pagecp::class)->findBy(['code_doccp'=>$doc_cp]);
+                                    foreach ($pagescp as $page){
+                                        $lignecps = $registry->getRepository(Lignepagecp::class)->findBy(['code_pagecp'=>$page]);
+                                        foreach($lignecps as $lignecp){
+                                            $volume_abattage = $volume_abattage + $lignecp->getVolumeArbrecp();
+                                            $arbre_abattus = $arbre_abattus + 1;
+                                        }
+                                    }
+                                }
+
+                                foreach ($doc_brhs as $doc_brh){
+                                    $nb_brh = $nb_brh + 1;
+                                    $pagesbrh = $registry->getRepository(Pagebrh::class)->findBy(['code_docbrh'=>$doc_brh]);
+                                    foreach ($pagesbrh as $page){
+                                        $lignebrhs = $registry->getRepository(Lignepagebrh::class)->findBy(['code_pagebrh'=>$page]);
+                                        foreach($lignebrhs as $lignebrh){
+                                            $volume_brh = $volume_brh + $lignebrh->getCubageLignepagebrh();
+                                        }
+                                    }
+                                }
+
+                                $point_dr[] = array(
+                                    'info'=>'SUCCESS',
+                                    'foret'=>$foret->getDenomination(),
+                                    'cantonnement'=>$canton,
+                                    'exploitant'=>$exploitant,
+                                    'decision_attribution'=>$decision_attribution,
+                                    'decision_reprise'=>$decision_reprise,
+                                    'nb_cp'=>$nb_cp,
+                                    'nb_brh'=>$nb_brh,
+                                    'nb_arbres_abattus'=>$arbre_abattus,
+                                    'volume_abattage'=>round($volume_abattage,3),
+                                    'volume_brh'=>round($volume_brh,3)
+                                );
+
+                            }
+                        }
+                    }
+                } else {
+                    $point_dr[] = array(
+                        'info'=>'ERROR'
+                    );
+                }
+                    return  new JsonResponse(json_encode($point_dr));
+                } else {
                 return $this->redirectToRoute('app_no_permission_user_active');
             }
 

@@ -1,12 +1,12 @@
 {% extends 'template_base.html.twig' %}
 
 {% block Title %}
-    {% trans %}SNVLT{% endtrans %} - {% trans %}Cutting sheet{% endtrans %}
+    {% trans %}SNVLT{% endtrans %} - Tronçonnage
 {% endblock %}
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold">
-        <img src="{{ asset('assets/images/webapp/tronconnage.png') }}" alt="{% trans %}clipping-tool{% endtrans %}">  {% trans %}Cutting sheet{% endtrans %}
+        <img src="{{ asset('assets/images/webapp/tronconnage.png') }}" alt="{% trans %}clipping-tool{% endtrans %}">  Tronçonnage
     </h2>
     <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
         <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
@@ -35,17 +35,17 @@
     <section class="section">
         <div class="alert-danger div_date"></div>
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-4 p-2 bg-white">
                 <table class="table table-responsive bg-white" style="max-height: 800px; border: 1px solid grey; width: 100%;" id="liste_billes">
                     <thead>
-                    <h4 class="text-dark alert-success p-1">{{ 'Logs Stock' | trans }}</h4>
-                    <tr style="background: #045125;color: #fcf8f8;width: 100%;">
-                        <th>{% trans %}Log{% endtrans %}</th>
-                        <th>{% trans %}Length{% endtrans %}</th>
-                        <th>{% trans %}Dm{% endtrans %}</th>
-                        <th>{% trans %}Vol{% endtrans %}</th>
-                        <th>{% trans %}Forest{% endtrans %}</th>
-                        <th>{% trans %}species{% endtrans %}</th>
+                    <h4 class="p-1" style="background-color: #0a53be; color: white;">{{ 'Logs Stock' | trans }}</h4>
+                    <tr style="background: #cce6ef;color: darkgreen;width: 100%;">
+                        <th>Bille</th>
+                        <th>Lng</th>
+                        <th>Dm</th>
+                        <th>Vol</th>
+                        <th>Forêt</th>
+                        <th>Essences</th>
                     </tr>
                     </thead>
                     <tbody id="body_bille">
@@ -53,9 +53,9 @@
                     </tbody>
                 </table>
             </div>
-            <div class="col-md-7" id="div_content" style="">
-
-                <div class="alert-success" style="color: black;"> <i class="mdi mdi-tree text-dark" style="margin-left: 5px;font-size: 32px;"></i> Détails Billonnage
+            <div class="col-md-8 p-2 bg-white" id="div_content" style="">
+                <h4 class="p-1"  style="background-color: orangered; color: white;">Détails Billonnage</h4>
+                <div class="alert-success" style="color: black;">
                     <div class="alert-warning">
                         <input class="mt-2 mb-2 font-weight-bold text-danger text-center" id="numero_bille" type="text" style="width: 120px;font-size: 16px;margin-left: 10px; text-transform: uppercase" placeholder="{% trans %}N° de la Bille{% endtrans %}">
                         <select class="contenu_source" name="select_source" id="select_source">
@@ -67,7 +67,7 @@
                         <label for="" id="lbl_essence" class="text-primary font-weight-bold" style="margin-right: 10px;" ></label>
 
                         <label for="" id="lbl_infos" class="alert-success p-2 font-weight-bold" style="margin-right: 10px;font-size: 18px" ></label>
-                        <button  id="btn_cloturer" data-bs-target="#cloturer_bille" data-bs-toggle="modal" class="mt-2 mb-2 btn btn-sm text-white font-weight-bold btn-danger" style="float: right;"><i class="mdi mdi-close-box-multiple" style="font-size: 20px;"></i> {{ 'Complete Cutting' | trans }}</button>
+                        <button  id="btn_cloturer" data-bs-target="#cloturer_bille" data-bs-toggle="modal" class="mt-2 mb-2 btn btn-sm text-white font-weight-bold btn-danger" disabled style="float: right;"><i class="mdi mdi-close-box-multiple" style="font-size: 20px;"></i> {{ 'Complete Cutting' | trans }}</button>
                     </div>
 
                 </div>
@@ -79,7 +79,7 @@
                     {#<select class=" mt-2 mb-2 text-dark font-weight-bold text-center" id="type_transformation" style="margin-left: 10px;font-size: 20px;">
 
                         </select>#}
-                    <button id="btn_decoupe" class=" mt-1 mb-2 btn btn-sm text-white font-weight-bold btn-primary" style="margin-left: 5px;border: 0px;font-size: 16px;"> <i class="mdi mdi-content-cut" style="font-size: 20px;"></i> {{ 'Cut' | trans}}</button>
+                    <button id="btn_decoupe" class=" mt-1 mb-2 btn btn-sm text-white font-weight-bold btn-primary" style="margin-left: 5px;border: 0px;font-size: 16px;">  Découper</button>
                     <span class="text-white bg-danger badge p-1 mb-3 mt-2" style="margin-left: 20px;font-size: 18px; border-radius: 20px;" id="lbl_lng_restant"></span>
 
                     <hr>
@@ -174,7 +174,16 @@
         })
         $('#date_tronconnage').on('change', function (){
             verifie_date_tr(this.value);
+            active_btn()
         })
+        function active_btn(){
+            let nb_lignes = document.querySelector('#liste_billons').rows.length;
+            if (nb_lignes > 0){
+                $('#btn_cloturer').prop("disabled",false);
+            } else {
+                $('#btn_cloturer').prop("disabled",true);
+            }
+        }
         function verifie_date_tr(valeur){
             let contenu = "";
             document.querySelector('.div_date').innerHTML = '';
@@ -296,6 +305,7 @@
         //Functions
         function liste_billes_dispo(){
             let contenu = "";
+            document.querySelector('#body_bille').innerHTML = "<h3>Chargement...</h3>";
             $.ajax({
                 url : '{{ path('liste_billes_dispo_lje') }}',
                 type : 'POST',
@@ -312,6 +322,9 @@
                     document.querySelector('#body_bille').innerHTML = contenu;
                     let table1 = document.querySelector('#liste_billes');
                     let dataTable = new simpleDatatables.DataTable(table1);
+                },
+                error : function (erreur){
+                    document.querySelector('#body_bille').innerHTML = "<h3>Erreur chargement...</h3>";
                 }
             })
         }

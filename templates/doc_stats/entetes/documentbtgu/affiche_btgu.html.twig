@@ -343,21 +343,36 @@
                 $('#date_chargement').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: '{% trans %}BTGU Loading{% endtrans %}',
-                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Merci de renseigner tous les champs étoilés avant de continuer", 2)
             }else {
-                maj_page_btgu();
+
+                let date_jour = new Date();
+                let date_chargement = new Date($('#date_chargement').val())
+                let date_depart = new Date($('#date_depart').val())
+                let date_arrivee = new Date($('#date_arrivee').val())
+                if (calculNbJours(date_chargement, date_jour) < 0){
+                    render_toast_value("Désolé! La date de chargement doit être supérieure ou égale à la date actuelle", 2)
+                } else if (calculNbJours(date_depart, date_jour) < 0){
+                    render_toast_value("Désolé! La date de départ doit être supérieure ou égale à la date actuelle", 2)
+                }else if (calculNbJours(date_arrivee, date_jour) < 0){
+                    render_toast_value("Désolé! La date d'arrivée doit être supérieure ou égale à la date actuelle", 2)
+                }else if (calculNbJours(date_depart, date_arrivee) < 0){
+                    render_toast_value("Désolé! La date d'arrivée doit être supérieure ou égale à la date de départ", 2)
+                } else if (calculNbJours(date_chargement, date_arrivee) < 0 || calculNbJours(date_chargement, date_depart) < 0 ){
+                    render_toast_value("Désolé! La date de chargement ne peut être supérieure à la date de départ ou d'arrivée", 2)
+                } else {
+                    maj_page_btgu();
+                }
+
+
             }
 
         })
-
+        function calculNbJours(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
         function affiche_pages(id_btgu){
 
             $.ajax({
@@ -448,12 +463,12 @@
                             contenu = contenu + '<td class="text-center"><a class="text-dark font-weight-bold" style="font-size: 16px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
                                 '<td class="text-center"><span class="badge bg-dark text-white p-1"style="font-size: 16px;">' + lignes[i].lettre  + '</span></td>'+
                                 '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh_btgu  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x_btgu  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y_btgu  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng_btgu  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm_btgu  + '</span></td>'+
-                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 16px;">' + lignes[i].cubage_btgu + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm  + '</span></td>'+
+                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 16px;">' + lignes[i].volume + '</span></td>'+
                                 '<td class="text-center"><span class="badge p-1 alert-primary font-weight-bold alert-dark rounded-5" style="font-size: 16px;">' + lignes[i].exploitant + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].cubage_btgu) * 1000)/1000;
@@ -504,7 +519,7 @@
                 'type': 'POST',
                 success: function(response) {
                     $('#transfert .btn-close').click()
-                    alert("SUCCES! Votre transfert a été effectué")
+                    render_toast_value("SUCCES! Votre transfert a été effectué", 1)
                     transfert_effectue()
                 }
             })
@@ -573,17 +588,7 @@
                 $('#date_arrivee').val() === null ||
                 $('#date_arrivee').val() === ""
             ){
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    background: '#f5c8b8',
-                    timer : 3000,
-                    icon: "success",
-                    title: '{% trans %}Please Fill input concerning Factory, date and destination before continue{% endtrans %}',
-                    showConfirmButton: false
-                });
-
-                alert("{% trans %}Please Fill input with star before continue{% endtrans %}")
+                render_toast_value("Merci de renseigner les champs obligatoires", 2)
             }else {
                 if (
                     $('#select_numero').val() === "" ||
@@ -596,17 +601,8 @@
                     $('#cubage_lignepagebtgu').val() === "" ||
                     $('#zh_lignepagebtgu').val() === null
                 ){
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#f5c8b8',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Please Fill input with star before continue{% endtrans %}',
-                        showConfirmButton: false
-                    });
 
-                    alert("{% trans %}Please Fill input with star before continue{% endtrans %}");
+                    render_toast_value("Merci de renseigner les champs obligatoires", 2)
 
                 } else {
                     transferer_bille($('#select_numero').val());
@@ -638,21 +634,14 @@
                 'type': 'POST',
 
                 success: function(response) {
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#dffbdd',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Page header saved !{% endtrans %}',
-                        showConfirmButton: false
-                    });
 
+                    render_toast_value("Entête feuillet enregistrée!", 1)
                 }
             })
         }
 
         function transferer_bille(id_bille){
+            maj_page_btgu()
             $.ajax({
                 'url': '{{ path('app_portail') }}snvlt/docbtgu/op/pages_btgu/data/add_lignes/' + id_bille + '/' + index_page,
                 'type': 'POST',
@@ -676,15 +665,7 @@
                 $('#date_chargement').val() === "" ||
                 $('#date_chargement').val() === null
             ){
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: '{% trans %}BRH Loading{% endtrans %}',
-                    html: "<h4 class='text-danger'>{% trans %}Please Fill input with star before continue{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Merci de renseigner les champs obligatoires SVP!", 2)
             }else {
                 validate_pagebtgu();
             }
@@ -712,16 +693,7 @@
                         success: function(response){
                             console.log(response);
                             let valeur = JSON.parse(response);
-
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                background: '#dffbdd',
-                                timer : 3000,
-                                icon: "success",
-                                title: '{% trans %}The loading is sent to manager!{% endtrans %}',
-                                showConfirmButton: false
-                            });
+                            render_toast_value("Notification chargement envoyé au manager pour validation", 3)
                             initialiser_page();
                             document.querySelector('#body_contenu').innerHTML = '<h1>{{ 'Loading...' | trans}}</h1>'
                             affiche_page_courante(index_page)

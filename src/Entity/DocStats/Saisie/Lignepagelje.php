@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+
 #[ORM\Table(name: 'metier.lignepagelje')]
 #[ORM\Entity(repositoryClass: LignepageljeRepository::class)]
 class Lignepagelje
@@ -112,9 +113,13 @@ class Lignepagelje
     #[ORM\ManyToOne(inversedBy: 'lignepageljes')]
     private ?Pagebtgu $code_pagebtgu = null;
 
+    #[ORM\OneToMany(mappedBy: 'code_bille', targetEntity: HistoriqueLje::class)]
+    private Collection $historiqueLjes;
+
     public function __construct()
     {
         $this->billons = new ArrayCollection();
+        $this->historiqueLjes = new ArrayCollection();
     }
 
 
@@ -488,6 +493,36 @@ class Lignepagelje
     public function setNumeroDocument(?string $numero_document): void
     {
         $this->numero_document = $numero_document;
+    }
+
+    /**
+     * @return Collection<int, HistoriqueLje>
+     */
+    public function getHistoriqueLjes(): Collection
+    {
+        return $this->historiqueLjes;
+    }
+
+    public function addHistoriqueLje(HistoriqueLje $historiqueLje): static
+    {
+        if (!$this->historiqueLjes->contains($historiqueLje)) {
+            $this->historiqueLjes->add($historiqueLje);
+            $historiqueLje->setCodeBille($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHistoriqueLje(HistoriqueLje $historiqueLje): static
+    {
+        if ($this->historiqueLjes->removeElement($historiqueLje)) {
+            // set the owning side to null (unless already changed)
+            if ($historiqueLje->getCodeBille() === $this) {
+                $historiqueLje->setCodeBille(null);
+            }
+        }
+
+        return $this;
     }
 
 

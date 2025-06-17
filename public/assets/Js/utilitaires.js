@@ -66,9 +66,8 @@ function render_toast_value(valeur, type_valeur){
 }
 
 
-// function getNbJours(date1, date2){
-//
-//     const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
-//     const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
-//         return differenceInDays;
-// }
+function getNbJours(date1, date2){
+    const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+    const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+        return differenceInDays;
+}

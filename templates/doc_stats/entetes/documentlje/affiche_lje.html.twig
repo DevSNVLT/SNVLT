@@ -13,7 +13,7 @@
     </h2>
     <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
         <div class="btn-group p-1 rounded-5 justify-content-end" role="group" aria-label="Basic example">
-            <button class="btn text-dark p-2 " style="border: 0px; font-size: 14px;background: linear-gradient(#4bf4c3, #d1f8bf)" id="charger_donnees" data-bs-toggle="modal" data-bs-target="#load_source"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>{% trans %}Load data from BRH, BCBP, BTGU, ...{% endtrans %}</button>
+            <button class="btn text-dark p-2 " style="border: 0px; font-size: 14px;background: linear-gradient(#4bf4c3, #d1f8bf)" id="charger_donnees" data-bs-toggle="modal" data-bs-target="#load_source"> <i class="mdi mdi-check-all" style="font-size: 20px;margin-right: 10px;"></i>Déchargements...</button>
         </div>
     </div>
 {% endblock %}
@@ -79,7 +79,7 @@
                 </div>
                 <div class="col-md-3" style="width: 100%;">
                     <div class="row mb-2 justify-content-center">
-                        <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_search_data" style="background: #507f87; font-size: 14px;"><i class="mdi mdi-content-save text-white" style="font-size: 18px; margin-right: 5px;"></i>{{ 'Save' | trans }}</a>
+                        <a href="#" class="btn btn-sm  text-white font-weight-light" id="btn_search_data" style="background: #507f87; font-size: 14px;"><i class="mdi mdi-content-save text-white" style="font-size: 20px; margin-right: 5px;"></i>{{ 'Save' | trans }}</a>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header  alert-secondary">
-                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">{{ 'Add LJE Data' | trans}}</h5>
+                    <h5 class="modal-title text-dark titre" id="backDropModalTitle">Ajouter des données</h5>
                     <button
                             type="button"
                             class="btn-close"
@@ -113,27 +113,30 @@
                 <div class="modal-body">
 
                     <div>
-                        <h4 class="text-danger">{{ 'Select the source please and search loading number' | trans}}</h4>
+                        <h4 class="text-danger">Sélectionnez la source et cliquez sur le connaissement</h4>
                         <div class="">
-                            <select name="source" id="source"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+
+                            <select name="source" id="source"  style="font-size: 20px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;font-weight: bold;">
+                                <option value="0">-- Source --</option>
                                 {% for doc in docs %}
                                     {% if (doc.id == 2 or doc.id == 3 or doc.id == 2 or doc.id == 6 or doc.id == 16 or doc.id == 21) %}
                                         <option value="{{ doc.id }}">{{ doc.abv }}</option>
                                     {% endif %}
                                 {% endfor %}
+                                <option value="99">Bois importé</option>
                             </select>
                             {% for role in app.user.roles %}
                                 {% if(role == "ROLE_DPIF_SAISIE" or role == "ROLE_DPIF" or role == "ROLE_ADMIN" or role == "ROLE_EXPLOITANT" ) %}
                                     {% set user_minef = 1 %}
                                 {% endif %}
                             {% endfor %}
-                            <input class="text-center" type="text" id="numero_page" style="background-color: #f4feff; width:100px; font-weight: bold" placeholder="N° Feuillet">
-                            <button  id="btn_search_numero_page" style="margin-right:10px;background: #0b511b" ><i class="mdi mdi-file-search text-white"></i></button>
+                            <input class="text-center" type="text" id="numero_page" style="background-color: #f4feff; width:100px;;font-size:20px; font-weight: bold" placeholder="N° Feuillet">
+                            <button  id="btn_search_numero_page" style="margin-right:10px;background: #0b511b;font-size:20px;" ><i class="mdi mdi-file-search text-white"></i></button>
 
-                            <select name="chargements" id="chargements"  style="font-size: 14px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
+                            <select name="chargements" id="chargements"  style="font-size: 20px;background-color: #f1f0e8; border: 1px solid lightgrey;;margin-right: 10px;">
                             </select>
 
-                            Déchargé le : <input type="date" id="date_dechargement" style="background-color: #fffff4; font-weight: bold">
+                            Déchargé le : <input type="date" id="date_dechargement" style="background-color: #fffff4; font-weight: bold;font-size: 20px;">
                             {#<a class="btn font-weight-bold" id="searchData" style="color: #4c4402;font-size: 14px;" href="#"><img src="{{ asset('assets/images/webapp/search.png') }}" alt="*search"></a>#}
 
                             <div id="lbl_source"></div>
@@ -181,7 +184,9 @@
                 </div>
                 <div class="modal-footer alert-secondary">
 
-                    <a type="button" class="btn btn-primary mt-3" href="#" id="btn_save_lje" style="width: 100%; font-size: 20px;">{{ 'Transcribe into the LJE' | trans}}</a>
+                    <a class="btn mt-3 text-white h2 bg-danger" href="#" id="btn_save_lje" style="width: 100%; font-size: 32px;background-color: #064d06;">
+                        Enregistrer les données dans le LJE
+                    </a>
                 </div>
             </div>
         </div>
@@ -221,11 +226,15 @@
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
 
     <script>
         let donnees_brh = "";
         let brh_page_id = 0;
         let bcbp_page_id = 0;
+        let bcbgfh_page_id = 0;
+        let btgu_page_id = 0;
         let index_page = 0;
 
 
@@ -236,9 +245,7 @@
 
 
             $('#charger_donnees').on('click', function (){
-                $('#source').val(null);
-
-
+                $('#source').val("0");
             })
             $('#source').on('change', function (){
                 let numero_chargement = $('#numero_page').val();
@@ -247,6 +254,10 @@
                     recherche_connaissement_brh()
                 } else if (value === "3"){
                     recherche_connaissement_bcbp()
+                }else if (value === "6"){
+                    recherche_connaissement_btgu()
+                }else if (value === "21"){
+                    recherche_connaissement_bcbgfh()
                 }
 
                 if (numero_chargement){
@@ -262,6 +273,10 @@
                     combo_chargements_brh(numero_chargement)
                 } else if(source === "3"){
                     combo_chargements_bcbp(numero_chargement)
+                }  else if(source === "6"){
+                    combo_chargements_btgu(numero_chargement)
+                }  else if(source === "21"){
+                    combo_chargements_bcbgfh(numero_chargement)
                 } else {
                     render_toast_value("SVP, Veuillez sélectionner une source", 0)
                 }
@@ -454,7 +469,7 @@
 
                         contenu = contenu + '</tbody></table>';
                         document.querySelector('#div_contenu').innerHTML = contenu;
-                        document.querySelector('.div_infos').innerHTML = '<span class="text-center font-weight-bold" style="font-size: 18px;"> Volume grumes : <span class="text-danger">' + cubage_total  + ' m<sup>3</sup></span></span>';
+                        document.querySelector('.div_infos').innerHTML = '<span class="text-center font-weight-bold" style="font-size: 20px;"> Volume grumes : <span class="text-danger">' + cubage_total  + ' m<sup>3</sup></span></span>';
                         document.querySelector('#btn_save_lje').style = 'display:inline';
 
                         let table = new DataTable('#data_lje', {
@@ -558,30 +573,13 @@
                     'type': 'POST',
 
                     success: function(response) {
-                        Swal.fire({
-                            toast: true,
-                            position: "top-end",
-                            background: '#dffbdd',
-                            timer : 3000,
-                            icon: "success",
-                            title: '{% trans %}Page header saved !{% endtrans %}',
-                            showConfirmButton: false
-                        });
 
+                        render_toast_value("Feuillet LJE enregistré", 1)
                     }
                 })
             } else {
 
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    background: '#fbddde',
-                    timer : 3000,
-                    icon: "error",
-                    title: 'Merci de renseigner le mois et l\'année SVP!',
-                    showConfirmButton: false
-                });
-
+                render_toast_value("Merci de renseigner le mois et l\'année SVP!", 2)
 
             }
 
@@ -628,9 +626,8 @@
                 annee === null || annee === "" ||
                 rowCount < 1
             ){
-                render_toast_value("Merci de renseigner tous les champs obligatoires : Mois, Année et Date déchargement", 0);
-                render_toast_value("Vérifiez que la table ci-dessous contienne des valeurs", 2);
-
+                render_toast_value("Merci de renseigner tous les champs obligatoires : Mois, Année et Date déchargement \n\n Vérifiez que la table ci-dessous contienne des valeurs", 2);
+                //if (getNbJours())
 
                 document.querySelector('#date_dechargement').focus()
             } else {
@@ -638,19 +635,28 @@
                     page_source_id = brh_page_id;
                 } else if (source_id === "3"){
                     page_source_id = bcbp_page_id;
+                } else if (source_id === "6"){
+                    page_source_id = btgu_page_id;
+                } else if (source_id === "21"){
+                    page_source_id = bcbgfh_page_id;
                 }
-                $('#chargement').modal('show');
-                ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
-                //liste_chargements_brh();
+                alert(getNbJours(new Date(date_dechargement), dateJour));
+                if (getNbJours(new Date(date_dechargement), dateJour) < 0){
+                    render_toast_value("La date de déchargement ne peut être postérieure à la date d'aujourd'hui", 2)
+                } else {
+                    ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
+                }
+
             }
         })
         function ajoute_donnees(index_page_lje, source_id, chargement_id, date_dechargement){
-            
-			if (index_page_lje && source_id && chargement_id && date_dechargement){
+            if (index_page_lje && source_id && chargement_id && date_dechargement){
+                $('#chargement').modal('show');
                 $.ajax({
                     url: '{{path('app_portail')}}snvlt/lje/save/'+ index_page_lje + '/' + source_id + '/' + chargement_id + '/' + date_dechargement,
                     'type': 'POST',
                     success: function(response) {
+
                         let liste_essence = JSON.parse(response)
 
                         reinitialise_table();
@@ -665,9 +671,10 @@
                         console.log(error);
                     }
                 })
+                $('#chargement .btn-close').click();
             } else {
-
                 render_toast_value("Erreur dans l'envoi de données vers le serveur", 0)
+
             }
 
         }
@@ -691,15 +698,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm_brh  + '</span></td>'+
-                                '<td class="text-center"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm_brh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' +  Math.round(lignes[i].cubage_brh * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].cubage_brh ) * 1000)/1000;
                         }
@@ -712,7 +719,7 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -743,15 +750,15 @@
                     } else{
 
                         for(var i = 0; i < lignes.length ; i++){
-                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 14px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
-                                '<td class="text-center"><span class="text-dark p-1"style="font-size: 14px;">' + lignes[i].lettre  + '</span></td>'+
-                                '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm + '</span></td>'+
-                                '<td class="text-center text-danger font-weight-bold"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                            contenu = contenu + '<td class="text-center"><a class="text-dark" style="font-size: 20px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center"><span class="text-dark p-1" style="font-size: 20px;">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
                         }
@@ -764,7 +771,111 @@
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
                             '<td class="text-center"></td>'+
-                            '<td class="text-center font-weight-bold" style="font-size: 18px;"><span>' + cubage_total  + '</span></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu_brh').innerHTML = contenu;
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+                        document.querySelector('#btn_save_lje').classList.add('w-100');
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        function rechercher_chargement_bcbgfh(id_page){
+            let contenu = "";
+            document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-bold"></h3>'
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/docbcbgfh/op/lignes_bcbgfh/data/' +id_page,
+                type: 'POST',
+                data: {'id_bcbp': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    donnees_bcbp = lignes;
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-lighter bg-transparent">{{ 'No Data Available' | trans }}</h3>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr style="background-color: #ebe9e9"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
+                            '</tr>';
+                        contenu = contenu + '</div>'
+                        document.querySelector('#body_contenu_brh').innerHTML = contenu;
+                        document.querySelector('#btn_save_lje').style = 'display:inline';
+                        document.querySelector('#btn_save_lje').classList.add('w-100');
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })
+        }
+        function rechercher_chargement_btgu(id_page){
+            let contenu = "";
+            document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-bold"></h3>'
+            $.ajax({
+                url: '{{path('app_portail')}}snvlt/docbtgu/op/lignes_btgu/data/' +id_page,
+                type: 'POST',
+                data: {'id_btgu': id_page},
+                success: function(response) {
+
+                    let lignes = JSON.parse(response);
+                    donnees_btgu = lignes;
+                    let cubage_total = 0;
+                    if(lignes.length === 0){
+                        // document.querySelector('#body_contenu').innerHTML = '<tr class="bg-white"><td class="text-danger font-weight-bold text-center" style="font-size: 28px;">{{ 'No Data Available'|trans }}</td></tr>';
+                        document.querySelector('#body_contenu_brh').innerHTML = '<h3 class="text-danger font-weight-lighter bg-transparent">{{ 'No Data Available' | trans }}</h3>'
+                    } else{
+
+                        for(var i = 0; i < lignes.length ; i++){
+                            contenu = contenu + '<td class="text-center" style="font-size: 20px;"><a class="text-dark" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
+                                '<td class="text-center" style="font-size: 20px;"><span class="text-dark p-1">' + lignes[i].lettre  + '</span></td>'+
+                                '<td style="font-size: 20px;"><span>' + lignes[i].essence  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center" style="font-size: 20px;"><span>' + lignes[i].dm + '</span></td>'+
+                                '<td class="text-center text-danger font-weight-bold" style="font-size: 20px;"><span>' +  Math.round(lignes[i].volume * 1000)/1000  + '</span></td>'+
+                                '</tr>';
+                            cubage_total = Math.round((cubage_total + lignes[i].volume ) * 1000)/1000;
+                        }
+
+                        contenu = contenu + '<tr style="background-color: #ebe9e9"><td class="text-center"><a class="text-dark font-weight-bold"></a></td>' +
+                            '<td class="text-center"></td>'+
+                            '<td></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center"></td>'+
+                            '<td class="text-center font-weight-bold" style="font-size: 20px;"><span>' + cubage_total  + '</span></td>'+
                             '</tr>';
                         contenu = contenu + '</div>'
                         document.querySelector('#body_contenu_brh').innerHTML = contenu;
@@ -786,7 +897,7 @@
                     let liste = JSON.parse(response);
                     if(liste.length > 0){
                         for (var i = 0; i < liste.length; i++){
-                            contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
+                            contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].numero + '</h3> - ' + liste[i].reference + '</option>';
                         }
                         document.querySelector('#chargements').innerHTML = contenu
                         brh_page_id = liste[0].id_page;
@@ -810,7 +921,7 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             brh_page_id = liste[0].id_page;
@@ -837,12 +948,68 @@
                         let liste = JSON.parse(response);
                         if(liste.length > 0){
                             for (var i = 0; i < liste.length; i++){
-                                contenu = contenu + '<option value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
                             }
                             document.querySelector('#chargements').innerHTML = contenu
                             bcbp_page_id = liste[0].id_page;
 
                             rechercher_chargement_bcbp(bcbp_page_id);
+                        } else {
+                            render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
+                        }
+                    }
+                })
+            } else {
+                render_toast_value('Merci de renseigner le N° du feuillet en premier.', 2)
+            }
+
+        }
+
+        function combo_chargements_bcbgfh(numero_chargement){
+            let contenu = "";
+
+            if(numero_chargement){
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/doc/stats/lje/cmb_chrg_bcbgfh/' + index_page + '/' + numero_chargement,
+                    type : 'POST',
+                    success : function (response){
+                        let liste = JSON.parse(response);
+                        if(liste.length > 0){
+                            for (var i = 0; i < liste.length; i++){
+                                contenu = contenu + '<option style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                            }
+                            document.querySelector('#chargements').innerHTML = contenu
+                            bcbgfh_page_id = liste[0].id_page;
+
+                            rechercher_chargement_bcbgfh(bcbgfh_page_id);
+                        } else {
+                            render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
+                        }
+                    }
+                })
+            } else {
+                render_toast_value('Merci de renseigner le N° du feuillet en premier.', 2)
+            }
+
+        }
+
+        function combo_chargements_btgu(numero_chargement){
+            let contenu = "";
+
+            if(numero_chargement){
+                $.ajax({
+                    url : '{{ path('app_portail') }}snvlt/doc/stats/lje/cmb_chrg_btgu/' + index_page + '/' + numero_chargement,
+                    type : 'POST',
+                    success : function (response){
+                        let liste = JSON.parse(response);
+                        if(liste.length > 0){
+                            for (var i = 0; i < liste.length; i++){
+                                contenu = contenu + '<option  style="font-size: 20px;" value = "' + liste[i].id_page+ '"><h3 class="text-danger font-weight-bold">' +  liste[i].reference + '</h3></option>';
+                            }
+                            document.querySelector('#chargements').innerHTML = contenu
+                            btgu_page_id = liste[0].id_page;
+
+                            rechercher_chargement_btgu(btgu_page_id);
                         } else {
                             render_toast_value('Aucun chargement N° ' + numero_chargement + ' disponible' , 2)
                         }
@@ -906,9 +1073,34 @@
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
                             contenu = contenu + '<tr>';
-                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
-                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].brh + '</td>';
+                            contenu = contenu + '<td><a class="num_connaissement"  style="font-size: 22px;" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].brh + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_connaissement').innerHTML = contenu;
+                    }
+            }
+            })
+        }
+        function recherche_connaissement_bcbgfh(){
+            let contenu = '';
+            reinitialise_table();
+            $('#numero_page').val('');
+
+
+            document.querySelector('#body_connaissement').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('lje_connaissement_bcbgfh') }}',
+                type : 'POST',
+                success : function(response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        for(var i=0 ; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement"  href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].brh + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
@@ -930,9 +1122,32 @@
                     if (reponse.length > 0){
                         for(var i=0 ; i < reponse.length; i++){
                             contenu = contenu + '<tr>';
-                            contenu = contenu + '<td><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
-                            contenu = contenu + '<td>' + reponse[i].date_connaissement + '</td>';
-                            contenu = contenu + '<td>' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].bcbp + '</td>';
+                            contenu = contenu + '</tr>';
+                        }
+                        document.querySelector('#body_connaissement').innerHTML = contenu;
+                    }
+                }
+            })
+        }
+        function recherche_connaissement_btgu(){
+            let contenu = '';
+            reinitialise_table();
+            $('#numero_page').val('');
+            document.querySelector('#body_connaissement').innerHTML = contenu;
+            $.ajax({
+                url : '{{ path('lje_connaissement_btgu') }}',
+                type : 'POST',
+                success : function(response){
+                    let reponse = JSON.parse(response);
+                    if (reponse.length > 0){
+                        for(var i=0 ; i < reponse.length; i++){
+                            contenu = contenu + '<tr>';
+                            contenu = contenu + '<td  style="font-size: 22px;"><a class="num_connaissement" href="#" id="' + reponse[i].numero + '">' + reponse[i].numero + '</a></td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].date_connaissement + '</td>';
+                            contenu = contenu + '<td  style="font-size: 22px;">' + reponse[i].btgu + '</td>';
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;

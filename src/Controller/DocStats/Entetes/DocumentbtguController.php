@@ -604,12 +604,12 @@ class DocumentbtguController extends AbstractController
                             'numero_ligne'=>$lignebtgu->getNumeroArbre(),
                             'lettre'=>$lignebtgu->getLettreBille(),
                             'essence'=>$lignebtgu->getEssence()->getNomVernaculaire(),
-                            'x_btgu'=>$lignebtgu->getX(),
-                            'y_btgu'=>$lignebtgu->getY(),
-                            'zh_btgu'=>$lignebtgu->getZh()->getZone(),
-                            'lng_btgu'=>$lignebtgu->getLng(),
-                            'dm_btgu'=>$lignebtgu->getDm(),
-                            'cubage_btgu'=>round($lignebtgu->getVolume(),3),
+                            'x'=>$lignebtgu->getX(),
+                            'y'=>$lignebtgu->getY(),
+                            'zh'=>$lignebtgu->getZh()->getZone(),
+                            'lng'=>$lignebtgu->getLng(),
+                            'dm'=>$lignebtgu->getDm(),
+                            'volume'=>round($lignebtgu->getVolume(),3),
                             'created_at'=>$lignebtgu->getCreatedAt()->format('d/m/Y h:i:s'),
                             'created_by'=>$lignebtgu->getCreatedBy(),
                             'exploitant'=>$registry->getRepository(Exploitant::class)->findOneBy(["numero_exploitant"=>(int) $lignebtgu->getCodeExploitant()])->getSigle()
@@ -823,6 +823,7 @@ class DocumentbtguController extends AbstractController
             }
         }
     }
+    //snvlt/docbtgu/op/pages_btgu/data/add_lignes/1165/3941
     #[Route('snvlt/docbtgu/op/pages_btgu/data/add_lignes/{id_bille}/{id_pagebtgu}', name:'transferer_bille_lje')]
     public function transferer_bille_lje(
         ManagerRegistry $registry,
@@ -858,6 +859,12 @@ class DocumentbtguController extends AbstractController
                         $ligne_btgu->setExercice($this->administrationService->getAnnee());
                         $ligne_btgu->setCreatedAt(new  \DateTimeImmutable());
                         $ligne_btgu->setCreatedBy($user);
+                        $ligne_btgu->setUpdatedAt(new  \DateTimeImmutable());
+                        $ligne_btgu->setUpdatedBy($user);
+
+                        //Recupère le ID LJE
+                        $ligne_btgu->setIdLje($bille->getId());
+
                         $ligne_btgu->setCodePagebtgu($pagebtgu);
                         $registry->getManager()->persist($ligne_btgu);
 
@@ -865,6 +872,15 @@ class DocumentbtguController extends AbstractController
                         $bille->setCodePagebtgu($pagebtgu);
 
                         $registry->getManager()->flush();
+
+                        // Log SNVLT
+                        $this->administrationService->save_action(
+                            $user,
+                            "LIGNEPAGE_BTGU",
+                            "AJOUT BILLE",
+                            new \DateTimeImmutable(),
+                            "Le chargement N% ". $ligne_btgu->getNumeroArbre().$ligne_btgu->getLettreBille() . " du connaissement BTGU N° " . $pagebtgu->getNumeroPagebtgu(). " a été enregistré par " . $user
+                        );
 
 
                         return new JsonResponse(json_encode(true));
@@ -904,6 +920,7 @@ class DocumentbtguController extends AbstractController
                         $page->setFini(true);
                         $page->setEntreLje(false);
                         $page->setSoumettre(true);
+                        $page->setConfirmationUsine(false);
 
                         if ($this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_DPIF_SAISIE')){
                             $page->setConfirmationUsine(true);
@@ -933,7 +950,7 @@ class DocumentbtguController extends AbstractController
                                     "Le Chargement BTGU". $page->getCodeDocbtgu()->getTypeDocument()->getAbv() . " N° " . $page->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $page->getNumeroPagebtgu() . " est en transit vers votre usine  ",
                                     $respo_usine,
                                     $user->getId(),
-                                    "app_my_loadings_notifs",
+                                    "app_my_btgu_loadings_notifs",
                                     "PAGE_BTGU",
                                     $page->getId()
                                 );
@@ -958,4 +975,226 @@ class DocumentbtguController extends AbstractController
 
         }
     }
+
+
+    #[Route('/snvlt/detail_btgu_loading/{id_notification?0}', name:'app_my_btgu_loadings_notifs')]
+    public function details_chargements_notifs(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_notification,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notifications
+    ){
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or
+                $this->isGranted('ROLE_ADMIN') or
+                $this->isGranted('ROLE_ADMINISTRATIF' ) or
+                $this->isGranted('ROLE_INDUSTRIEL' ) ){
+
+                $notification = $notifications->find($id_notification);
+
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                if ($notification) {
+
+                    $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($notification->getRelatedToId());
+                    if ($pagebtgu) {
+
+                        return $this->render('doc_stats/entetes/documentbtgu/details_chargement.html.twig',
+                            [
+                                'liste_menus'=>$menus->findOnlyParent(),
+                                "all_menus"=>$menus->findAll(),
+                                'menus'=>$permissions->findBy(['code_groupe_id'=>$code_groupe]),
+                                'mes_notifs'=>$notifications->findBy(['to_user'=>$user, 'lu'=>false],[],5,0),
+                                'groupe'=>$code_groupe,
+                                'chargement'=>$pagebtgu,
+                                'liste_parent'=>$permissions
+                            ]);
+
+                    } else {
+                        return new JsonResponse(json_encode(false));
+                    }
+
+
+                } else {
+                    return new JsonResponse(json_encode("BAD NOTIFICATION"));
+                }
+
+            }else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+    #[Route('/snvlt/detail_btgu_loading/accept/{id_page?0}', name:'accept_chargement_btgu')]
+    public function accepter_chargement_btgu(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_page,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notifications
+    ){
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ( $this->isGranted('ROLE_INDUSTRIEL' ) ){
+
+
+
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($id_page);
+                if ($pagebtgu) {
+
+                    $pagebtgu->setConfirmationUsine(true);
+                    $registry->getManager()->persist($pagebtgu);
+                    $registry->getManager()->flush();
+
+
+                    //Save Log
+
+                    $this->administrationService->save_action(
+                        $user,
+                        "PAGE_BTGU",
+                        "ACCEPTAION_CHARGEMENT_USINE",
+                        new \DateTimeImmutable(),
+                        "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}"
+                    );
+
+                    //envoi Notification à l'usine emettrice
+                    if ($pagebtgu->getCodeDocbtgu()->getCodeUsine()->getEmailPersonneRessource()){
+                        $this->utils->envoiNotification(
+                            $registry,
+                            "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+                            "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+                            $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getEmailPersonneRessource()]),
+                            $user,
+                            "app_my_btgu_loadings_notifs",
+                            "PAGE_BTGU",
+                            $pagebtgu->getId()
+                        );
+                    }
+
+
+                    //envoi Notification à la DR de l'usine
+                    $this->utils->envoiNotification(
+                        $registry,
+                        "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+                        "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+                        $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDr()->getEmailPersonneRessource()]),
+                        $user,
+                        "app_my_btgu_loadings_notifs",
+                        "PAGE_BTGU",
+                        $pagebtgu->getId()
+                    );
+
+                    //envoi Notification à la DD de l'usine si elle existe
+                    if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId() > 0){
+                        if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()){
+                            // dd($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId());
+
+                            $this->utils->envoiNotification(
+                                $registry,
+                                "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+                                "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+                                $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()]),
+                                $user,
+                                "app_my_btgu_loadings_notifs",
+                                "PAGE_BTGU",
+                                $pagebtgu->getId()
+                            );
+                        }
+                    }
+
+                    //envoi Notification au cantonnement de l'usine
+
+                    $this->utils->envoiNotification(
+                        $registry,
+                        "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+                        "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+                        $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getEmailPersonneRessource()]),
+                        $user,
+                        "app_my_btgu_loadings_notifs",
+                        "PAGE_BTGU",
+                        $pagebtgu->getId()
+                    );
+                    return new JsonResponse(json_encode("SUCCESS"));
+
+
+                } else {
+                    return new JsonResponse(json_encode("BAD NOTIFICATION"));
+                }
+
+            }else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+    #[Route('/snvlt/detail_btgu_loading/details/{id_page}', name:'app_my_btgu_loadings')]
+    public function my_btgu_loadings(
+        ManagerRegistry $registry,
+        Request $request,
+        int $id_page,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        UserRepository $userRepository,
+        NotificationRepository $notifications
+    ){
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_MINEF') or
+                $this->isGranted('ROLE_ADMIN') or
+                $this->isGranted('ROLE_ADMINISTRATIF' ) or
+                $this->isGranted('ROLE_INDUSTRIEL' ) ){
+
+
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+
+                //dd($notification->getRelatedToId());
+                $pagebtgu = $registry->getRepository(Pagebtgu::class)->find($id_page);
+                if ($pagebtgu) {
+
+
+                    return $this->render('doc_stats/entetes/documentbtgu/details_chargement.html.twig',
+                        [
+                            'liste_menus'=>$menus->findOnlyParent(),
+                            "all_menus"=>$menus->findAll(),
+                            'menus'=>$permissions->findBy(['code_groupe_id'=>$code_groupe]),
+                            'mes_notifs'=>$notifications->findBy(['to_user'=>$user, 'lu'=>false],[],5,0),
+                            'groupe'=>$code_groupe,
+                            'chargement'=>$pagebtgu,
+                            'liste_parent'=>$permissions
+                        ]);
+
+                } else {
+                    return new JsonResponse(json_encode(false));
+                }
+
+
+            }else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+
 }

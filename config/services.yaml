@@ -11,6 +11,7 @@ parameters:
     prospections_csv_directory: '%kernel.project_dir%/public/images/uploads/prospections'
     images_brh_directory: '%kernel.project_dir%/public/images/uploads/brh'
     images_bcbp_directory: '%kernel.project_dir%/public/images/uploads/bcbp'
+    images_bcbgfh_directory: '%kernel.project_dir%/public/images/uploads/bcbgfh'
     medias_directory: 'public/uploads/media'
     uploads_directory: 'uploads/media'
     abonnes_directory: 'uploads/abonnes'

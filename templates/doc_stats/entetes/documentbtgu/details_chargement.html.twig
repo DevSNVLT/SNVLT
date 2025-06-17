@@ -1,18 +1,18 @@
 {% extends 'template_base.html.twig' %}
 
 {% block Title %}
-    {% trans %}SNVLT{% endtrans %} - Chargement BCBGFH-FC - [N° {{ chargement.numeroPagebcbgfh }} - {{ chargement.codeDocbcbgfh.codeContrat.codeExploitant.sigle }}]
+    {% trans %}SNVLT{% endtrans %} - Déchargement Grumes BTGU - [ {{ chargement.numeroPagebtgu }} - {{ chargement.codeDocbtgu.codeUsine.raisonSocialeUsine }}]
 {% endblock %}
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
-        <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="{% trans %}bcbgfh{% endtrans %}">  Détails Chargement BCBGFH-FC - [ N° : {{ chargement.numeroPagebcbgfh }}]
+        <img src="{{ asset('assets/images/webapp/loading.png') }}" alt="{% trans %}btgu{% endtrans %}">    Déchargement Grumes BTGU - [ Connaissement N° : {{ chargement.numeroPagebtgu }}]
     </h2>
     <div class="d-sm-flex justify-content-xl-between align-items-center mb-2">
         <div class="btn-group p-1 rounded-5 " role="group" aria-label="Basic example">
-            {% if (chargement.photo) %}
-                <a class="btn alert-dark text-dark p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ asset('images/uploads/bcbgfh') }}/{{ chargement.photo }}" target="_blank"> <img src="{{ asset('assets/images/webapp/photo.png') }}" alt="photo" height="32" style="margin-right: 5px;">Voir la photo</a>
-            {% endif %}
+{#            {% if (chargement.photo) %}#}
+{#            <a class="btn alert-dark text-dark p-2 mt-2" style="border: 0px; font-size: 16px;" href="{{ asset('images/uploads/btgu') }}/{{ chargement.photo }}" target="_blank"> <img src="{{ asset('assets/images/webapp/photo.png') }}" alt="photo" height="32" style="margin-right: 5px;">{% trans %}Show photo{% endtrans %}</a>#}
+{#            {% endif %}#}
         </div>
     </div>
 {% endblock %}
@@ -40,9 +40,10 @@
     <link rel="stylesheet" href="{{ asset('assets/Js/cartographie/style.css') }}">
     <link rel="stylesheet" href="https://elrobis.github.io/L.Control.ZoomBar/src/L.Control.ZoomBar.css">
 
+    </style>
     {% set volumeTotal = 0 %}
-    {% for ligne in  chargement.lignepagebcbgfhs %}
-        {% set volumeTotal = volumeTotal +  ligne.cubageLignepagebcbgfh %}
+    {% for ligne in  chargement.lignepagebtgus %}
+        {% set volumeTotal = volumeTotal +  ligne.volume %}
     {% endfor %}
     {% set volumeTotal = (volumeTotal) %}
     <section class="section p-2" style="background:radial-gradient(#f3fbda, #e4fafe); border: 1px lightgrey solid">
@@ -51,37 +52,39 @@
 
             <div class="card-body p-2" style="background: #f4f2f2">
                 {% if (chargement.confirmationUsine == true) %}
-                    <div class="p-2 m-2 text-white" style="background: #058021; font-size: 22px;">Chargement Grumes déjà accepté par  {{ chargement.parcUsineBcbgfh.raisonSocialeUsine }}</div>
-                {% elseif (chargement.motivationRejet) %}
-                    <div class="bg-danger p-2 m-2 text-white" style="font-size: 22px;">Chargement Grumes refusé par {{ chargement.parcUsineBcbgfh.raisonSocialeUsine }}</div>
+                    <div class="p-2 m-2 text-white" style="background: #058021; font-size: 22px;">Chargement de grumes BTGU accepté par {{ chargement.UsineDestinataire.raisonSocialeUsine }}</div>
                 {% endif %}
                 <div class="alert-warning mb-3">
                     <div class="row alert-secondary ">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'Logger' }}</span>
-                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.codeDocbcbgfh.codeContrat.codeExploitant.raisonSocialeExploitant }} - {{ chargement.codeDocbcbgfh.codeContrat.codeExploitant.marteauExploitant }} </span>
+                        <span class="col-md-2" style="font-size: 16px;">Type Document</span>
+                        <span class="font-weight-bold col-md-9" style="font-size: 20px;color:orangered;"> BTGU </span>
                     </div>
                     <div class="row alert-secondary ">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'Forest' }}</span>
-                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbcbgfh.codeContrat.codeForet.denomination }}</span>
+                        <span class="col-md-2" style="font-size: 16px;">Usine Fournisseur</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.codeDocbtgu.codeUsine.raisonSocialeUsine }} </span>
                     </div>
                     <div class="row alert-secondary ">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'Document' }}</span>
-                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbcbgfh.numeroDocbcbgfh }}</span>
+                        <span class="col-md-2" style="font-size: 16px;">ville</span>
+                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbtgu.codeUsine.ville }}</span>
                     </div>
                     <div class="row alert-secondary ">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'loading date' }}</span>
-                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.dateChargementbcbgfh | date('d/m/Y') }}</span>
+                        <span class="col-md-2" style="font-size: 16px;">Document</span>
+                        <span class="text-dark font-weight-bold badge alert-dark p-1" style="font-size: 16px;margin-left: 10px;">{{ chargement.codeDocbtgu.numeroDocbtgu }}</span>
                     </div>
                     <div class="row alert-secondary ">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'Destination' }}</span>
-                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.parcUsineBcbgfh.raisonSocialeUsine }} - {{ chargement.destinationPagebcbgfh }}</span>
+                        <span class="col-md-2" style="font-size: 16px;">Date de chargement</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.datechargement | date('d/m/Y') }}</span>
+                    </div>
+                    <div class="row alert-secondary ">
+                        <span class="col-md-2" style="font-size: 16px;">Destination</span>
+                        <span class="text-dark font-weight-bold col-md-9" style="font-size: 16px;">{{ chargement.UsineDestinataire.raisonSocialeUsine }} - {{ chargement.destination }}</span>
                     </div>
                     <div class="row alert-secondary mb-2">
-                        <span class="col-md-2" style="font-size: 16px;">{{ 'Total volume' }}</span>
+                        <span class="col-md-2" style="font-size: 16px;">Volume Total</span>
                         <span class="text-white font-weight-bold badge p-2 bg-danger" style="font-size: 16px;margin-left: 10px;">{{ volumeTotal }} m<sup>3</sup></span>
                     </div>
                 </div>
-                <table class="table table-responsive" id="data_bcbgfh">
+                <table class="table table-responsive" id="data_btgu">
                     <thead>
                     <tr class="alert-primary">
                         <th class="text-center font-weight-bold" style="font-size: 20px;width: 10%;">{{ 'Tree No' |trans}}</th>
@@ -96,19 +99,19 @@
                     </tr>
                     </thead>
                     <tbody class="bg-white text-center">
-                    {% for ligne_bcbgfh in chargement.lignepagebcbgfhs %}
+                    {% for ligne_btgu in chargement.lignepagebtgus %}
                         <tr>
-                            <td>{{ ligne_bcbgfh.numeroLignepagebcbgfh }}</td>
-                            <td>{{ ligne_bcbgfh.lettreLignepagebcbgfh }}</td>
-                            <td>{{ ligne_bcbgfh.nomEssencebcbgfh.nomVernaculaire }}</td>
-                            <td>{{ ligne_bcbgfh.zhLignepagebcbgfh.zone }}</td>
-                            <td>{{ ligne_bcbgfh.xLignepagebcbgfh }}</td>
-                            <td>{{ ligne_bcbgfh.yLignepagebcbgfh }}</td>
-                            <td>{{ ligne_bcbgfh.longeurLignepagebcbgfh }}</td>
-                            <td>{{ ligne_bcbgfh.diametreLignepagebcbgfh }}</td>
-                            <td>
+                            <td>{{ ligne_btgu.numeroArbre }}</td>
+                            <td>{{ ligne_btgu.lettreBille }}</td>
+                            <td>{{ ligne_btgu.essence.nomVernaculaire }}</td>
+                            <td>{{ ligne_btgu.zh.zone }}</td>
+                            <td>{{ ligne_btgu.x }}</td>
+                            <td>{{ ligne_btgu.y }}</td>
+                            <td>{{ ligne_btgu.lng }}</td>
+                            <td>{{ ligne_btgu.dm }}</td>
+                            <td class="font-weight-bold text-danger">
 
-                                {{ ligne_bcbgfh.cubageLignepagebcbgfh}}
+                                {{ ligne_btgu.volume}}
                             </td>
                         </tr>
                     {% endfor %}
@@ -117,7 +120,7 @@
                 {% if (app.user.codeindustriel and chargement.confirmationUsine == false) %}
                     <hr>
                     <a href="#" data-bs-toggle="modal" data-bs-target="#acceptRequest" class="btn btn-sm bg-primary p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-check-circle" style="font-size: 24px;margin-right: 10px;"></i>Accepter le chargement</a>
-                    <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter"><i class="mdi mdi-message-alert" style="font-size: 24px;margin-right: 10px;"></i>Refuser</a>
+                    <a href="#" class="btn btn-sm bg-danger p-2 me-2 ms-5 text-white font-weight-light" style="font-size: 16px;font-weight: lighter" disabled=""><i class="mdi mdi-message-alert" style="font-size: 24px;margin-right: 10px;"></i>Rejeter le chargement</a>
                 {% endif %}
             </div>
         </div>
@@ -128,7 +131,7 @@
         <div class="modal-dialog">
             <form class="modal-content">
                 <div class="modal-header alert-success">
-                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> {{ 'Loading data' | trans}}</h5>
+                    <h5 class="modal-title" id="backDropModalTitle"><img src="{{ asset('assets/images/webapp/loading.png') }}" alt="loading" style="margin-right: 10px; height: 32px;"> Chargement de grumes</h5>
                 </div>
                 <div class="modal-body">
                     <div class="justify-content-start d-inline-flex">
@@ -137,19 +140,18 @@
                         </div>
                         <div class="m-2">
                             <label for="motif" class="text-dark font-weight-bold">Nous avons besoin de votre approbation</label>
-                            <h6  class="text-danger ">Voulez-vous accepter ce chargement sur votre parc ?</h6>
+                            <h6  class="text-danger ">Voulez-vous autoriser ce chargement de grumes sur votre parc usine ?</h6>
                         </div>
                     </div>
 
                     <div class="text-center mt-3">
                         <a type="button" class="btn btn-danger text-white font-weight-light refuse_loading" data-bs-dismiss="modal" id="{{ chargement.id }}"  style="font-size: 16px;">
-                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>Annuler
+                            <i class="mdi mdi-cancel text-white me-2 " style="font-size: 20px;margin-right: 5px;"></i>{{ 'Cancel'|trans }}
                         </a>
                         <a type="button" class="btn btn-success accepter font-weight-light  accept_loading" id="{{ chargement.id }}" style="font-size: 16px;margin-left: 15px;">
-                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Autoriser le chargement
+                            <i class="mdi mdi-check-circle text-white ms-4" style="font-size: 20px;margin-right: 5px;"></i> Autoriser
                         </a>
                     </div>
-                    <h1 class="text-danger alert-light loading_chr"></h1>
                 </div>
             </form>
         </div>
@@ -171,30 +173,23 @@
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script src="{{ asset('assets/Js/cartographie/main.js') }}"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
     <script>
         $('.accept_loading').on('click', function (){
-            document.querySelector('.loading_chr').innerText = "Chargement..."
-            document.querySelector('.loading_chr').style = "padding:5px;"
             $.ajax({
-                'url' : '{{ path('app_portail') }}snvlt/detail_bcbgfh_loading/accept/{{ chargement.id }}',
+                'url' : '{{ path('app_portail') }}snvlt/detail_btgu_loading/accept/{{ chargement.id }}',
                 type : 'POST',
                 success : function (){
-                    render_toast_value("Chargement accepté",1)
-                    document.location.href = "{{ path('app_tdb_admin') }}";
-                    $('.refuse_loading').click();
+                    render_toast_value("Chargement accepté", 1)
+                    document.location.reload();
                 },
-                error : function (){
-                    render_toast_value("Erreur dans le traitement", 0)
-                    $('.refuse_loading').click()
+                error : function (erreur){
+                    render_toast_value("Chargement refusé", 0)
                 }
             })
-            //document.location.reload();
         })
     </script>
 

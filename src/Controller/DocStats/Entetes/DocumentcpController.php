@@ -959,6 +959,64 @@ class DocumentcpController extends AbstractController
         }
     }
 
+    #[Route('snvlt/doccp/retirer/pages_cp/{id_arbre}', name: 'retirer_fut')]
+    public function retirer_fut(
+        Request $request,
+        int $id_arbre,
+        UserRepository $userRepository,
+        PagecpRepository $pages_cp,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_EXPLOITANT') or  $this->isGranted('ROLE_ADMINISTRATIF') or $this->isGranted('ROLE_MINEF') or $this->isGranted('ROLE_ADMIN')  )
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $ligne_cp = $registry->getRepository(Lignepagecp::class)->find($id_arbre);
+                if ($ligne_cp){
+                    //recherche du ID CP dans la Table BRH
+                    $ligne_brh = $registry->getRepository(Lignepagebrh::class)->findOneBy(['code_ligne_cp'=>$ligne_cp]);
+                    if (!$ligne_brh){
+                        $registry->getManager()->remove($ligne_cp);
+                        $registry->getManager()->flush();
+
+                        //Mise à jour dans SNVLT1
+                        try {
+                            $this->snvlt1->DeleteLignePageDoccp($ligne_cp);
+                        } catch (\Throwable $exception){
+                            $my_cp_page[] = array(
+                                'code'=>$exception->getMessage()
+                            );
+                        }
+
+
+                        $my_cp_page[] = array(
+                            'code'=>'SUCCESS'
+                        );
+                    } else {
+                        $my_cp_page[] = array(
+                            'code'=>'ERROR'
+                        );
+                    }
+
+                } else {
+                    $my_cp_page[] = array(
+                        'code'=>'ERROR'
+                    );
+                }
+                return  new JsonResponse(json_encode($my_cp_page));
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+    }
+
+
     function getVolumeCp(Documentcp $documentcp):float
     {
         $volumecp = 0;

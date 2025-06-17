@@ -67,6 +67,9 @@ class Lignepagebtgu
     #[ORM\ManyToOne(inversedBy: 'lignepagebtgus')]
     private ?Pagebtgu $code_pagebtgu = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $id_lje = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -260,6 +263,18 @@ class Lignepagebtgu
     public function setCodePagebtgu(?Pagebtgu $code_pagebtgu): static
     {
         $this->code_pagebtgu = $code_pagebtgu;
+
+        return $this;
+    }
+
+    public function getIdLje(): ?int
+    {
+        return $this->id_lje;
+    }
+
+    public function setIdLje(?int $id_lje): static
+    {
+        $this->id_lje = $id_lje;
 
         return $this;
     }

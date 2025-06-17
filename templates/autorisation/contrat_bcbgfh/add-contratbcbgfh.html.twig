@@ -1,12 +1,12 @@
 {% extends 'template_base.html.twig' %}
 
 {% block Title %}
-    SNVLT - Ajouter un contrat BCBGFH
+    {% trans %}SNVLT{% endtrans%} - Contrats BCBGFH
 {% endblock %}
 
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
-        <img src="{{ asset('assets/images/webapp/contract2.png') }}" alt="">  Contrats BCBGFH - {% trans %}[ADD]{% endtrans %}
+        <img src="{{ asset('assets/images/webapp/contract2.png') }}" alt="reprise">  Contrats BCBGFH-FC
     </h2>
 {% endblock %}
 
@@ -15,57 +15,150 @@
  {% endblock %}
 
 {% block page_content %}
-    <link rel="stylesheet" href="{{ asset('assets/webapp/assets/vendors/simple-datatables/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/input.css') }}">
-    <style>
-
-    </style>
-    <section class="section" style="border: 1px green solid;">
-
-                <div class="box">
-                    <div  class="input-data">
-                        <input id="numero_bcbgfh" type="text">
-                        <div class="line"></div>
-                        <label>N° BCBGFH</label>
-                    </div>
+    <link href="{{ asset('assets/dselect-main/dist/css/dselect.css') }}" rel="stylesheet" />
+    <section class="section">
+        <div class="p-2 w-100 banniere"></div>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="w-100 alert-success">Enregistrez un nouveau contrat BCBGFH-FC</h3>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">N° Contrat</span>
+                    <input type="text" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="num_contrat"  aria-label="N° de la décision" aria-describedby="N° de la décision">
                 </div>
-
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Date Contrat</label>
-                    <input id="date_contrat" type="text" class="input-group-sm">
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Date Signature</span>
+                    <input type="date" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="date_signature"  aria-label="Date de la décision" aria-describedby="Date de la décision">
                 </div>
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Date Signature</label>
-                    <input id="date_signature" type="text" class="input-group-sm">
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Durée (mois)</span>
+                    <input type="number" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="duree"  aria-label="Date de la décision" aria-describedby="Durée du contrat">
                 </div>
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Durée</label>
-                    <input id="duree" type="text" class="input-group-sm">
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Nombre de tiges</span>
+                    <input type="number" class="form-control h4 border-0" style="font-size: large;text-transform: uppercase;width: fit-content" id="nb_tiges"  aria-label="Date de la décision" aria-describedby="Nombre de tiges">
                 </div>
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Nombre Tiges</label>
-                    <input id="tiges" type="number" class="input-group-sm">
-                </div>
-                <hr>
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Exploitant</label>
-                    <select id="select_exp"  class="input-group-sm">
-                        <option value="0">Liste Exploitants</option>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Forêt</span>
+                    <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="foret"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                        <option value="0">Sélectionnez la forêt</option>
+                        {% for foret in forets %}
+                            {% if (foret.codeTypeForet.id == 2) %}
+                                <option value="{{ foret.id }}">{{ foret.denomination }}</option>
+                            {% endif %}
+                        {% endfor %}
                     </select>
                 </div>
-                <div class="box">
-                    <label class="" for="numero_bcbgfh">Forêt</label>
-                    <select id="select_foret"  class="input-group-sm">
-                        <option value="0">Liste Forêts</option>
+                <div class="input-group mb-2" style="border: 1px solid lightgrey">
+                    <span class="input-group-text h4 alert-light" style="min-width: 200px;">Exploitant</span>
+                    <select type="text" class="form-control h4 border-0 select_titre" required style="font-size: large" id="exploitant"  aria-label="Titre utilisateur" aria-describedby="Titre utilisateur">
+                        <option value="0">Sélectionnez l'exploitant</option>
+                        {% for exploitant in exploitants %}
+                            {% if (exploitant.sigle) %}
+                                <option value="{{ exploitant.id }}">{{ exploitant.sigle }}</option>
+                            {% else %}
+                                <option value="{{ exploitant.id }}">{{ exploitant.raisonSocialeExploitant }}</option>
+                            {% endif %}
+                        {% endfor %}
                     </select>
                 </div>
+                <br>
+                <a href="{{ path('app_autorisation_contrat_bcbgfh') }}" class="btn btn-danger p-2 font-weight-light" style="font-size: 20px;"><i class="bi bi-back me-2"></i>Retourner à la liste</a>
+                <a href="#" class="btn btn-primary p-2 font-weight-light" id="btn_add_att" style="font-size: 20px;"><i class="bi bi-back me-2"></i>Ajouter</a>
+            </div>
+        </div>
 
 
+        <!--Modification de l'attribution -->
 
     </section>
 
-    <script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>
+
+    {#<script src="{{ asset('assets/webapp/assets/vendors/jquery/jquery.min.js') }}"></script>#}
+    <script src="{{ asset('assets/dselect-main/dist/js/dselect.min.js') }}"></script>
+    <script src="{{ asset('assets/assets/js/jquery.min-3.5.1.js') }}"></script>
 
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
+
+    <script>
+        restaure()
+        $('#btn_add_att').on('click', function(){
+            let date_signature = new Date($("#date_signature").val()).toISOString().split("T")[0]; // Format YYYY-MM-DD
+            if ( $("#num_decision").val() === "" ||
+                $("#date_signature").val() === "" ||
+                $("#duree").val() === "0" ||
+                $("#duree").val() === "" ||
+                $("#foret").val() === "0" ||
+                $("#exploitant").val() === "0"
+            ) {
+                render_toast_value("Merci de renseigner correctement toutes les informationbs requises", 2)
+            } else {
+                if (getNbJoursContrat(new Date(date_signature), new Date()) < 0) {
+                    render_toast_value("La date de signature ne peut postérieure à la date du jour ", 2)
+                } else {
+                    ajout_contrat();
+                }
+
+            }
+        })
+        // Functions
+        function ajout_contrat(){
+            var obj = {};
+            let numero_contrat = $("#num_contrat").val()
+            obj.foret =  $("#foret").val();
+            obj.exploitant =  $("#exploitant").val();
+            obj.numero_contrat =  numero_contrat.replaceAll('/', '-');
+            obj.date_signature =  $("#date_signature").val();
+            obj.duree =  $("#duree").val();
+            obj.nb_tiges =  $("#nb_tiges").val();
+
+            var data = JSON.stringify(obj);
+
+            $.ajax({
+                'url': '{{ path('app_portail') }}snvlt/contrat/gcbgfh/addnew/' + data,
+                'type': 'POST',
+                success: function(response) {
+
+                    restaure()
+                    render_toast_value('Attribution enregistrée avec succès', 1)
+                }
+            })
+        }
+
+        function restaure(){
+
+
+            $("#foret").val("0");
+            $("#exploitant").val("0");
+            $("#num_contrat").val("");
+            $("#date_signature").val("");
+            $("#date_signature").val("");
+            $("#duree").val("");
+            $("#nb_tiges").val("");
+            $("#num_contrat").focus();
+        }
+
+        function reinitialise_foret(){
+            let contenu_select = '';
+            $('#foret').removeData();
+
+            contenu_select = '<option value="0">Sélectionnez la forêt</option>';
+            {% for foret in forets %}
+            {% if (foret.codeTypeForet.id == 1) %}
+            contenu_select = contenu_select + '<option value="{{ foret.id }}">{{ foret.denomination }}</option>';
+            {% endif %}
+            {% endfor %}
+            document.querySelector('#foret').innerHTML = contenu_select;
+        }
+
+        function getNbJoursContrat(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
+    </script>
 {% endblock %}
-

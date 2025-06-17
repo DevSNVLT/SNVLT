@@ -37,8 +37,8 @@
                 <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#f7f9f7, #f1fbed);color: black;">
 
     {% elseif (app.user.codeDirection) %}
-            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#1e7861, #7f995a);">
-                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#1e7861, #7f995a);">
+            <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#054209, #054209);">
+                <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center" style="background-image:linear-gradient(#054209, #054209);">
 
     {% elseif (app.user.codeService) %}
             <nav class="navbar default-layout-navbar bg-success col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-image:linear-gradient(#1869b0, #198089);">
@@ -391,7 +391,7 @@
                 {% endif %}
 
                     {% if i > 0 %}
-                          <h3 class=" alert-danger text-danger text-center">{{ 'You have recieved notifications. Please click on bell above' | trans}}</h3>
+                          <h3 class=" alert-danger text-danger text-center">Vous avez des notifications! Veuillez cliquer sur la cloche en haut.</h3>
                     {% endif %}
             {#<div class="text-center alert-secondary text-danger text-danger p-1 font-weight-bold">Merci de faire CTRL + F5 depuis votre clavier pour appliquer les dernières mises à jour</div>#}
             <div class="content-wrapper">
@@ -504,7 +504,19 @@
                     render_toast_value("{{ message }}", 0)
                 {% endfor %}
             });
-    
+            function getNotifs(id_user){
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{path('app_portail')}}snvlt/admin/all/notifs/' + id_user,
+                        data: {id_notification: this.id},
+                        success: function () {
+                            console.log(response);
+                            let reponse = JSON.parse(response);
+                        }
+                    });
+            }
+
+
 </script>
 </body>
 </html>

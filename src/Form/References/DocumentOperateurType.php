@@ -5,6 +5,9 @@ namespace App\Form\References;
 use App\Entity\References\DocumentOperateur;
 use App\Entity\References\GrilleLegalite;
 use App\Entity\References\TypeOperateur;
+use App\Repository\References\DdefRepository;
+use App\Repository\References\GrilleLegaliteRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -43,7 +46,12 @@ class DocumentOperateurType extends AbstractType
                     new NotBlank([
                         'message' => 'Le nom du document est obligatoire',
                     ])
-                ]
+                ],
+                'query_builder' => function (GrilleLegaliteRepository $gr): QueryBuilder {
+                    return $gr->createQueryBuilder('g')
+                        ->where('g.code_operateur = 2')
+                        ->orderBy('g.libelle_document', 'ASC');
+                }
 
             ])
             ->add('description', TextareaType::class, [

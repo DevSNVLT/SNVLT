@@ -36,7 +36,7 @@ class ProcessCircuitGenerate
         private ManagerRegistry $registry,
 
         private CircuitCommunicationRepository $communicationRepository,
-      )
+    )
     {
         $this->pageDocGenRepository = $pageDocGenRepository;
         $this->translator = $translator;
@@ -46,7 +46,7 @@ class ProcessCircuitGenerate
         AddDocumentOperateurEvent $event
     ){
         $modele = new  ModeleCommunication();
-
+        $manager = $this->doctrine->getManager();
 
         $option_legalite = $this->registry->getRepository(Option::class)->findOneBy(['name'=>'legalite_document']);
         $modeles = $this->doctrine->getRepository(ModeleCommunication::class)->findBy(['statut'=>'ACTIF', 'code_type_modele_communication'=>2]);
@@ -57,8 +57,8 @@ class ProcessCircuitGenerate
 
 
         // ------------ Parcours du circuit modèle et Enregistrepment Copie du circuit de la demande -------------------------
-       $i = 0;
-       $dateCreation =  new \DateTimeImmutable();
+        $i = 0;
+        $dateCreation =  new \DateTimeImmutable();
         foreach ($details_modele as $detail){
             $i++;
             $circuit = new  CircuitCommunication();
@@ -92,7 +92,7 @@ class ProcessCircuitGenerate
             }
 
 
-            $manager = $this->doctrine->getManager();
+
             $manager->persist($circuit);
             $manager->flush();
         }
@@ -101,42 +101,43 @@ class ProcessCircuitGenerate
             $event->getDocumentOperateur()->setStatut("APPROUVE");
             $manager->persist($event->getDocumentOperateur());
             $manager->flush();
-        }
-        /*Recherche de l'ID du premier circuit a partir du code document*/
-        $idCircuit = $this->communicationRepository->findBy(['code_document_operateur'=>$event->getDocumentOperateur()])[0];
-
-        /*Début Notification*/
-        if ($idCircuit->getTypeService() == 'SERVICE'){
-            //Recherche du mail Responsable Service
-            $serviceReference = $this->registry->getRepository(ServiceMinef::class)->find($idCircuit->getCodeService());
-            $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$serviceReference->getEmailPersonneRessource()]);
-
-            $this->utils->envoiNotification(
-                $this->registry,
-                $this->translator->trans("New document for validation"),
-                $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
-                $userReference[0],
-                $event->getDocumentOperateur()->getDemandeurId()->getId(),
-                'app_validation_circuit_document',
-                "DOCUMENT_OPERATOR",
-                $idCircuit->getId()
-            );
         } else {
-            //Recherche du mail Responsable Service
-            $directionReference = $this->registry->getRepository(Direction::class)->find($idCircuit->getCodeDirection());
-            $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$directionReference->getEmailPersonneRessource()]);
-           //dd($userReference);
-            $this->utils->envoiNotification(
-                $this->registry,
-                $this->translator->trans("New document for validation"),
-                $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
-                $userReference[0],
-                $event->getDocumentOperateur()->getDemandeurId()->getId(),
-                'app_validation_circuit_document',
-                "DOCUMENT_OPERATOR",
-                $idCircuit->getId()
-            );
+            /*Recherche de l'ID du premier circuit a partir du code document*/
+            $idCircuit = $this->communicationRepository->findBy(['code_document_operateur'=>$event->getDocumentOperateur()])[0];
 
+            /*Début Notification*/
+            if ($idCircuit->getTypeService() == 'SERVICE'){
+                //Recherche du mail Responsable Service
+                $serviceReference = $this->registry->getRepository(ServiceMinef::class)->find($idCircuit->getCodeService());
+                $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$serviceReference->getEmailPersonneRessource()]);
+
+                $this->utils->envoiNotification(
+                    $this->registry,
+                    $this->translator->trans("New document for validation"),
+                    $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
+                    $userReference[0],
+                    $event->getDocumentOperateur()->getDemandeurId()->getId(),
+                    'app_validation_circuit_document',
+                    "DOCUMENT_OPERATOR",
+                    $idCircuit->getId()
+                );
+            } else {
+                //Recherche du mail Responsable Service
+                $directionReference = $this->registry->getRepository(Direction::class)->find($idCircuit->getCodeDirection());
+                $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$directionReference->getEmailPersonneRessource()]);
+                //dd($userReference);
+                $this->utils->envoiNotification(
+                    $this->registry,
+                    $this->translator->trans("New document for validation"),
+                    $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
+                    $userReference[0],
+                    $event->getDocumentOperateur()->getDemandeurId()->getId(),
+                    'app_validation_circuit_document',
+                    "DOCUMENT_OPERATOR",
+                    $idCircuit->getId()
+                );
+
+            }
         }
 
         /*Fin Notification*/
@@ -145,88 +146,93 @@ class ProcessCircuitGenerate
     public function onDemandeOperateurAdd(
         AddDemandeOperateurEvent $event
     ){
-        $modele = new  ModeleCommunication();
+        try {
+            $modele = new  ModeleCommunication();
 
-        //dd($user);
-        //Recherche le modèle Actif
-        $modeles = $this->doctrine->getRepository(ModeleCommunication::class)->findBy(['statut'=>'ACTIF', 'code_type_modele_communication'=>1]);
-        $modele = $modeles[0] ;
+            //dd($user);
+            //Recherche le modèle Actif
+            $modeles = $this->doctrine->getRepository(ModeleCommunication::class)->findBy(['statut' => 'ACTIF', 'code_type_modele_communication' => 1]);
+            $modele = $modeles[0];
 
-        //Recherche le circuit du modèle actif
-        $details_modele = $this->doctrine->getRepository(DetailsModele::class)->findBy(['code_modele'=>$modele]);
+            //Recherche le circuit du modèle actif
+            $details_modele = $this->doctrine->getRepository(DetailsModele::class)->findBy(['code_modele' => $modele]);
 
 
-        // ------------ Parcours du circuit modèle et Enregistrepment Copie du circuit de la demande -------------------------
-        $i = 0;
-        $dateCreation =  new \DateTimeImmutable();
-        foreach ($details_modele as $detail){
-            $i++;
-            $circuit = new  CircuitCommunication();
+            // ------------ Parcours du circuit modèle et Enregistrepment Copie du circuit de la demande -------------------------
+            $i = 0;
+            $dateCreation = new \DateTimeImmutable();
+            foreach ($details_modele as $detail) {
+                $i++;
+                $circuit = new  CircuitCommunication();
 
-            $circuit->setCodeModele($modele);
-            $circuit->setCodeDirection($detail->getCodeDirection());
-            $circuit->setTypeService($detail->getTypeService());
-            $circuit->setCodeService($detail->getCodeService());
-            $circuit->setCodeDemandeOperateur($event->getDemandeOperateur());
-            $circuit->setNumSeq($detail->getNumseq());
-            $circuit->setCreatedBy($event->getDemandeOperateur()->getCreatedBy());
-            $circuit->setCreatedAt($dateCreation);
+                $circuit->setCodeModele($modele);
+                $circuit->setCodeDirection($detail->getCodeDirection());
+                $circuit->setTypeService($detail->getTypeService());
+                $circuit->setCodeService($detail->getCodeService());
+                $circuit->setCodeDemandeOperateur($event->getDemandeOperateur());
+                $circuit->setNumSeq($detail->getNumseq());
+                $circuit->setCreatedBy($event->getDemandeOperateur()->getCreatedBy());
+                $circuit->setCreatedAt($dateCreation);
 
-            $operateur = "";
+                $operateur = "";
 
-            if ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 2){
-                $operateur = $this->registry->getRepository(Exploitant::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeexploitant())->getRaisonSocialeExploitant();
-            }elseif ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 3){
-                $operateur = $this->registry->getRepository(Usine::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeindustriel())->getRaisonSocialeUsine();
-            }elseif ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 4){
-                $operateur = $this->registry->getRepository(Exportateur::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeExportateur())->getRaisonSocialeExportateur();
+                if ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 2) {
+                    $operateur = $this->registry->getRepository(Exploitant::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeexploitant())->getRaisonSocialeExploitant();
+                } elseif ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 3) {
+                    $operateur = $this->registry->getRepository(Usine::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeindustriel())->getRaisonSocialeUsine();
+                } elseif ($event->getDemandeOperateur()->getCodeOperateur()->getId() == 4) {
+                    $operateur = $this->registry->getRepository(Exportateur::class)->find($event->getDemandeOperateur()->getDemandeur()->getCodeExportateur())->getRaisonSocialeExportateur();
+                }
+
+                $circuit->setOperateur($operateur);
+                $userReference = new User();
+                if ($i == 1) {
+                    $circuit->setStatut("EN COURS");
+
+                }
+
+                $manager = $this->doctrine->getManager();
+                $manager->persist($circuit);
+                $manager->flush();
+            }
+            /*Recherche de l'ID du premier circuit a partir du code document*/
+            $idCircuit = $this->communicationRepository->findBy(['code_demande_operateur' => $event->getDemandeOperateur()])[0];
+            if ($idCircuit){
+                /*Début Notification*/
+                if ($idCircuit->getTypeService() == 'SERVICE') {
+                    //Recherche du mail Responsable Service
+                    $serviceReference = $this->registry->getRepository(ServiceMinef::class)->find($idCircuit->getCodeService());
+                    $userReference = $this->registry->getRepository(User::class)->findBy(['email' => $serviceReference->getEmailPersonneRessource()]);
+
+                    $this->utils->envoiNotification(
+                        $this->registry,
+                        $this->translator->trans("New document request for validation"),
+                        $this->translator->trans("The Operator ") . $operateur . $this->translator->trans(" has sent to you a new statical document request . Please click on this notification to display the content."),
+                        $userReference[0],
+                        $event->getDemandeOperateur()->getDemandeur()->getId(),
+                        'app_validation_circuit_demande',
+                        "DEMANDE_OPERATOR",
+                        $idCircuit->getId()
+                    );
+                } else {
+                    //Recherche du mail Responsable Service
+                    $directionReference = $this->registry->getRepository(Direction::class)->find($idCircuit->getCodeDirection());
+                    $userReference = $this->registry->getRepository(User::class)->findBy(['email' => $directionReference->getEmailPersonneRessource()]);
+                    $this->utils->envoiNotification(
+                        $this->registry,
+                        $this->translator->trans("New document for validation"),
+                        $this->translator->trans("The Operator ") . $operateur . $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
+                        $userReference[0],
+                        $event->getDemandeOperateur()->getDemandeur()->getId(),
+                        'app_validation_circuit_demande',
+                        "DEMANDE_OPERATOR",
+                        $idCircuit->getId()
+                    );
+
+                }
             }
 
-            $circuit->setOperateur($operateur);
-            $userReference = new User();
-            if($i == 1){
-                $circuit->setStatut("EN COURS");
-
+        }   catch (\Throwable $exception){
             }
-
-            $manager = $this->doctrine->getManager();
-            $manager->persist($circuit);
-            $manager->flush();
-        }
-        /*Recherche de l'ID du premier circuit a partir du code document*/
-        $idCircuit = $this->communicationRepository->findBy(['code_demande_operateur'=>$event->getDemandeOperateur()])[0];
-
-        /*Début Notification*/
-        if ($idCircuit->getTypeService() == 'SERVICE'){
-            //Recherche du mail Responsable Service
-            $serviceReference = $this->registry->getRepository(ServiceMinef::class)->find($idCircuit->getCodeService());
-            $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$serviceReference->getEmailPersonneRessource()]);
-
-            $this->utils->envoiNotification(
-                $this->registry,
-                $this->translator->trans("New document request for validation"),
-                $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new statical document request . Please click on this notification to display the content."),
-                $userReference[0],
-                $event->getDemandeOperateur()->getDemandeur()->getId(),
-                'app_validation_circuit_demande',
-                "DEMANDE_OPERATOR",
-                $idCircuit->getId()
-            );
-        } else {
-            //Recherche du mail Responsable Service
-            $directionReference = $this->registry->getRepository(Direction::class)->find($idCircuit->getCodeDirection());
-            $userReference = $this->registry->getRepository(User::class)->findBy(['email'=>$directionReference->getEmailPersonneRessource()]);
-            $this->utils->envoiNotification(
-                $this->registry,
-                $this->translator->trans("New document for validation"),
-                $this->translator->trans("The Operator ") . $operateur .  $this->translator->trans(" has sent to you a new document . Please click on this notification to display the content."),
-                $userReference[0],
-                $event->getDemandeOperateur()->getDemandeur()->getId(),
-                'app_validation_circuit_demande',
-                "DEMANDE_OPERATOR",
-                $idCircuit->getId()
-            );
-
-        }
     }
 }

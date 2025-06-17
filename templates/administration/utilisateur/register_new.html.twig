@@ -544,7 +544,7 @@
                                     obj.fonction = fonction;
                                     obj.mobile = tel;
                                     obj.langue = langue;
-                                    obj.mpd = mpd.replaceWith("#", "%23");
+                                    obj.mpd = mpd.replace("#", "|||");
                                     obj.email = email_utilisateur;
                                     obj.operateur = operateur;
                                     obj.exploitant = exploitant;
@@ -568,7 +568,7 @@
                                             let reponse = JSON.parse(response)
                                             render_toast_value("Votre demande d'adhésion a été soumise à votre administrateur", 3)
                                             $("#chargement_snvlt .btn-close").click()
-                                            //document.location.href = '{{ path('request_submitted')}}'
+                                            document.location.href = '{{ path('request_submitted')}}'
                                         }
                                     })
                                 }

@@ -80,18 +80,25 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/Js/utilitaires.js') }}"></script>
     <script>
         restaure()
         $('#btn_add_att').on('click', function(){
+            let date_decision = new Date($("#date_decision").val()).toISOString().split("T")[0]; // Format YYYY-MM-DD
             if ( $("#num_decision").val() === "" ||
                  $("#date_decision").val() === "" ||
                  $("#foret").val() === "0" ||
                  $("#exploitant").val() === "0"
                 ) {
-                alert("Merci de renseigner correctement toutes les informationbs requises")
+                render_toast_value("Merci de renseigner correctement toutes les informationbs requises", 2)
             } else {
-                ajout_att();
+                if (getNbJoursAtt(new Date(date_decision), new Date()) < 0) {
+                    render_toast_value("La date de signature ne peut postérieure à la date du jour ", 2)
+                } else {
+                    ajout_att();
+                }
+
             }
         })
         // Functions
@@ -109,24 +116,14 @@
                 'url': '{{ path('app_portail') }}snvlt/att/addnew/' + data,
                 'type': 'POST',
                 success: function(response) {
-                    // Swal.fire({
-                    //     toast: true,
-                    //     position: "top-end",
-                    //     background: '#dffbdd',
-                    //     timer : 3000,
-                    //     icon: "success",
-                    //     title: 'Attribution enregistrée avec succès',
-                    //     showConfirmButton: false
-                    // });
+
                     restaure()
-                    alert('Attribution enregistrée avec succès');
+                    render_toast_value('Attribution enregistrée avec succès', 1)
                 }
             })
         }
 
         function restaure(){
-
-
             $("#foret").val("0");
             $("#exploitant").val("0");
             $("#num_decision").val("");
@@ -147,6 +144,14 @@
             {% endfor %}
             document.querySelector('#foret').innerHTML = contenu_select;
         }
+
+        function getNbJoursAtt(date1, date2){
+            const differenceInMilliseconds = date2.getTime() - date1.getTime(); // Conversion en millisecondes
+            const differenceInDays = differenceInMilliseconds /  (1000 * 60 * 60 * 24); // Conversion en jours
+            return differenceInDays;
+        }
+
+
     </script>
 {% endblock %}
 
