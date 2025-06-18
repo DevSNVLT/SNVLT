@@ -122,6 +122,11 @@ class FicheProductionController extends AbstractController
                             $billons_prod = $liste_billons;
                             //dd($liste_billons);
                         }
+						if ($element->getCodeEssence()){
+							$ess = $element->getCodeEssence()->getNomVernaculaire();
+						} else {
+							$ess = '-';
+						}
                         $infos_fiche[] = array(
                             'id_elt'=>$element->getId(),
                             'lng'=>$element->getLng(),
@@ -130,7 +135,7 @@ class FicheProductionController extends AbstractController
                             'nb'=>$element->getNombre(),
                             'vol'=>$element->getVolume(),
                             'type_transfo'=>$type_transfo->getLibelle(),
-                            'essence'=>$element->getCodeEssence()->getNomVernaculaire(),
+                            'essence'=>$ess,
                             'billons'=>$billons_prod
                         );
                     }
@@ -201,6 +206,11 @@ class FicheProductionController extends AbstractController
                         }
                         $volume = $volume + $element->getVolume();
                         $nb_elts = $nb_elts + $element->getNombre();
+						if ($element->getCodeEssence()){
+							$ess = $element->getCodeEssence()->getNomVernaculaire();
+						} else {
+							$ess = '-';
+						}
                         $infos_fiche[] = array(
                             'id_elt'=>$element->getId(),
                             'numero_fiche'=>$fiche->getNumero() ." du ". $fiche->getDateFiche()->format('d/m/Y'),
@@ -210,7 +220,7 @@ class FicheProductionController extends AbstractController
                             'nb'=>$element->getNombre(),
                             'vol'=>$element->getVolume(),
                             'type_transfo'=>$type_transfo->getLibelle(),
-                            'essence'=>$element->getCodeEssence()->getNomVernaculaire(),
+                            'essence'=>$ess,
                             'billons'=>$billons_prod
                         );
                     }
@@ -279,6 +289,11 @@ class FicheProductionController extends AbstractController
                             $billons_prod = $liste_billons;
                             //dd($liste_billons);
                         }
+						if ($element->getCodeEssence()){
+							$ess = $element->getCodeEssence()->getNomVernaculaire();
+						} else {
+							$ess = '-';
+						}
                         $infos_fiche[] = array(
                             'id_elt'=>$element->getId(),
                             'numero_fiche'=>$fiche->getNumero() ." du ". $fiche->getDateFiche()->format('d/m/Y'),
@@ -288,7 +303,7 @@ class FicheProductionController extends AbstractController
                             'nb'=>$element->getNombre(),
                             'vol'=>$element->getVolume(),
                             'type_transfo'=>$type_transfo->getLibelle(),
-                            'essence'=>$element->getCodeEssence()->getNomVernaculaire(),
+                            'essence'=>$ess,
                             'billons'=>$billons_prod
                         );
                     }

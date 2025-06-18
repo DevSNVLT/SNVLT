@@ -7,7 +7,7 @@
 {% block titre_page %}
     <h2 class="text-dark font-weight-bold mb-2">
         <img src="{{ asset('assets/images/webapp/package.png') }}" alt="{% trans %}Colis{% endtrans %}">  {% trans %}Wood packages{% endtrans %} N° {{ mon_colis.reference }}
-        - [<span class="text-info">{{ mon_colis.codeEssence.nomVernaculaire }}</span> - <span class="font-weight-bold text-dark" style="margin-right: 25px; font-size: 20px;">{{ 'Number of elements' | trans}} :
+        - [<span class="text-info">{%if (mon_colis.codeEssence) %}{{ mon_colis.codeEssence.nomVernaculaire }}{% endif %}</span> - <span class="font-weight-bold text-dark" style="margin-right: 25px; font-size: 20px;">{{ 'Number of elements' | trans}} :
             {% set nb = 0 %}
             {% for element in mon_colis.elementsColis %}
                 {% set nb = nb + element.nombre %}
@@ -68,7 +68,7 @@
                             </div>
                             <div class="row mb-2">
                                 <span class="col-6">{{ 'Species' | trans }}</span>
-                                <input type="text" value="{{ mon_colis.codeEssence.nomVernaculaire }}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
+                                <input type="text" value="{%if (mon_colis.codeEssence) %}{{ mon_colis.codeEssence.nomVernaculaire }}{% endif %}" readonly style="font-size: 16px;background-color: #fcf378; border: 1px solid lightgrey;">
                             </div>
                         </div>
                         <div class="col-md-4" style="width: 100%;">

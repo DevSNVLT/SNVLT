@@ -242,13 +242,17 @@ class ColisController extends AbstractController
                             $nb_elt = $nb_elt + $elt->getNombre();
                             $vol_elt = round($vol_elt + $elt->getVolume(), 3);
                         }
-
+						if ($colis->getCodeEssence()){
+							$ess = $colis->getCodeEssence()->getNomVernaculaire();
+						} else {
+							$ess = '-';
+						}
                         $liste_colis[] = array(
                             'id_colis'=>$colis->getId(),
                             'contrat'=>$colis->getCodeContrat()->getNumeroContrat(),
                             'transformation'=>$colis->getCodeContrat()->getTypeTransfo()->getLibelle(),
                             'ref_colis'=>$colis->getReference(),
-                            'code_essence'=>$colis->getCodeEssence()->getNomVernaculaire(),
+                            'code_essence'=>$ess,
                             'date_confection'=>$colis->getDateConfection()->format('d/m/Y'),
                             'etat'=>$colis->getEtatHygro(),
                             'nb_elts'=>$nb_elt,
@@ -358,13 +362,17 @@ class ColisController extends AbstractController
                 $infos_colis = array();
                 $mon_colis = $colisRepository->find((int) $id_colis);
                 if ($mon_colis){
-
+						if ($mon_colis->getCodeEssence()){
+							$ess = $mon_colis->getCodeEssence()->getNomVernaculaire();
+							} else {
+								$ess = '-';
+							}
                     $infos_colis[] = array(
                         'id_colis'=>$mon_colis->getId(),
                         'contrat'=>$mon_colis->getCodeContrat()->getNumeroContrat(),
                         'transformation'=>$mon_colis->getCodeContrat()->getTypeTransfo()->getLibelle(),
                         'ref_colis'=>$mon_colis->getReference(),
-                        'code_essence'=>$mon_colis->getCodeEssence()->getNomVernaculaire(),
+                        'code_essence'=>$ess,
                         'date_confection'=>$mon_colis->getDateConfection()->format('d/m/Y'),
                         'etat'=>$mon_colis->getEtatHygro(),
                         'nb_elts'=>0,

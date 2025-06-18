@@ -244,16 +244,16 @@ class ContratController extends AbstractController
                 $mon_contrat = $contratRepository->find($id_contract);
                 if ($mon_contrat){
                     $mes_essences = $mon_contrat->getEssence();
-
-                    foreach ($mes_essences as $essence){
-                        $essences[] = array(
-                            'essence_id'=>$essence->getId(),
-                            'nom_vernaculaire'=>$essence->getNomVernaculaire(),
-                            'code_essence'=>$essence->getNumeroEssence(),
-                            'dm'=>$essence->getDmMinima()
-                        );
-                    }
-
+					if ($mes_essences){
+						foreach ($mes_essences as $essence){
+							$essences[] = array(
+								'essence_id'=>$essence->getId(),
+								'nom_vernaculaire'=>$essence->getNomVernaculaire(),
+								'code_essence'=>$essence->getNumeroEssence(),
+								'dm'=>$essence->getDmMinima()
+							);
+						}
+					}
                 }
                 return  new JsonResponse(json_encode($essences));
             } else {
