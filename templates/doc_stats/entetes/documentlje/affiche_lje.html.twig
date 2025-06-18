@@ -640,13 +640,8 @@
                 } else if (source_id === "21"){
                     page_source_id = bcbgfh_page_id;
                 }
-                alert(getNbJours(new Date(date_dechargement), dateJour));
-                if (getNbJours(new Date(date_dechargement), dateJour) < 0){
-                    render_toast_value("La date de déchargement ne peut être postérieure à la date d'aujourd'hui", 2)
-                } else {
-                    ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
-                }
-
+                
+				ajoute_donnees(index_page, source_id, page_source_id, date_dechargement);
             }
         })
         function ajoute_donnees(index_page_lje, source_id, chargement_id, date_dechargement){

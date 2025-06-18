@@ -81,8 +81,8 @@ class ServiceMinefType extends AbstractType
 
                 'attr'=>[
                     'class'=>'form-control',
-                    'style'=>'background-color:lightblue',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow',
+                    'readonly'=>false
                 ]
 
             ])
@@ -94,8 +94,8 @@ class ServiceMinefType extends AbstractType
                 ],
                 'attr'=>[
                     'class'=>'form-control',
-                    'style'=>'background-color:lightblue',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow',
+                    'readonly'=>false
                 ]
 
             ])
@@ -108,8 +108,8 @@ class ServiceMinefType extends AbstractType
                 ],
                 'attr'=>[
                     'class'=>'form-control',
-                    'style'=>'background-color:lightblue',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow',
+                    'readonly'=>false
                 ]
 
             ])

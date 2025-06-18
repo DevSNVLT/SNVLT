@@ -146,13 +146,8 @@
 
             <div id="control-main">
                 <button id="pef" class="chargement controle_btn"><i class="ph ph-truck-trailer"></i> Chargement de grumes</button>
+                <button id="bille" class="bille controle_btn"><i class="ph ph-log"></i> Rechercher une Bille</button>
                 <button id="laac" class="laac controle_btn"><i class="ph ph-circle-notch"></i>LAAC</button>
-            </div>
-
-            <div id="rechercheContainer">
-                <button id="rechercheBilleContainer" class="controle_btn">
-                    <i class="ph ph-log"></i> Rechercher une Bille
-                </button>
             </div>
 
             <div id="chargement-treed" class="chargement-treed" >
@@ -168,7 +163,22 @@
 
             </div>
 
-           
+            <div id="bille-treed" class="bille-treed">
+                <select id="pefList2">
+                    <option value="" disabled>Choisir une zone</option>
+                    {%for value in data%}
+                        <option value="{{value.id_foret }}">{{value.numero_foret }}</option>
+                    {%endfor%}
+                </select>
+                <select name="liste_chargements" id="liste_chargements2"></select>
+
+                <input type="" name="bille" placeholder="Numéro de Bille" id="billeNum">
+
+                <button id="rechercheBille">
+                    <i class="ph ph-magnifying-glass" style="font-size:17px;"></i>
+                    <span>Rechercher</span>
+                </button>
+            </div>
 
         </div>
         <div class="container">
@@ -214,16 +224,16 @@
 
         let chargements = document.querySelector('#liste_chargements');
         const pef = document.getElementById("pef")
-        //const bille = document.getElementById("bille")
+        const bille = document.getElementById("bille")
         const laac = document.getElementById("laac")
         
-        //const bille_treed = document.getElementById("bille-treed")
+        const bille_treed = document.getElementById("bille-treed")
         const chargement_treed = document.getElementById("chargement-treed")
 
         // Initialize the map
         const maptilerApiKey = 'WydFNLpS6gHVVGqhkpYB';
         const coteDivoire = [6.246855, -5.5471]; // Latitude, Longitude
-        const map = L.map('map').setView(coteDivoire, 7.5); // Zoom sur la basilique
+        const map = L.map('map').setView(coteDivoire, 7); // Zoom sur la basilique
 
         //osm layer
         var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -323,7 +333,7 @@
             
         });
 
-        // Lorsque le pef change on charge les chargements du nouveau pef
+        
         document.getElementById('pefList').addEventListener('change', async (event) => {
             const ForetId = event.target.value;
             console.log('ForetId:'+ ForetId)
@@ -362,6 +372,7 @@
             if (id_chargement) {
                 try {
                     let response = await fetch(`{{ path('app_portail') }}api/spacial-data-layer/getPointBrh?id_chargement=${id_chargement}`);
+					
                     let data = await response.json();
                     if (data.success === true) {
                         // Supprimer tous les marqueurs précédents
@@ -395,7 +406,13 @@
 
                             L.geoJSON(geoJSON, {
                                 pointToLayer: function (feature, latlng) {
-                                    let marker = L.marker(latlng);
+                                    let marker = L.circleMarker(latlng, {
+                                        radius: 12,
+                                        color: '#b58e3a',
+                                        fillColor: '#c39745',
+                                        fillOpacity: 0.5,
+                                        weight: 2
+                                    });
 
                                     marker.bindPopup(`
                                 <h3>${data.data[i]['nom_vernaculaire']} - <span style="background:#60b4b4;">${data.data[i]['numero_lignepagebrh']}${data.data[i]['lettre_lignepagebrh']}</span></h3>
@@ -419,7 +436,7 @@
 
                                 <p><b>Forêt:</b> ${ForetCode}</p>
 
-                                <img src="https://i.postimg.cc/3wZ1VVDC/14453098-b-che-de-bois-que-le-bois-du-feu-devant-un-fond-blanc.png" alt="${data.data[i]['nom_vernaculaire']}" style="width:100%; height:auto;">
+                                <img src="https://i.postimg.cc/y6cyVTw4/bois.png" alt="Image" style="width:100%; height:auto;">
                             `);
 
                                     // Ajouter les coordonnées du marqueur au tableau des limites
@@ -434,7 +451,7 @@
                         if (bounds.length > 0) {
                             let latlngBounds = L.latLngBounds(bounds); // Créer un objet LatLngBounds
                             map.fitBounds(latlngBounds); // Ajuster la carte aux limites
-                            map.setZoom(13.5);
+                            map.setZoom(10);
                         }
                     } else {
                         alert(data.message);
@@ -445,7 +462,106 @@
             }
         });
 
-        
+        document.getElementById('liste_chargements2').addEventListener('change', async (event) => {
+            idChargementForSearch = event.target.value;
+        });
+
+
+
+        document.getElementById('pefList2').addEventListener('change', async (event) => {
+            const ForetId = event.target.value;
+
+            liste_tous_chargements2(ForetId)
+
+            const selectedOption = event.target.options[event.target.selectedIndex];
+
+            ForetCode = parseInt(selectedOption.text);
+
+            console.log('ForetCode: '+ForetCode)
+
+            if (ForetId) {
+                try {
+                    let response = await fetch(`{{api_route['pef']}}?id_foret=${ForetId}`);
+                    let data = await response.json();
+                    if (data.success==true) {
+                        let geoJSON = JSON.parse(data.data[0].geom)
+                        updatePefMap(geoJSON,data)
+                    }else{
+                        alert(data.message)
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        document.getElementById('rechercheBille').addEventListener('click',async(event) =>{
+            let bille = document.getElementById('billeNum').value;
+            let id_chargement = idChargementForSearch
+            let url =  "{{ path('app_portail') }}api/spacial-data-layer/billes-recherche/"
+            console.log('Bille Numero: ' + bille);
+            console.log('id chargement: ' + idChargementForSearch);
+
+            try {
+                //let response = await fetch(`${url}?id_chargement=${id_chargement}&billeNum=${bille}`);
+				let response = await fetch(`{{ path('recherche_bille_carto') }}?id_chargement=${id_chargement}&billeNum=${bille}`)
+                let data = await response.json();
+                console.log(data)
+                if (data.success === true) {
+                        let geoJSON = JSON.parse(data.geom.geom);
+
+                        L.geoJSON(geoJSON, {
+                            pointToLayer: function (feature, latlng) {
+                                let marker = L.circleMarker(latlng, {
+                                    radius: 12,
+                                    color: '#b58e3a',
+                                    fillColor: '#c39745',
+                                    fillOpacity: 0.5,
+                                    weight: 2
+                                });
+
+                                marker.bindPopup(`
+                                <h3>${data.data['essence']} - <span style="background:#60b4b4;">${data.data['numeroBille']}${data.data['lettre']}</span></h3>
+
+                                <p>
+                                    <span><b>Long:</b> ${data.data['long']}</span> |
+                                    <span><b>Diam:</b> ${data.data['diam']}</span> |
+                                    <span><b>Cub:</b> ${data.data['cub']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Zone H:</b> ${data.data['zoneH']}</span> |
+                                    <span><b>X:</b> ${data.data['x']}</span>
+                                    <span><b>Y:</b> ${data.data['y']}</span>
+                                </p>
+
+                                <p>
+                                    <span><b>Doc:</b> ${data.data['docBrh']}</span> |
+                                    <span><b>N.Feuillet:</b> ${data.data['feuillet']}</span>
+                                </p>
+
+                                <p><b>Forêt:</b> ${data.data['numeroForet']}</p>
+
+                                <img src="https://i.postimg.cc/y6cyVTw4/bois.png" alt="Image" style="width:100%; height:auto;">
+                            `);
+                                return marker;
+                            }
+                        }).addTo(map);
+
+
+
+
+                }else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+
+
+
+        });
 
         function liste_tous_chargements(id_pef){
             let contenu = '<option>{{ 'Select loading' | trans}}</option>';
@@ -462,7 +578,21 @@
             })
         }
 
-        
+        function liste_tous_chargements2(id_pef){
+
+            let contenu = '<option>{{ 'Select loading' | trans}}</option>';
+            $.ajax({
+                url :'{{path('app_portail')}}snvlt/chargements/lst/'+ id_pef,
+                type : 'POST',
+                success : function (response){
+                    let liste_forets = JSON.parse(response);
+                    for(var i = 0; i< liste_forets.length ; i++){
+                        contenu = contenu + '<option value="' + liste_forets[i].pageid + '">' + liste_forets[i].numero_page + '</option>'
+                    }
+                    document.querySelector('#liste_chargements2').innerHTML = contenu;
+                }
+            })
+        }
 
 
         function updatePefMap(geoJSON, data) {
@@ -495,201 +625,18 @@
 
         pef.onclick = function(argument) {
             chargement_treed.style.display = 'block'
+            bille_treed.style.display = 'none'
         }
 
+        bille.onclick = function(argument) {
+            bille_treed.style.display = 'flex'
+            chargement_treed.style.display = 'none'
+        }
 
         laac.onclick = function(argument) {
+            bille_treed.style.display = 'none'
             chargement_treed.style.display = 'none'
         }
 
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnRecherche = document.getElementById('rechercheBilleContainer');
-        btnRecherche.addEventListener('click', () => {
-            // Premier popup : saisie du numéro de bille
-            Swal.fire({
-                title: 'Numéro de Bille',
-                input: 'text',
-                inputPlaceholder: 'Entrez le numéro de bille',
-                showCancelButton: true,
-                confirmButtonText: 'Vérifier',
-                cancelButtonText: 'Annuler',
-                inputValidator: (value) => {
-                    if (!value || !value.trim()) {
-                        return 'Veuillez saisir un numéro.';
-                    }
-                    return null;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const numero = result.value.trim();
-
-                    Swal.fire({
-                        title: 'Vérification en cours...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        },
-                        timer: 800,
-                        willClose: () => {
-                            // Après un court délai, on ferme et on poursuit
-                        }
-                    }).then(() => {
-                        ouvrirPopupSelection(numero);
-                    });
-                }
-            });
-        });
-
-       
-        async function ouvrirPopupSelection(numeroBille) {
-            try {
-                // 1. Récupération des PEF disponibles pour cette bille
-                const response = await fetch(`{{ path('app_portail') }}api/data_carto/billes/?billeNum=${numeroBille}`);
-                const apiData = await response.json();
-
-                if (!apiData.success || !apiData.data.pef || apiData.data.pef.length === 0) {
-                    Swal.fire('Erreur', 'Aucune zone PEF trouvée pour cette bille', 'error');
-                    return;
-                }
-
-                // Création des options pour le select
-                const pefOptions = {};
-                apiData.data.pef.forEach(pef => {
-                    pefOptions[pef] = pef;
-                });
-
-                // 2. Sélection du PEF par l'utilisateur
-                const selectionResult = await Swal.fire({
-                    title: `Sélectionnez une zone pour la bille ${numeroBille}`,
-                    input: 'select',
-                    inputOptions: pefOptions,
-                    inputPlaceholder: 'Choisir une zone',
-                    showCancelButton: true,
-                    confirmButtonText: 'Valider',
-                    cancelButtonText: 'Annuler',
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'Veuillez choisir une zone.';
-                        }
-                        return null;
-                    }
-                });
-
-                if (selectionResult.isConfirmed) {
-                    const selectedPef = selectionResult.value;
-                    
-                    // 3. Chargement avec indicateur de progression
-                    Swal.fire({
-                        title: 'Chargement des données...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    try {
-                        // 4. Récupération des données géographiques du PEF
-                        const pefResponse = await fetch(`/api/spacial-data-layer/polygon/numero?id_foret=${selectedPef}`);
-                        const pefData = await pefResponse.json();
-
-                        if (pefData.success) {
-                            // 5. Affichage sur la carte
-                            const geoJSON = JSON.parse(pefData.data[0].geom);
-                            updatePefMap(geoJSON, pefData);
-                            
-
-                            // Après avoir reçu la réponse de l'API
-                            const billeResponse = await fetch(`/api/spacial-data-layer/find-bille/?billeNum=${numeroBille}&id_foret=${selectedPef}`);
-                            const billeData = await billeResponse.json();
-
-                            if (billeData.success && billeData.data.geom) {
-                                try {
-                                    // Parse le GeoJSON
-                                    const geoJSON = JSON.parse(billeData.data.geom);
-                                    
-                                    // Création du marqueur
-                                    const billeLayer = L.geoJSON(geoJSON, {
-                                        pointToLayer: function(feature, latlng) {
-                                            const marker = L.marker(latlng);
-                                            
-                                            // Construction du contenu du popup
-                                            const popupContent = `
-                                                <h3>${billeData.data.essence || 'Non spécifié'} - 
-                                                    <span style="background:#60b4b4;">${billeData.data.numeroBille}${billeData.data.lettre}</span>
-                                                </h3>
-                                                <p>
-                                                    <span><b>Long:</b> ${billeData.data.long || 'N/A'} mm</span> |
-                                                    <span><b>Diam:</b> ${billeData.data.diam || 'N/A'} mm</span> |
-                                                    <span><b>Cub:</b> ${billeData.data.cub || 'N/A'} m³</span>
-                                                </p>
-                                                <p>
-                                                    <span><b>Zone H:</b> ${billeData.data.zoneH || 'N/A'}</span> |
-                                                    <span><b>Coords:</b> ${geoJSON.coordinates[0].toFixed(6)}, ${geoJSON.coordinates[1].toFixed(6)}</span>
-                                                </p>
-                                                <p>
-                                                    <span><b>Doc:</b> ${billeData.data.docBrh || 'N/A'}</span> |
-                                                    <span><b>Feuillet:</b> ${billeData.data.feuiillet || 'N/A'}</span>
-                                                </p>
-                                                <p><b>Forêt:</b> ${billeData.data.numeroForet || 'N/A'}</p>
-                                                <img src="https://i.postimg.cc/3wZ1VVDC/14453098-b-che-de-bois-que-le-bois-du-feu-devant-un-fond-blanc.png" 
-                                                     alt="${billeData.data.essence || 'Bille'}" 
-                                                     style="width:100%; height:auto;">
-                                            `;
-                                            
-                                            marker.bindPopup(popupContent);
-                                            return marker;
-                                        }
-                                    }).addTo(markerGroup);
-                                    
-                                    // Ajustement de la vue
-                                    if (pefPolygone) {
-                                        const group = new L.FeatureGroup([pefPolygone, billeLayer]);
-                                        map.fitBounds(group.getBounds().pad(0.5)); // Ajoute un padding de 50%
-                                    } else {
-                                        map.fitBounds(billeLayer.getBounds().pad(0.2));
-                                    }
-                                    
-                                    // Ouvrir le popup automatiquement
-                                    billeLayer.eachLayer(layer => layer.openPopup());
-                                    
-                                } catch (e) {
-                                    console.error("Erreur de parsing GeoJSON:", e);
-                                    Swal.fire('Erreur', 'Format de données géospatiales invalide', 'error');
-                                }
-                            } else {
-                                Swal.fire('Information', 'Aucune donnée spatiale disponible pour cette bille', 'info');
-                            }
-
-
-                            // 6. Fermeture du loader et affichage du résultat
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'PEF affiché sur la carte',
-                                html: `Le PEF <strong>${selectedPef}</strong> a été chargé et affiché sur la carte.`,
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                        } else {
-                            Swal.fire('Erreur', pefData.message || 'Erreur lors du chargement du PEF', 'error');
-                        }
-                    } catch (error) {
-                     
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erreur technique',
-                            text: 'Une erreur est survenue lors du chargement des données cartographiques'
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                Swal.fire('Erreur', 'Une erreur est survenue lors de la récupération des zones', 'error');
-            }
-        }
-    });
-</script>
 {% endblock %}

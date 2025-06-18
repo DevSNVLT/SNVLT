@@ -2,6 +2,7 @@
 {% for notification in mes_notifs %}
     {% set i = i + 1 %}
 <div class="dropdown-divider"></div>
+{% if (notification.id) %}
 <a class="dropdown-item preview-item notif_id" href="{{ path(notification.reference, {'id_notification': notification.id }) }}" id="{{ notification.id }}">
     <div class="preview-thumbnail">
         <div class="preview-icon bg-success">
@@ -13,6 +14,7 @@
         <p class="text-gray ellipsis mb-0"> {{notification.description | slice(0, 60)}} ... </p>
     </div>
 </a>
+{% endif %}
 {% endfor %}
 <div class="dropdown-divider"></div>
 <a href="{{ path('app_notifs') }}"><h6 class="p-3 mb-0 text-center">{% trans %}See all notifications{% endtrans %}</h6></a>

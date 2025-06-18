@@ -1090,47 +1090,56 @@ class DocumentbtguController extends AbstractController
 
 
                     //envoi Notification à la DR de l'usine
-                    $this->utils->envoiNotification(
-                        $registry,
-                        "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
-                        "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
-                        $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDr()->getEmailPersonneRessource()]),
-                        $user,
-                        "app_my_btgu_loadings_notifs",
-                        "PAGE_BTGU",
-                        $pagebtgu->getId()
-                    );
-
+					if($user->getCodeindustriel()->getCodeDr()){
+						$this->utils->envoiNotification(
+							$registry,
+							"Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+							"Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+							$registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDr()->getEmailPersonneRessource()]),
+							$user,
+							"app_my_btgu_loadings_notifs",
+							"PAGE_BTGU",
+							$pagebtgu->getId()
+						);
+					}
+					
                     //envoi Notification à la DD de l'usine si elle existe
-                    if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId() > 0){
-                        if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()){
-                            // dd($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId());
+					if($user->getCodeindustriel()->getCodeCantonnement()){
+						if($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()){
+							if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId() > 0){
+								if ($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()){
+									// dd($user->getCodeindustriel()->getCodeCantonnement()->getCodeDdef()->getId());
 
-                            $this->utils->envoiNotification(
-                                $registry,
-                                "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
-                                "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
-                                $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()]),
-                                $user,
-                                "app_my_btgu_loadings_notifs",
-                                "PAGE_BTGU",
-                                $pagebtgu->getId()
-                            );
-                        }
-                    }
+									$this->utils->envoiNotification(
+										$registry,
+										"Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+										"Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+										$registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getCodeDdef()->getEmailPersonneRessource()]),
+										$user,
+										"app_my_btgu_loadings_notifs",
+										"PAGE_BTGU",
+										$pagebtgu->getId()
+									);
+								}
+							}
+						}
+					}
+                    
 
                     //envoi Notification au cantonnement de l'usine
-
-                    $this->utils->envoiNotification(
-                        $registry,
-                        "Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
-                        "Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
-                        $registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getEmailPersonneRessource()]),
-                        $user,
-                        "app_my_btgu_loadings_notifs",
-                        "PAGE_BTGU",
-                        $pagebtgu->getId()
-                    );
+					if($user->getCodeindustriel()->getCodeCantonnement()){
+						$this->utils->envoiNotification(
+							$registry,
+							"Infos sur le Chargement BTGU N° " . $pagebtgu->getNumeroPagebtgu() . " [" . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . "]",
+							"Chargement ". $pagebtgu->getCodeDocbtgu()->getTypeDocument()->getDenomination() . " N° " . $pagebtgu->getCodeDocbtgu()->getNumeroDocbtgu() . " - Feuillet N° ". $pagebtgu->getNumeroPagebtgu() . " en provenance de l'usine " . $pagebtgu->getCodeDocbtgu()->getCodeUsine()->getRaisonSocialeUsine() . " a été accepté par l'usine " . $user->getCodeindustriel()->getRaisonSocialeUsine() . " {User : " . $user . "}",
+							$registry->getRepository(User::class)->findOneBy(['email'=>$pagebtgu->getCodeDocbtgu()->getCodeUsine()->getCodeCantonnement()->getEmailPersonneRessource()]),
+							$user,
+							"app_my_btgu_loadings_notifs",
+							"PAGE_BTGU",
+							$pagebtgu->getId()
+						);
+					}
+					
                     return new JsonResponse(json_encode("SUCCESS"));
 
 

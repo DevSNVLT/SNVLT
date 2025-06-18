@@ -1584,7 +1584,7 @@ class DocumentbrhController extends AbstractController
         }
     }
 
-    #[Route('/snvlt/detail_brh_loading/details/{id_page}', name:'app_my_loadings')]
+    #[Route('/snvlt/detail_brh_loading/details/{id_page?0}', name:'app_my_loadings')]
     public function details_chargement(
         ManagerRegistry $registry,
         Request $request,

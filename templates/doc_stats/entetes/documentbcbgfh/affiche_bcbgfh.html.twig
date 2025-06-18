@@ -517,12 +517,12 @@
                             contenu = contenu + '<td class="text-center"><a class="text-dark font-weight-bold" style="font-size: 20px;" href="#" id="' + lignes[i].id_ligne + '">' + lignes[i].numero_ligne + '</a></td>' +
                                 '<td class="text-center"><span class="badge bg-dark text-white p-1"style="font-size: 20px;">' + lignes[i].lettre  + '</span></td>'+
                                 '<td><span>' + lignes[i].essence  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].zh_bcbgfh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].x_bcbgfh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].y_bcbgfh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].lng_bcbgfh  + '</span></td>'+
-                                '<td class="text-center"><span>' + lignes[i].dm_bcbgfh  + '</span></td>'+
-                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 20px;">' + Math.round((lignes[i].cubage_bcbgfh) * 1000)/1000  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].zh  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].x  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].y  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].lng  + '</span></td>'+
+                                '<td class="text-center"><span>' + lignes[i].dm  + '</span></td>'+
+                                '<td class="text-center"><span class="font-weight-bold alert-dark badge p-1 rounded-5" style="font-size: 20px;">' + Math.round((lignes[i].volume) * 1000)/1000  + '</span></td>'+
                                 '</tr>';
                             cubage_total = Math.round((cubage_total + lignes[i].cubage_bcbgfh) * 1000)/1000;
                         }

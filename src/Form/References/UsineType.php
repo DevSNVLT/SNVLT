@@ -86,8 +86,8 @@ class UsineType extends AbstractType
                 ],
                 'attr'=>[
                     'class'=>'form-control alert-light text-dark',
-                    'style'=>'background-color:lightblue;text-transform:uppercase;',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow;text-transform:uppercase;',
+                    'readonly'=>false
                 ]
             ])
 
@@ -172,8 +172,8 @@ class UsineType extends AbstractType
                 ],
                 'attr'=>[
                     'class'=>'form-control alert-light text-dark',
-                    'style'=>'background-color:lightblue;text-transform:uppercase;',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow;text-transform:uppercase;',
+                    'readonly'=>false
                 ]
             ])
             ->add('mobile_personne_ressource', TextType::class, [
@@ -183,8 +183,8 @@ class UsineType extends AbstractType
                 ],
                 'attr'=>[
                     'class'=>'form-control alert-light text-dark',
-                    'style'=>'background-color:lightblue;text-transform:uppercase;',
-                    'readonly'=>true
+                    'style'=>'background-color:lightyellow;text-transform:uppercase;',
+                    'readonly'=>false
                 ]
             ])
 

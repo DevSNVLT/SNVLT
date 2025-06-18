@@ -462,13 +462,18 @@ class BillonController extends AbstractController
                     if ($pagebrh){
                         $foret = $registry->getRepository(Pagebrh::class)->find($ligne->getCodeFeuillet())->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination();
                     }
+                    if($ligne->getEssence()){
+                        $ess = $ligne->getEssence()->getNomVernaculaire();
+                    } else {
+                        $ess = "-";
+                    }
                     $sources_forets[] = array(
 
                         'foret'=>$foret,
                         'numero'=>$ligne->getNumeroArbre() . $ligne->getLettre(),
                         'lng_lje'=>$ligne->getLng(),
                         'dm_lje'=>$ligne->getDm(),
-                        'essence'=>$ligne->getEssence()->getNomVernaculaire()
+                        'essence'=>$ess
                     );
                 }
 
