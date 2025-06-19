@@ -104,6 +104,23 @@
         {% endif %}
     }, 20000);
 
+    function accepter_tous() {
+        let contenu = '';
+        $.ajax({
+            url: '{{ path('app_portail') }}doc/stats/lje/acceptAllFromSource',
+            type: 'POST',
+            success: function (response) {
+                let reponse = JSON.parse(response);
+                if (reponse[0].nb > 0){
+                    load_chargements({{ app.user.codeindustriel.id }});
+                    render_toast_value("Tous les chargements ont été acceptés!", 1);
+                } else {
+                    render_toast_value("Vous n'avez aucun connaissement en attente", 3);
+                }
+            }
+        });
+    }
+
     function load_chargements(id_usine){
         let contenu = '';
         document.querySelector('.chrs_usine').innerHTML = '<h4 class="card-title p-2 text-white font-weight-light w-100" style="background-color: #145b04;width:100%;">Chargements Grumes en destination de mon usine </h4><h3 class="p-2 alert-primary m-2 infos_connaissement">Aucun connaissement disponible</h3>'
@@ -115,7 +132,7 @@
 
                 if (reponse.length > 0){
                     contenu = '<h3 class="card-title p-2 text-white font-weight-light w-100" style="background-color: #145b04;width:100%;">Chargements Grumes en destination de mon usine </h3>';
-                    contenu = contenu + '<div class="bg-white p-2"><div class="text-center"><a class="btn btn-sm alert-secondary font-weight-light p-2 m-2" href="{{ path('accept_loadings') }}" id="btn_accept_chr" style="font-size: 16x²px;border:2px solid black">Accepter tous les chargements</a></div>'
+                    contenu = contenu + '<div class="bg-white p-2"><div class="text-center"><a class="btn btn-sm alert-secondary font-weight-light p-2 m-2" href="#" id="btn_accept_chr" style="font-size: 16px;border:2px solid black">Accepter tous les chargements</a></div>'
                     contenu = contenu + '<table class="table table-responsive tbl_chr m-2 bg-white" style="width: 98%;">'
                     contenu = contenu + '<thead>'
                     contenu = contenu + '<tr class="bg-secondary">'
@@ -221,6 +238,8 @@
             }
 
         }
-
+        $('body').on('click', '#btn_accept_chr', function (){
+            accepter_tous();
+        });
 
 </script>

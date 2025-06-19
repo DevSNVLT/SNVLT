@@ -156,16 +156,7 @@
         $('#btn_search_bille').on('click', function (){
             document.querySelector("#lbl_infos").innerText = "";
             if (!document.querySelector('#numero_bille').value){
-
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: '{% trans %}Billon{% endtrans %}',
-                    html: "<h4 class='text-danger'>{% trans %}Please enter Log number{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Renseignez SVP le N° de la bille", 2)
                 document.querySelector('#numero_bille').focus()
             } else {
                 numero_bille = document.querySelector('#numero_bille').value;
@@ -223,30 +214,12 @@
 
         $('#btn_decoupe').on('click', function (){
             if (!document.querySelector('#date_tronconnage').value || !document.querySelector('#txt_lng').value || !document.querySelector('#txt_times').value /*|| !document.querySelector('#type_transformation').value*/){
-
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: '{% trans %}Billon{% endtrans %}',
-                    html: "<h4 class='text-danger'>{% trans %}Please fill all required values{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Merci de renseignez tous les champs requis", 2)
             } else {
                 let lng_demande  = $('#txt_lng').val() * $('#txt_times').val();
 
                 if (lng_remaining < lng_demande){
-
-                    Swal.fire({
-                        toast: true,
-                        background: '#f8e9e9',
-                        icon: "error",
-                        allowEscapeKey: false,
-                        title: '{% trans %}Billon{% endtrans %}',
-                        html: "<h4 class='text-danger'>{% trans %}The total length requested is greater than the length available{% endtrans %}</h4>",
-                        padding: '1em'
-                    });
+                    render_toast_value("La longueur saisie ne peut être supérieure à celle disponible", 1)
                     $('#txt_lng').val("");
                     $('#txt_times').val(1);
                     document.querySelector('#txt_lng').focus();
@@ -259,16 +232,7 @@
 
 
                     if (new Date(date_tronconnage) > d){
-                        Swal.fire({
-                            toast: true,
-                            background: '#f8e9e9',
-                            icon: "error",
-                            allowEscapeKey: false,
-                            title: '{% trans %}Cuting sheet{% endtrans %}',
-                            html: "<h4 class='text-danger'>{% trans %}the selected date cannot be later than today{% endtrans %}</h4>",
-                            padding: '1em'
-                        });
-
+                        render_toast_value("La date sélectionnée doit être inférieure ou égale à la date d'aujourd'hui", 1)
                     } else {
                         add_billons(lng, nb, code_bille_lje, date_tronconnage);
                     }
@@ -282,16 +246,7 @@
             var nb_billons = document.querySelector('#liste_billons').rows
             //alert(nb_billons.length );
             if (document.querySelector('#numero_bille').value === "" && document.querySelector('#liste_billons').rows.length === 0){
-
-                Swal.fire({
-                    toast: true,
-                    background: '#f8e9e9',
-                    icon: "error",
-                    allowEscapeKey: false,
-                    title: '{% trans %}Billon{% endtrans %}',
-                    html: "<h4 class='text-danger'>{% trans %}Sorry no log was selected{% endtrans %}</h4>",
-                    padding: '1em'
-                });
+                render_toast_value("Désolé! Aucune bille sélectionnée", 0)
                 $('#numero_bille').focus();
             } else {
                 cloturer();
@@ -312,7 +267,7 @@
                 success : function (response){
                     let liste_billes = JSON.parse(response);
                     for (let i = 0;  i < liste_billes.length; i++){
-                        contenu = contenu + '<tr><td class="font-weight-bold"><button class="btn btn-primary bille_select" id="' + liste_billes[i].numero + '"> ' + liste_billes[i].numero + '</button></td>';
+                        contenu = contenu + '<tr><td class="font-weight-bold"><button class="btn bille_select text-center w-100 text-white" style="background-color: darkgreen; border-radius: 25px;" id="' + liste_billes[i].numero + '"> ' + liste_billes[i].numero + '</button></td>';
                         contenu = contenu + '<td class="alert-warning">' + liste_billes[i].lng_lje + '</td>';
                         contenu = contenu + '<td class="alert-warning">' + liste_billes[i].dm_lje + '</td>';
                         contenu = contenu + '<td class="alert-warning">' + liste_billes[i].vol_lje + '</td>';
@@ -401,16 +356,7 @@
                         //document.querySelector('#lbl_lng_restant').innerText =  liste_forets[0].lng_restant + " {{ ' cm remaining' | trans }}";
 
                     } else {
-
-                        Swal.fire({
-                            toast: true,
-                            background: '#f8e9e9',
-                            icon: "error",
-                            allowEscapeKey: false,
-                            title: '{% trans %}Billon{% endtrans %}',
-                            html: "<h4 class='text-danger'>{% trans %}Sorry there is no transformed log with this number in LJE file{% endtrans %}</h4>",
-                            padding: '1em'
-                        });
+                        render_toast_value("Une erreur s'est produite. \n\n Cette bille présente des données incompatibles. Merci de contacter votre administrateur.!", 0)
                         initialise();
                         document.querySelector(".contenu_source").listindex = -1
                         document.querySelector('#txt_lng').focus();
@@ -429,16 +375,7 @@
                     liste_billons_dispo(code_bille_lje);
                     lng_restante(code_bille_lje)
                     liste_billes_dispo();
-
-                    Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        background: '#dffbdd',
-                        timer : 3000,
-                        icon: "success",
-                        title: '{% trans %}Successful operation !{% endtrans %}',
-                        showConfirmButton: false
-                    });
+                    render_toast_value("Opération réussie", 1)
 
                     $('#txt_lng').val("");
                     $('#txt_times').val(1);
@@ -469,8 +406,7 @@
                     for (let i = 0; i < valeur.length; i++){
                         contenu_transfo = contenu_transfo + '<option value="' + valeur[i].id_transfo + '">' + valeur[i].libelle + '</option>'
                     }
-                    /* document.querySelector("#type_transformation").innerHTML = contenu_transfo
-                     document.querySelector('#type_transformation').selectedIndex = -1;*/
+
                 }
             });
         }

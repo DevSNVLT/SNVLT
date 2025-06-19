@@ -783,7 +783,7 @@ class DocumentljeController extends AbstractController
                                     $ligne_lje->setCreatedAt(new \DateTime());
                                     $ligne_lje->setCreatedBy($user);
                                     $ligne_lje->setCodeTypeDoc($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getTypeDocument());
-                                    $ligne_lje->setCodeFeuillet($lignebcbgfh->getId());
+                                    $ligne_lje->setCodeFeuillet($pagebcbgfh->getId());
                                     $ligne_lje->setRsOrigine($pagebcbgfh->getCodeDocbcbgfh()->getCodeContrat()->getCodeExploitant());
                                     $ligne_lje->setNumeroDocument($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getNumeroDocbcbgfh());
                                     $ligne_lje->setDocumentSource($lignebcbgfh->getCodePagebcbgfh()->getCodeDocbcbgfh()->getNumeroDocbcbgfh());
@@ -945,6 +945,100 @@ class DocumentljeController extends AbstractController
                     'groupe'=>$code_groupe,
                     'liste_parent'=>$permissions
                 ]);
+            } else {
+                return $this->redirectToRoute('app_no_permission_user_active');
+            }
+
+        }
+
+    }
+
+    #[Route('/doc/stats/lje/acceptAllFromSource', name: 'accept_loadings_json')]
+    public function accept_loadings_json(
+        Request $request,
+        MenuRepository $menus,
+        MenuPermissionRepository $permissions,
+        GroupeRepository $groupeRepository,
+        UserRepository $userRepository,
+        User $user = null,
+        NotificationRepository $notification,
+        DocumentljeRepository $docs_lje,
+        ManagerRegistry $registry
+    ): Response
+    {
+        if(!$request->getSession()->has('user_session')){
+            return $this->redirectToRoute('app_login');
+        } else {
+            if ($this->isGranted('ROLE_INDUSTRIEL'))
+            {
+                $user = $userRepository->find($this->getUser());
+                $code_groupe = $user->getCodeGroupe()->getId();
+
+                $nb_chr = 0;
+                $liste_chr = array();
+                //Chargements BCBGFH-PEF
+                $chargement_non_acceptes = $registry->getRepository(Pagebrh::class)->findBy(['confirmation_usine'=>false, 'parc_usine_brh'=>$user->getCodeindustriel(), 'fini'=>true, 'entre_lje'=>false]);
+                $description = "";
+                foreach($chargement_non_acceptes as $chargement){
+                    $chargement->setConfirmationUsine(true);
+                    $chargement->setUpdatedBy($user);
+                    $chargement->setUpdatedAt(new \DateTime());
+                    $description = $description .$chargement->getNumeroPagebrh() .  " ";
+                    $registry->getManager()->persist($chargement);
+                    $nb_chr = $nb_chr +1;
+                }
+
+                //Chargements BCBGFH-FC
+                $chargement_non_acceptes = $registry->getRepository(Pagebcbgfh::class)->findBy(['confirmation_usine'=>false, 'parc_usine_bcbgfh'=>$user->getCodeindustriel(), 'fini'=>true, 'entre_lje'=>false]);
+
+                foreach($chargement_non_acceptes as $chargement){
+                    $chargement->setConfirmationUsine(true);
+                    $chargement->setUpdatedBy($user);
+                    $chargement->setUpdatedAt(new \DateTime());
+                    $description = $description .$chargement->getNumeroPagebcbgfh() .  " ";
+                    $registry->getManager()->persist($chargement);
+                    $nb_chr = $nb_chr +1;
+                }
+
+                //Chargements BCBP
+                $chargement_non_acceptes = $registry->getRepository(Pagebcbp::class)->findBy(['confirmation_usine'=>false, 'parc_usine'=>$user->getCodeindustriel(), 'fini'=>true, 'entre_lje'=>false]);
+
+                foreach($chargement_non_acceptes as $chargement){
+                    $chargement->setConfirmationUsine(true);
+                    $chargement->setUpdatedBy($user);
+                    $chargement->setUpdatedAt(new \DateTime());
+                    $description = $description .$chargement->getNumeroPagebcbp() .  " ";
+                    $registry->getManager()->persist($chargement);
+                    $nb_chr = $nb_chr +1;
+                }
+
+                //Chargements BTGU
+                $chargement_non_acceptes = $registry->getRepository(Pagebtgu::class)->findBy(['confirmation_usine'=>false, 'usine_destinataire'=>$user->getCodeindustriel(), 'fini'=>true, 'entre_lje'=>false]);
+
+                foreach($chargement_non_acceptes as $chargement){
+                    $chargement->setConfirmationUsine(true);
+                    $chargement->setUpdatedBy($user);
+                    $chargement->setUpdatedAt(new \DateTime());
+                    $description = $description .$chargement->getNumeroPagebtgu() .  " ";
+                    $registry->getManager()->persist($chargement);
+                    $nb_chr = $nb_chr +1;
+                }
+
+                $registry->getManager()->flush();
+
+                $liste_chr[] = array(
+                  'nb'=>$nb_chr
+                );
+                //Log
+                $this->administrationService->save_action(
+                    $user,
+                    "PAGE_BRH",
+                    "ACCEPTATION_CHARGEMENT_BLOC",
+                    new \DateTimeImmutable(),
+                    "L'utilisateur " . $user . " vient d'accepter en bloc les chargements suivants : " . $description
+                );
+
+                return new  JsonResponse(json_encode($liste_chr));
             } else {
                 return $this->redirectToRoute('app_no_permission_user_active');
             }

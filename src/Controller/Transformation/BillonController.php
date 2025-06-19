@@ -6,6 +6,8 @@ use App\Controller\Services\AdministrationService;
 use App\Controller\Services\Utils;
 use App\Entity\Administration\DocStatsGen;
 use App\Entity\DocStats\Entetes\Documentlje;
+use App\Entity\DocStats\Pages\Pagebcbgfh;
+use App\Entity\DocStats\Pages\Pagebcbp;
 use App\Entity\DocStats\Pages\Pagebrh;
 use App\Entity\DocStats\Pages\Pagelje;
 use App\Entity\DocStats\Saisie\Lignepagebrh;
@@ -299,11 +301,37 @@ class BillonController extends AbstractController
                             $lettre = substr(strtoupper($numero_bille), -1);
                             //dd($numero. " - ". $lettre);
                             $lignes= $registry->getRepository(Lignepagelje::class)->findBy(['numero_arbre'=> $numero  , 'lettre'=>$lettre, 'code_pagelje'=>$page_lje]);
+
                             foreach ($lignes as $ligne){
+                                $foret = "";
+                                if ($ligne->getEssence()) { $ess = $ligne->getEssence()->getNomVernaculaire();} else { $ess = "-";}
+                                if ($ligne->getCodeTypeDoc()){
+                                    if ($ligne->getCodeTypeDoc()->getId() == 2){
+                                        // Le document source est un BCBGFH-PEF
+                                        $foret = $registry->getRepository(Pagebrh::class)->find($ligne->getCodeFeuillet())->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination();
+                                    } elseif ($ligne->getCodeTypeDoc()->getId() == 3){
+                                        // Le document source est un BCBP
+                                        $foret = $registry->getRepository(Pagebcbp::class)->find($ligne->getCodeFeuillet())->getCodeDocbcbp()->getCodeAutorisationPv()->getCodeAttributionPv()->getCodeParcelle()->getDenomination();
+                                    } elseif ($ligne->getCodeTypeDoc()->getId() == 6){
+                                        // Le document source est un BTGU
+                                        $foret = $ligne->getForet();
+                                    }elseif ($ligne->getCodeTypeDoc()->getId() == 21){
+                                        // Le document source est un BCBGFH-FC
+                                        //dd($registry->getRepository(Pagebcbgfh::class)->find($ligne->getCodeFeuillet()));
+                                        $foret = $registry->getRepository(Pagebcbgfh::class)->find($ligne->getCodeFeuillet())->getCodeDocbcbgfh()->getCodeContrat()->getCodeForet()->getDenomination();
+                                    }
+                                    if ($foret){
+                                        $concession = $foret;
+                                    } else {
+                                        $concession = $ligne->getForet();
+                                    }
+                                }
+
                                 $sources_forets[] = array(
-                                    'foret'=>$registry->getRepository(Pagebrh::class)->find($ligne->getCodeFeuillet())->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
+                                    //$registry->getRepository(Pagebrh::class)->find($ligne->getCodeFeuillet())->getCodeDocbrh()->getCodeReprise()->getCodeAttribution()->getCodeForet()->getDenomination(),
+                                   'foret'=>$concession,
                                     'lng'=>$ligne->getLng(),
-                                    'essence'=>$ligne->getEssence()->getNomVernaculaire(),
+                                    'essence'=>$ess,
                                     'dm_lje'=>$ligne->getDm(),
                                     'code_bille_lje'=>$ligne->getId(),
                                     'tronconnee'=>$ligne->isTronconnee()
@@ -343,6 +371,7 @@ class BillonController extends AbstractController
 
                 $mes_lje = $registry->getRepository(Documentlje::class)->findBy(['code_usine'=>$user->getCodeindustriel()]);
                 foreach($mes_lje as $lje) {
+
                     $mes_pages = $registry->getRepository(Pagelje::class)->findBy(['code_doclje' => $lje]);
                     foreach ($mes_pages as $page) {
                         $lignes = $registry->getRepository(Lignepagelje::class)->findBy(['code_pagelje'=>$page, 'tronconnee' => false]);

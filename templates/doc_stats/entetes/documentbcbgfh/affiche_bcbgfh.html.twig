@@ -698,51 +698,79 @@
 
         function add_ligne_bcbgfh(){
             var obj = {};
+            if (    $("#select_numero").val() === "" ||
+                    $("#nom_essencebcbgfh").val() === "0" ||  $("#nom_essencebcbgfh").val() === "" ||  $("#nom_essencebcbgfh").val() === null ||
+                    $("#zh_lignepagebcbgfh").val() ==="0" ||  $("#zh_lignepagebcbgfh").val() === "" ||  $("#zh_lignepagebcbgfh").val() === null ||
+                    $("#x_lignepagebcbgfh").val() === "" ||
+                    $("#y_lignepagebcbgfh").val() === "" ||
+                    $("#lettre_lignepagebcbgfh").val() === "0" ||  $("#lettre_lignepagebcbgfh").val() === "" ||  $("#lettre_lignepagebcbgfh").val() === null ||
+                    $("#longeur_lignepagebcbgfh").val() === 0 ||
+                    $("#diametre_lignepagebcbgfh").val() === "" ||
+                    $("#diametre_lignepagebcbgfh").val() === 0 ||
+                    $("#cubage_lignepagebcbgfh").val() === "" ||
+                    $("#cubage_lignepagebcbgfh").val() === 0
+            ){
+                render_toast_value("Saisissez toutes les valeurs avant de continuer!", 0);
+            }else {
+                obj.numero_lignepagebcbgfh =  $("#select_numero").val();
+                obj.lettre_lignepagebcbgfh =  $("#lettre_lignepagebcbgfh").val();
+                obj.nom_essencebcbgfh =  $("#nom_essencebcbgfh").val();
+                obj.zh_lignepagebcbgfh =  $("#zh_lignepagebcbgfh").val();
+                obj.x_lignepagebcbgfh =  $("#x_lignepagebcbgfh").val();
+                obj.y_lignepagebcbgfh =  $("#y_lignepagebcbgfh").val();
+                obj.longeur_lignepagebcbgfh =  $("#longeur_lignepagebcbgfh").val();
+                obj.diametre_lignepagebcbgfh =  $("#diametre_lignepagebcbgfh").val();
+                obj.cubage_lignepagebcbgfh =  $("#cubage_lignepagebcbgfh").val();
+                obj.code_pagebcbgfh =  index_page;
 
-            obj.numero_lignepagebcbgfh =  $("#select_numero").val();
-            obj.lettre_lignepagebcbgfh =  $("#lettre_lignepagebcbgfh").val();
-            obj.nom_essencebcbgfh =  $("#nom_essencebcbgfh").val();
-            obj.zh_lignepagebcbgfh =  $("#zh_lignepagebcbgfh").val();
-            obj.x_lignepagebcbgfh =  $("#x_lignepagebcbgfh").val();
-            obj.y_lignepagebcbgfh =  $("#y_lignepagebcbgfh").val();
-            obj.longeur_lignepagebcbgfh =  $("#longeur_lignepagebcbgfh").val();
-            obj.diametre_lignepagebcbgfh =  $("#diametre_lignepagebcbgfh").val();
-            obj.cubage_lignepagebcbgfh =  $("#cubage_lignepagebcbgfh").val();
-            obj.code_pagebcbgfh =  index_page;
+                var data = JSON.stringify(obj);
+                $.ajax({
+                    'url': '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/add_lignes/'  + data + "/{{ document_name.codeContrat.codeForet.id }}",
+                    'type': 'POST',
+                    success: function(response) {
+                        let retour = JSON.parse(response)
+                        console.log(retour)
+                        //alert(retour[0].code_bcbgfh)
+                        //alert(retour)
+                        if (retour[0].code_bcbgfh === "SAME_NUMBER") {
+                            document.querySelector('#lbl_alert').style = "display:inline";
+                            document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">Attention!! ce numéro de bille existe déjà pour cette forêt</h5>';
+                            //alert("Sorry! This number with this forest is already in used");
+                            render_toast_value("Attention!! ce numéro de bille existe déjà pour cette forêt",0)
 
-            var data = JSON.stringify(obj);
-            $.ajax({
-                'url': '{{ path('app_portail') }}snvlt/docbcbgfh/op/pages_bcbgfh/data/add_lignes/'  + data + "/{{ document_name.codeContrat.codeForet.id }}",
-                'type': 'POST',
-                success: function(response) {
-                    let retour = JSON.parse(response)
-                    console.log(retour)
-                    //alert(retour[0].code_bcbgfh)
-                    //alert(retour)
-                    if (retour[0].code_bcbgfh === "SAME_NUMBER") {
-                        document.querySelector('#lbl_alert').style = "display:inline";
-                        document.querySelector('#lbl_alert').innerHTML = '<h5><img style="margin-right:10px;" src="{{ asset('assets/icons/pressure.png') }}" alt="on_pressure">Attention!! ce numéro de bille existe déjà pour cette forêt</h5>';
-                        //alert("Sorry! This number with this forest is already in used");
-                        render_toast_value("Attention!! ce numéro de bille existe déjà pour cette forêt",0)
+                        } else {
 
-                    } else {
+                            affiche_lignes_courante(index_page);
+                            initialiser_numero_select();
+                            liste_numeros_cp();
+                            maj_page_bcbgfh();
+                            lettres_billes(document.querySelector('#select_numero').value)
+                            document.querySelector('#select_numero').focus();
+                        }
 
-                        affiche_lignes_courante(index_page);
-                        initialiser_numero_select();
-                        liste_numeros_cp();
-						maj_page_bcbgfh();
-                        lettres_billes(document.querySelector('#select_numero').value)
-                        document.querySelector('#select_numero').focus();
+
                     }
+                })
+            }
 
-
-                }
-            })
         }
 
 		function add_ligne_bcbgfh_dpif(){
 					var obj = {};
-					
+            if (    $("#select_numero_dpif").val() === "" ||
+                    $("#nom_essencebcbgfh_dpif").val() === "0" ||  $("#nom_essencebcbgfh_dpif").val() === "" ||  $("#nom_essencebcbgfh_dpif").val() === null ||
+                    $("#zh_lignepagebcbgfh_dpif").val() ==="0" ||  $("#zh_lignepagebcbgfh_dpif").val() === "" ||  $("#zh_lignepagebcbgfh_dpif").val() === null ||
+                    $("#x_lignepagebcbgfh_dpif").val() === "" ||
+                    $("#y_lignepagebcbgfh_dpif").val() === "" ||
+                    $("#lettre_lignepagebcbgfh_dpif").val() === "0" || $("#lettre_lignepagebcbgfh_dpif").val() === "" ||  $("#lettre_lignepagebcbgfh_dpif").val() === null ||
+                    $("#longeur_lignepagebcbgfh_dpif").val() === 0 ||
+                    $("#diametre_lignepagebcbgfh_dpif").val() === "" ||
+                    $("#diametre_lignepagebcbgfh_dpif").val() === 0 ||
+                    $("#cubage_lignepagebcbgfh_dpif").val() === "" ||
+                    $("#cubage_lignepagebcbgfh_dpif").val() === 0
+            ){
+                render_toast_value("Saisissez toutes les valeurs avant de continuer!", 0);
+            }else {
 					obj.numero_lignepagebcbgfh =  $("#numero_lignepagebcbgfh_dpif").val();
 					obj.lettre_lignepagebcbgfh =  document.querySelector("#lettre_lignepagebcbgfh_dpif").value;
 					obj.nom_essencebcbgfh =  $("#nom_essencebcbgfh_dpif").val();
@@ -777,6 +805,7 @@
 
 						}
 					})
+				}
 				}
 		function initialiser_dpif(){
 			$("#numero_lignepagebcbgfh_dpif").val('');

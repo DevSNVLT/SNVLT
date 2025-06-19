@@ -1056,10 +1056,11 @@
         function recherche_connaissement_brh(){
             let contenu = '';
             reinitialise_table();
+
             $('#numero_page').val('');
 
 
-            document.querySelector('#body_connaissement').innerHTML = contenu;
+            document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-dark">Chargement...</h3>';
             $.ajax({
                 url : '{{ path('lje_connaissement_brh') }}',
                 type : 'POST',
@@ -1074,6 +1075,8 @@
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
+                    } else {
+                        document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-danger">Aucun connaissement</h3>';
                     }
             }
             })
@@ -1084,7 +1087,7 @@
             $('#numero_page').val('');
 
 
-            document.querySelector('#body_connaissement').innerHTML = contenu;
+            document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-dark">Chargement...</h3>';
             $.ajax({
                 url : '{{ path('lje_connaissement_bcbgfh') }}',
                 type : 'POST',
@@ -1099,6 +1102,8 @@
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
+                    } else {
+                        document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-danger">Aucun connaissement</h3>';
                     }
             }
             })
@@ -1108,7 +1113,7 @@
             let contenu = '';
             reinitialise_table();
             $('#numero_page').val('');
-            document.querySelector('#body_connaissement').innerHTML = contenu;
+            document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-dark">Chargement...</h3>';
             $.ajax({
                 url : '{{ path('lje_connaissement_bcbp') }}',
                 type : 'POST',
@@ -1123,6 +1128,8 @@
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
+                    } else {
+                        document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-danger">Aucun connaissement</h3>';
                     }
                 }
             })
@@ -1131,7 +1138,7 @@
             let contenu = '';
             reinitialise_table();
             $('#numero_page').val('');
-            document.querySelector('#body_connaissement').innerHTML = contenu;
+            document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-dark">Chargement...</h3>';
             $.ajax({
                 url : '{{ path('lje_connaissement_btgu') }}',
                 type : 'POST',
@@ -1146,6 +1153,8 @@
                             contenu = contenu + '</tr>';
                         }
                         document.querySelector('#body_connaissement').innerHTML = contenu;
+                    } else {
+                        document.querySelector('#body_connaissement').innerHTML = '<h3 class="text-danger">Aucun connaissement</h3>';
                     }
                 }
             })
